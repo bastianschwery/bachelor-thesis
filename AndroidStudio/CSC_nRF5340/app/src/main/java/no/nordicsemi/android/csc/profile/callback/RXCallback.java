@@ -32,7 +32,7 @@ public interface RXCallback {
      * Called when a new data was received from the device.
      *
      * @param device the target device.
-     * @param data first value is type of sensor, second value the speed/cadence.
+     * @param data array with type and data values
      */
     void onCSCDataChanged(@NonNull final BluetoothDevice device, final Integer data);
 }

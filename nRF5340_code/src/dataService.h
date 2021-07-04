@@ -60,4 +60,4 @@ void data_service_send(struct bt_conn *conn, const uint8_t *data, uint16_t len);
 /** @brief get the diameter value
  *  @return the diameter value in cm
 */
-uint8_t getDiameter();
+double getDiameter();

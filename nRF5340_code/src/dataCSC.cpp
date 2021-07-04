@@ -20,7 +20,7 @@ dataCSC::dataCSC() {
     lastEventCadence = 0;
     oldLastEventCadence = 0;
     type = 0;
-    wheelDiameter = 0;
+    wheelDiameter = 0.0;
     speed = 0;
     rpm = 0;
 }
@@ -75,7 +75,7 @@ uint16_t dataCSC::calcRPM() {
 
         if (time < 0)
         {
-            time = 0xffff -oldLastEventCadence + lastEventCadence;
+            time = 0xffff - oldLastEventCadence + lastEventCadence;
         }
         
         rpm = (sumRevCadence - oldSumRevCadence) * 60 / time;
@@ -91,7 +91,7 @@ uint16_t dataCSC::calcRPM() {
 uint16_t dataCSC::calcSpeed() {
     uint16_t retVal = 0;
     //wheelDiameter = 0.08; // in m
-    uint16_t nbrRevSpeed = sumRevSpeed-oldSumRevSpeed;
+    uint16_t nbrRevSpeed = sumRevSpeed - oldSumRevSpeed;
     uint32_t maxVal = 0xffffffff;   // 32 bit
     double wheelCircumference = 0;
     double rpm_speed = 0;

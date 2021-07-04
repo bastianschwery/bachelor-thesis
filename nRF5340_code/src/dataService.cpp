@@ -23,6 +23,7 @@
 #include "dataService.h"
 
 uint8_t diameter;
+double dia;
 
 // defines of the UUID's
 #define BT_UUID_DATA_SERVICE      BT_UUID_DECLARE_128(DATA_SERVICE_UUID)
@@ -56,6 +57,16 @@ static ssize_t on_receive(struct bt_conn *conn,
 {
     const uint8_t * buffer = (uint8_t *) buf;
     diameter = (uint8_t ) *buffer;
+
+    // check if last bit is '1', then add 0.5 to dia and convert it to cm
+    if (diameter & 0b10000000 == 0b10000000)
+    {
+        dia = (diameter + 0.5) * 2.54;
+    }
+    else {
+        dia = diameter * 2.54;
+    }
+    
     
 	printk("Received data, handle %d, conn %p, data: 0x", attr->handle, conn);
  
@@ -161,6 +172,6 @@ void data_service_send(struct bt_conn *conn, const uint8_t *data, uint16_t len)
 }
 
 // getter
-uint8_t getDiameter() {
-    return diameter;
+double getDiameter() {
+    return dia;
 }

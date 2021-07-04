@@ -39,6 +39,10 @@ public class CSCViewModel extends AndroidViewModel {
 	private final CSCManager CSCManager;
 	private BluetoothDevice device;
 
+	/**
+	 * constructor
+	 * @param application
+	 */
 	public CSCViewModel(@NonNull final Application application) {
 		super(application);
 
@@ -46,17 +50,28 @@ public class CSCViewModel extends AndroidViewModel {
 		CSCManager = new CSCManager(getApplication());
 	}
 
+	/**
+	 * get the connection state
+	 * @return connection state
+	 */
 	public LiveData<ConnectionState> getConnectionState() {
 		return CSCManager.getState();
 	}
 
+	/**
+	 * get the rpm value
+	 * @return rpm value
+	 */
 	public LiveData<Integer> getRPMValue() {return CSCManager.getRPMValue();}
 
+	/**
+	 * get the speed value
+	 * @return speed value
+	 */
 	public LiveData<Double> getSpeedValue() {return CSCManager.getSpeedValue();}
 
 	/**
 	 * Connect to the given peripheral.
-	 *
 	 * @param target the target device.
 	 */
 	public void connect(@NonNull final DiscoveredBluetoothDevice target) {
@@ -93,19 +108,27 @@ public class CSCViewModel extends AndroidViewModel {
 	}
 
 	/**
-	 * Sends a command to set the wheel diameter to value.
-	 *
-	 * @param value diameter of the wheels in cm
+	 * sends a command to set the wheel diameter to value
+	 * @param value diameter of the wheels in inch
 	 */
 	public void setWheelDiameter(final Integer value) {
 		CSCManager.sendDiameter(value);}
 
+	/**
+	 * sends a command to set notifications manually
+	 */
 	public void setNotifications() {
 		CSCManager.setNotificationsOn();}
 
+	/**
+	 * sends command to reset the diameter value
+	 */
 	public void resetDiameter() {
 		CSCManager.resetDiameterValue();}
 
+	/**
+	 * when connected -> disconnect
+	 */
 	@Override
 	protected void onCleared() {
 		super.onCleared();

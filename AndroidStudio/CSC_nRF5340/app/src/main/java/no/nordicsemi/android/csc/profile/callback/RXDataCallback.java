@@ -31,6 +31,11 @@ import no.nordicsemi.android.ble.data.Data;
 @SuppressWarnings("ConstantConditions")
 public abstract class RXDataCallback implements ProfileDataCallback, RXCallback {
 
+    /**
+     * called when new data received
+     * @param device
+     * @param data
+     */
     @Override
     public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
         if (data.size() != 1) {
@@ -49,5 +54,11 @@ public abstract class RXDataCallback implements ProfileDataCallback, RXCallback 
         }*/
     }
 
+
+    /**
+     * abstract function
+     * @param device the target device.
+     * @param data array with type and data values
+     */
     public abstract void onCSCDataChanged(@NonNull @org.jetbrains.annotations.NotNull BluetoothDevice device, Integer data);
 }

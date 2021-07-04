@@ -52,7 +52,7 @@ public:
     uint8_t type;
 
     // received data from application
-    uint8_t wheelDiameter;
+    double wheelDiameter;
 
     // attributes for calculations
 private:

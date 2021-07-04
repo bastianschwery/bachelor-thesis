@@ -33,6 +33,11 @@ import no.nordicsemi.android.ble.data.Data;
 @SuppressWarnings("ConstantConditions")
 public abstract class TXDataCallback implements ProfileDataCallback, TXCallback {
 
+    /**
+     * called when new data received
+     * @param device
+     * @param data
+     */
     @Override
     public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
         if (data.size() != 2) {
@@ -48,5 +53,10 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
         onCSCDataChanged(device,d);
     }
 
+    /**
+     * abstract function
+     * @param device the target device.
+     * @param data first value in array is type of sensor, second value is the speed/cadence
+     */
     public abstract void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer data[]);
 }

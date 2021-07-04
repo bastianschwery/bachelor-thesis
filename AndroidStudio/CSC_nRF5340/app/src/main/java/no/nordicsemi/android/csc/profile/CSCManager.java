@@ -177,12 +177,22 @@ public class CSCManager extends ObservableBleManager {
 	 * will be called with the data received.
 	 */
 	private final RXDataCallback rxCallback = new RXDataCallback() {
+		/**
+		 * value changed on the rx characteristic
+		 * @param device
+		 * @param data
+		 */
 		@Override
 		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer data) {
 			log(Log.INFO, "New Data:" + data);
 			//cscValue.setValue(data);
 		}
 
+		/**
+		 * invalid data was obtained
+		 * @param device
+		 * @param data
+		 */
 		@Override
 		public void onInvalidDataReceived(@NonNull @NotNull BluetoothDevice device, @NonNull @NotNull Data data) {
 			// Data can only invalid if we read them. We assume the app always sends correct data.
@@ -195,6 +205,9 @@ public class CSCManager extends ObservableBleManager {
 	 * initialize all notification settings
 	 */
 	private class CSCBleManagerGattCallback extends BleManagerGattCallback {
+		/**
+		 * initialize all notifications of the characterstics
+		 */
 		@Override
 		protected void initialize() {
 			setNotificationCallback(RX_characteristic).with(rxCallback);
@@ -205,6 +218,12 @@ public class CSCManager extends ObservableBleManager {
 			enableNotifications(TX_characteristic).enqueue();
 		}
 
+		/**
+		 *
+		 * check if service is supported or not
+		 * @param gatt
+		 * @return boolean supported
+		 */
 		@Override
 		public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
 			final BluetoothGattService CSCService = gatt.getService(CSC_SERVICE);
@@ -231,11 +250,19 @@ public class CSCManager extends ObservableBleManager {
 		}
 	}
 
+	/**
+	 *
+	 * send diameter value in inch over ble to server
+	 * @param diameter
+	 */
 	public void sendDiameter(int diameter) {
 		log(Log.VERBOSE,"Sending wheel diameter, Data: " + diameter);
 		writeCharacteristic(RX_characteristic,Data.opCode((byte) diameter)).enqueue();
 	}
 
+	/**
+	 * set notifications manually
+	 */
 	public void setNotificationsOn(){
 		BluetoothGattService service = mBluetoothGatt.getService(CSC_SERVICE);
 		BluetoothGattCharacteristic TXcharacteristic = service.getCharacteristic(TX_CHARACTERISTIC_UUID);
@@ -247,6 +274,9 @@ public class CSCManager extends ObservableBleManager {
 		mBluetoothGatt.setCharacteristicNotification(TXcharacteristic,true);
 	}
 
+	/**
+	 * send message to server that the diameter has been reset
+	 */
 	public void resetDiameterValue() {
 		writeCharacteristic(RX_characteristic,Data.opCode((byte) 0)).enqueue();
 	}

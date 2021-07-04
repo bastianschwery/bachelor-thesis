@@ -67,6 +67,10 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     @BindView(R.id.no_location) View noLocationView;
     @BindView(R.id.bluetooth_off) View noBluetoothView;
 
+    /**
+     * create all necessary instances and add on click listeners
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,18 +98,29 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * on restart application -> call constructor and clear
+     */
     @Override
     protected void onRestart() {
         super.onRestart();
         clear();
     }
 
+    /**
+     * when stopping application -> stop scanning
+     */
     @Override
     protected void onStop() {
         super.onStop();
         stopScan();
     }
 
+    /**
+     * create options menu
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.filter, menu);
@@ -114,6 +129,11 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         return true;
     }
 
+    /**
+     * get the selected menu options
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
@@ -129,6 +149,10 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * get clicked item
+     * @param device
+     */
     @Override
     public void onItemClick(@NonNull final DiscoveredBluetoothDevice device) {
         final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
@@ -136,6 +160,12 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         startActivity(controlBlinkIntent);
     }
 
+    /**
+     * result of the permission request
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(final int requestCode,
                                            @NonNull final String[] permissions,
@@ -146,18 +176,27 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         }
     }
 
+    /**
+     * when location enabled clicked
+     */
     @OnClick(R.id.action_enable_location)
     public void onEnableLocationClicked() {
         final Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         startActivity(intent);
     }
 
+    /**
+     * when bluetooth enable clicked
+     */
     @OnClick(R.id.action_enable_bluetooth)
     public void onEnableBluetoothClicked() {
         final Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivity(enableIntent);
     }
 
+    /**
+     * when grant location enable clicked
+     */
     @OnClick(R.id.action_grant_location_permission)
     public void onGrantLocationPermissionClicked() {
         Utils.markLocationPermissionRequested(this);
@@ -167,6 +206,9 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
                 REQUEST_ACCESS_FINE_LOCATION);
     }
 
+    /**
+     * when permission settings clicked
+     */
     @OnClick(R.id.action_permission_settings)
     public void onPermissionSettingsClicked() {
         final Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);

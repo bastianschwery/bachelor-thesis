@@ -52,7 +52,7 @@ public class CSCActivity extends AppCompatActivity {
 	private CSCViewModel viewModel;
 	private TextView diameterValue;
 	private Button setValueButton, resetButton, resetDistanceButton;
-	private int wheelDiameter = 0;
+	private double wheelDiameter = 0.0;
 	private double distance = 0;
 	private NumberFormat n = NumberFormat.getInstance();
 
@@ -63,6 +63,10 @@ public class CSCActivity extends AppCompatActivity {
 	@BindView(R.id.cadence_value) TextView cadenceValue;
 	@BindView(R.id.distance_value) TextView distanceValue;
 
+	/**
+	 * create all necessary instances and add on click listeners
+	 * @param savedInstanceState
+	 */
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -116,9 +120,16 @@ public class CSCActivity extends AppCompatActivity {
 		setValueButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				wheelDiameter = Integer.valueOf(diameterValue.getText().toString());
+				wheelDiameter = Double.valueOf(diameterValue.getText().toString());
 				setValueButton.setEnabled(false);
-				viewModel.setWheelDiameter(Integer.valueOf(diameterValue.getText().toString()));
+				if ((int) wheelDiameter == wheelDiameter) {
+					viewModel.setWheelDiameter((int) wheelDiameter);
+				}
+				else {
+					// set last bit to '1', so we know there is .5 in the wheel diameter
+					viewModel.setWheelDiameter((int) wheelDiameter | 0b10000000);
+				}
+
 			}
 		});
 		
@@ -158,14 +169,21 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.getSpeedValue().observe(this,
 				integer -> speedValue.setText(integer.toString()));
 
-		viewModel.getRPMValue().observe(this,integer -> setDistance(integer));
+		viewModel.getSpeedValue().observe(this,integer -> setDistance(integer));
 	}
 
+	/**
+	 * try to reconnect
+	 */
 	@OnClick(R.id.action_clear_cache)
 	public void onTryAgainClicked() {
 		viewModel.reconnect();
 	}
 
+	/**
+	 * called when the connection state has been changed
+	 * @param connected
+	 */
 	private void onConnectionStateChanged(final boolean connected) {
 		if (!connected) {
 			if (firstEntry) {
@@ -179,11 +197,14 @@ public class CSCActivity extends AppCompatActivity {
 		}
 	}
 
-	public void setDistance(int rpm) {
-		double rps = rpm / 60;
-		distance += rps * wheelDiameter/100/1000 * Math.PI; // distance in km
+	/**
+	 * calculate the distance
+	 * @param speed
+	 */
+	public void setDistance(Double speed) {
+		double speed_in_km_s = speed / 3600; // speed in km/s
+		distance += speed_in_km_s * 1;	// distance in km, * 1s just to say its in km now
 		n.setMaximumFractionDigits(2);
-		//double dist_round = Math.round(distance*100)/100;
 		distanceValue.setText((n.format(distance)));
 	}
 }

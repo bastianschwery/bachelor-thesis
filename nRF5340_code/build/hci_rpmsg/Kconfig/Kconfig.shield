@@ -1,0 +1,3 @@
+osource "C:/Users/basti/ncs/nrf/boards/shields/*/Kconfig.shield"
+osource "C:/Users/basti/ncs/zephyr/boards/shields/*/Kconfig.shield"
+osource "C:/Users/basti/ncs/zephyr/boards/shields/*/Kconfig.shield"

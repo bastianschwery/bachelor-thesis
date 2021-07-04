@@ -1,0 +1,192 @@
+{
+	"folders": 
+	[	
+		{
+			"name": "PerCen",
+			"path": "."
+		},
+		{
+			"name" : "zephyr",
+			"path" : "../../../zephyr",
+		},
+		{
+			"name" : "nrf",
+			"path" : "../../../nrf",
+		},
+	],
+	"tasks":
+	{
+		"version": "2.0.0",
+		"options": 
+		{
+
+		},
+		"tasks":
+		[
+			{
+				"label": "Build firmware",
+				//"dependsOn": "clean firmware",
+				"type": "shell",
+				"windows" :
+				{
+					"command": 
+					[ 
+						"${workspaceRoot}\\..\\..\\..\\zephyr\\zephyr-env.cmd && west build -b nrf5340dk_nrf5340_cpuappns"						 
+					]
+				},
+				"problemMatcher": 
+				{
+					"base": "$gcc",
+					"fileLocation": [
+						"absolute"
+					]
+				},
+				"group": 
+				{
+					"kind": "build",
+					"isDefault": true
+				}
+			},
+			{
+				"label": "clean firmware",
+				"type": "shell",
+				"windows" :
+				{
+					"command": 
+					[
+						"rmdir /s /q ${workspaceRoot}\\build\\"
+					]
+				},
+				"group": 
+				{
+					"kind": "build",
+					"isDefault": true
+				}
+			},
+			{
+				"label": "Build and flash firmware",
+				"type": "shell",
+				"windows" :
+				{
+					"command": 
+					[ 
+						"${workspaceRoot}\\..\\..\\..\\zephyr\\zephyr-env.cmd && west build -b nrf5340dk_nrf5340_cpuappns && west flash"
+					]
+				},
+				"problemMatcher": {
+					"base": "$gcc",
+					"fileLocation": [
+						"absolute"
+					]
+				},
+				"group": 
+				{
+					"kind": "build",
+					"isDefault": true
+				}
+			}, 
+			{
+				"label": "Recover and flash",
+				"type": "shell",
+				"windows" :
+				{
+					"command": 
+					[
+						"${workspaceRoot}\\..\\..\\..\\zephyr\\zephyr-env.cmd && west flash --recover"
+					]
+				},
+				"group": 
+				{
+					"kind": "build",
+					"isDefault": true
+				}
+			},	
+		]
+	},
+	"settings": {
+		"files.associations": {
+			"vector": "cpp",
+			"iosfwd": "cpp",
+			"iterator": "cpp",
+			"__locale": "cpp",
+			"thread": "cpp",
+			"memory": "cpp",
+			"utility": "cpp",
+			"deque": "cpp",
+			"functional": "cpp",
+			"hash_map": "cpp",
+			"list": "cpp",
+			"map": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp",
+			"*.tcc": "cpp",
+			"array": "cpp",
+			"string_view": "cpp",
+			"filesystem": "cpp",
+			"__bit_reference": "cpp",
+			"__hash_table": "cpp",
+			"__string": "cpp",
+			"__tree": "cpp",
+			"algorithm": "cpp",
+			"__split_buffer": "cpp",
+			"initializer_list": "cpp",
+			"chrono": "cpp",
+			"locale": "cpp",
+			"__config": "cpp",
+			"__debug": "cpp",
+			"__errc": "cpp",
+			"__functional_base": "cpp",
+			"__mutex_base": "cpp",
+			"__node_handle": "cpp",
+			"__nullptr": "cpp",
+			"__threading_support": "cpp",
+			"__tuple": "cpp",
+			"atomic": "cpp",
+			"bit": "cpp",
+			"bitset": "cpp",
+			"cctype": "cpp",
+			"clocale": "cpp",
+			"cmath": "cpp",
+			"condition_variable": "cpp",
+			"cstdarg": "cpp",
+			"cstddef": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cstring": "cpp",
+			"ctime": "cpp",
+			"cwchar": "cpp",
+			"cwctype": "cpp",
+			"exception": "cpp",
+			"fstream": "cpp",
+			"ios": "cpp",
+			"istream": "cpp",
+			"limits": "cpp",
+			"mutex": "cpp",
+			"new": "cpp",
+			"numeric": "cpp",
+			"optional": "cpp",
+			"ostream": "cpp",
+			"queue": "cpp",
+			"random": "cpp",
+			"ratio": "cpp",
+			"sstream": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"system_error": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"typeinfo": "cpp",
+			"memory_resource": "cpp",
+			"cinttypes": "cpp",
+			"iomanip": "cpp",
+			"zephyr.h": "c",
+			"att_internal.h": "c"
+		},
+		"kconfig.zephyr.board": {
+			"board": "nrf5340dk_nrf5340_cpuapp",
+			"arch": "arm",
+			"dir": "c:/Users/basti/ncs/zephyr/boards/arm/nrf5340dk_nrf5340"
+		}
+	}
+}

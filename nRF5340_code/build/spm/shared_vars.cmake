@@ -1,0 +1,11 @@
+set(spm_KERNEL_HEX_NAME zephyr.hex)
+set(spm_ZEPHYR_BINARY_DIR C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/spm/zephyr)
+set(spm_KERNEL_ELF_NAME zephyr.elf)
+list(APPEND spm_BUILD_BYPRODUCTS C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/spm/zephyr/zephyr.hex)
+list(APPEND spm_BUILD_BYPRODUCTS C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/spm/zephyr/zephyr.elf)
+list(APPEND spm_BUILD_BYPRODUCTS
+    C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/spm/libspmsecureentries.a)
+list(APPEND spm_PM_YML_DEP_FILES C:/Users/basti/ncs/nrf/samples/spm/pm.yml)
+list(APPEND spm_PM_YML_FILES C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/spm/zephyr/include/generated/pm.yml)
+list(APPEND spm_PM_YML_DEP_FILES C:/Users/basti/ncs/nrf/subsys/partition_manager/pm.yml.trustzone)
+list(APPEND spm_PM_YML_FILES C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/spm/modules/nrf/subsys/partition_manager/pm.yml.trustzone)

@@ -10,7 +10,7 @@ ELF Header:
   Version:                           0x1
   Entry point address:               0xd8a9
   Start of program headers:          52 (bytes into file)
-  Start of section headers:          2138380 (bytes into file)
+  Start of section headers:          2138436 (bytes into file)
   Flags:                             0x5000200, Version5 EABI, soft-float ABI
   Size of this header:               52 (bytes)
   Size of program headers:           32 (bytes)
@@ -49,13 +49,13 @@ Section Headers:
   [25] .debug_abbrev     PROGBITS        00000000 0e9107 01a09b 00      0   0  1
   [26] .debug_line       PROGBITS        00000000 1031a2 051ee4 00      0   0  1
   [27] .debug_frame      PROGBITS        00000000 155088 00ad04 00      0   0  4
-  [28] .debug_str        PROGBITS        00000000 15fd8c 017aa0 01  MS  0   0  1
-  [29] .debug_loc        PROGBITS        00000000 17782c 061336 00      0   0  1
-  [30] .debug_ranges     PROGBITS        00000000 1d8b68 013a60 00      0   0  8
-  [31] .ARM.attributes   ARM_ATTRIBUTES  00000000 1ec5c8 000034 00      0   0  1
-  [32] .symtab           SYMTAB          00000000 1ec5fc 012aa0 10     33 3424  4
-  [33] .strtab           STRTAB          00000000 1ff09c 00aec2 00      0   0  1
-  [34] .shstrtab         STRTAB          00000000 209f5e 0001ad 00      0   0  1
+  [28] .debug_str        PROGBITS        00000000 15fd8c 017ad8 01  MS  0   0  1
+  [29] .debug_loc        PROGBITS        00000000 177864 061336 00      0   0  1
+  [30] .debug_ranges     PROGBITS        00000000 1d8ba0 013a60 00      0   0  8
+  [31] .ARM.attributes   ARM_ATTRIBUTES  00000000 1ec600 000034 00      0   0  1
+  [32] .symtab           SYMTAB          00000000 1ec634 012aa0 10     33 3424  4
+  [33] .strtab           STRTAB          00000000 1ff0d4 00aec2 00      0   0  1
+  [34] .shstrtab         STRTAB          00000000 209f96 0001ad 00      0   0  1
 Key to Flags:
   W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
   L (link order), O (extra OS processing required), G (group), T (TLS),

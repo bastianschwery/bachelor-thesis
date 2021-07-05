@@ -30,33 +30,48 @@ import org.jetbrains.annotations.NotNull;
 import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
 import no.nordicsemi.android.ble.data.Data;
 
-@SuppressWarnings("ConstantConditions")
 public abstract class TXDataCallback implements ProfileDataCallback, TXCallback {
 
     /**
      * called when new data received
-     * @param device
-     * @param data
+     * @param device the target device
+     * @param data the new data
      */
     @Override
     public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-        if (data.size() != 2) {
+        if (data.size() > 3) {
             onInvalidDataReceived(device, data);
             return;
         }
-        Integer d[] = new Integer[2];
-        Integer d1 = Integer.valueOf(data.getIntValue(Data.FORMAT_UINT8,0));
-        Integer d2 = Integer.valueOf(data.getIntValue(Data.FORMAT_UINT8,1));
-        d[0] = d1;
-        d[1] = d2;
+        if (data.size() == 1) {
+            Integer[] errorArray = new Integer[1];
+            errorArray[0] = data.getIntValue(Data.FORMAT_UINT8,0);
+            onCSCDataChanged(device,errorArray);
+        }
 
-        onCSCDataChanged(device,d);
+        if (data.size() == 3) {
+            // 1. value: type -> 1 = speed, 2 = cadence
+            // 2. value: when speed -> 8 bit of speed on the left side of the comma
+            //           when cadence -> 8 lsb of cadence value
+            // 3. value: when speed -> 8 bit of speed on the right side of the comma
+            //           when cadence -> 8 msb of cadence value
+            Integer[] dataArray = new Integer[3];
+            Integer type = data.getIntValue(Data.FORMAT_UINT8,0);
+            Integer val1 = data.getIntValue(Data.FORMAT_UINT8,1);
+            Integer val2 = data.getIntValue(Data.FORMAT_UINT8,2);
+            dataArray[0] = type;
+            dataArray[1] = val1;
+            dataArray[2] = val2;
+
+            onCSCDataChanged(device,dataArray);
+        }
+
     }
 
     /**
      * abstract function
-     * @param device the target device.
+     * @param device the target device
      * @param data first value in array is type of sensor, second value is the speed/cadence
      */
-    public abstract void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer data[]);
+    public abstract void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer[] data);
 }

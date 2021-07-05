@@ -63,6 +63,7 @@ public class CSCManager extends ObservableBleManager {
 
 	private final MutableLiveData<Integer> rpmValue = new MutableLiveData<>();
 	private final MutableLiveData<Double> speedValue = new MutableLiveData<>();
+	private final MutableLiveData<Integer> messageCode = new MutableLiveData<>();
 
 	private BluetoothGattCharacteristic RX_characteristic, TX_characteristic;
 
@@ -70,11 +71,10 @@ public class CSCManager extends ObservableBleManager {
 	private boolean supported;
 
 	private BluetoothGatt mBluetoothGatt;
-	private int cnt = 0;
-	private int type = 0;
+	private double speed = 0;
 
 	private final int TYPE_SPEED = 1;
-	private final int TYPE_RPM = 2;
+	private final int TYPE_CADENCE= 2;
 
 	public CSCManager(@NonNull final Context context) {
 		super(context);
@@ -83,6 +83,8 @@ public class CSCManager extends ObservableBleManager {
 	public final LiveData<Integer> getRPMValue() { return  rpmValue;}
 
 	public final LiveData<Double> getSpeedValue() { return speedValue;}
+
+	public final LiveData<Integer> getMessageCode() { return messageCode;}
 
 	@NonNull
 	@Override
@@ -119,48 +121,41 @@ public class CSCManager extends ObservableBleManager {
 	 */
 	private final TXDataCallback txCallback = new TXDataCallback() {
 
+		/**
+		 * callback -> called when new data arrived
+		 * @param device the target device
+		 * @param data first value in array is type of sensor, second value is the speed/cadence
+		 */
 		@Override
-		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer data[]) {
+		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer[] data) {
 			log(Log.INFO,"Data received");
 
+			if (data.length == 1) {
+				messageCode.setValue(data[0]);
+			}
+
 			switch (data[0]) {
-				case 1:
+				case TYPE_SPEED:
 					// type speed
-					speedValue.setValue(data[1].doubleValue());
+					double val = data[2].doubleValue();
+					speed = data[1] + val/100;
+					speedValue.setValue(speed);
 					break;
-				case 2:
+				case TYPE_CADENCE:
 					// type cadence
-					rpmValue.setValue(data[1]);
+					rpmValue.setValue(data[1] + (data[2] << 8));
 					break;
 				default:
 					log(Log.INFO,"Unknown type");
 					break;
 			}
-
-
-
-			/*if (cnt == 0) {
-				if (data[0] == 1) {
-					type = TYPE_SPEED;
-					cnt++;
-				}
-				else if (data[1] == 2) {
-					type = TYPE_RPM;
-					cnt++;
-				}
-			}
-			else if (cnt == 1) {
-				if (type == TYPE_SPEED) {
-					speedValue.setValue(data.doubleValue());
-					cnt = 0;
-				}
-				else if (type == TYPE_RPM) {
-					rpmValue.setValue(data);
-					cnt = 0;
-				}
-			}*/
 		}
 
+		/**
+		 * invalid data was received
+		 * @param device the target device
+		 * @param data the fault data
+		 */
 		@Override
 		public void onInvalidDataReceived(@NonNull @NotNull BluetoothDevice device, @NonNull @NotNull Data data) {
 			// Data can only invalid if we read them. We assume the app always sends correct data.
@@ -179,19 +174,18 @@ public class CSCManager extends ObservableBleManager {
 	private final RXDataCallback rxCallback = new RXDataCallback() {
 		/**
 		 * value changed on the rx characteristic
-		 * @param device
-		 * @param data
+		 * @param device the target device
+		 * @param data the new data
 		 */
 		@Override
 		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer data) {
 			log(Log.INFO, "New Data:" + data);
-			//cscValue.setValue(data);
 		}
 
 		/**
-		 * invalid data was obtained
-		 * @param device
-		 * @param data
+		 * invalid data was received
+		 * @param device the target device
+		 * @param data the fault data
 		 */
 		@Override
 		public void onInvalidDataReceived(@NonNull @NotNull BluetoothDevice device, @NonNull @NotNull Data data) {
@@ -221,7 +215,7 @@ public class CSCManager extends ObservableBleManager {
 		/**
 		 *
 		 * check if service is supported or not
-		 * @param gatt
+		 * @param gatt object
 		 * @return boolean supported
 		 */
 		@Override
@@ -253,7 +247,7 @@ public class CSCManager extends ObservableBleManager {
 	/**
 	 *
 	 * send diameter value in inch over ble to server
-	 * @param diameter
+	 * @param diameter value in inch
 	 */
 	public void sendDiameter(int diameter) {
 		log(Log.VERBOSE,"Sending wheel diameter, Data: " + diameter);

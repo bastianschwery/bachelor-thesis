@@ -121,12 +121,12 @@ uint16_t dataCSC::calcSpeed() {
         {
             //retVal = (uint16_t) (speed/100); // speed is in m/min
             //speed = (nbrRevSpeed*wheelCircumference)/(time);
-            rpm_speed = time/nbrRevSpeed *60;
+            //rpm_speed = time/nbrRevSpeed *60;
             //printk("rpm1%d\n",rpm_speed);
             rpm_speed = (nbrRevSpeed) * 60 / time;
             //printk("rpm2%d\n",rpm_speed);
             speed = rpm_speed * wheelCircumference;
-            retVal = (uint16_t) (speed/100);
+            retVal = (uint16_t) (speed);
             return retVal;
         }  
     }

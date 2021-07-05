@@ -58,8 +58,9 @@ static ssize_t on_receive(struct bt_conn *conn,
     const uint8_t * buffer = (uint8_t *) buf;
     diameter = (uint8_t ) *buffer;
 
+    printk("diameter: %d\n", diameter & 0b10000000);
     // check if last bit is '1', then add 0.5 to dia and convert it to cm
-    if (diameter & 0b10000000 == 0b10000000)
+    if ((diameter & 0b10000000) == 0b10000000)
     {
         dia = (diameter + 0.5) * 2.54;
     }

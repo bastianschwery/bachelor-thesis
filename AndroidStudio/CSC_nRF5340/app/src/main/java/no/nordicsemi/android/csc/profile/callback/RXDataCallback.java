@@ -28,13 +28,12 @@ import androidx.annotation.NonNull;
 import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
 import no.nordicsemi.android.ble.data.Data;
 
-@SuppressWarnings("ConstantConditions")
 public abstract class RXDataCallback implements ProfileDataCallback, RXCallback {
 
     /**
      * called when new data received
-     * @param device
-     * @param data
+     * @param device the target device
+     * @param data the new data
      */
     @Override
     public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
@@ -44,14 +43,6 @@ public abstract class RXDataCallback implements ProfileDataCallback, RXCallback 
         }
 
         onCSCDataChanged(device,data.getIntValue(Data.FORMAT_UINT16,0));
-        /*final int state = data.getIntValue(Data.FORMAT_UINT8, 0);
-        if (state == STATE_PRESSED) {
-            onButtonStateChanged(device, true);
-        } else if (state == STATE_RELEASED) {
-            onButtonStateChanged(device, false);
-        } else {
-            onInvalidDataReceived(device, data);
-        }*/
     }
 
 

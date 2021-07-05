@@ -69,7 +69,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
     /**
      * create all necessary instances and add on click listeners
-     * @param savedInstanceState
+     * @param savedInstanceState state
      */
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
@@ -118,8 +118,8 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
     /**
      * create options menu
-     * @param menu
-     * @return
+     * @param menu object
+     * @return true
      */
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
@@ -131,8 +131,8 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
     /**
      * get the selected menu options
-     * @param item
-     * @return
+     * @param item object
+     * @return true
      */
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
@@ -151,7 +151,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
     /**
      * get clicked item
-     * @param device
+     * @param device item
      */
     @Override
     public void onItemClick(@NonNull final DiscoveredBluetoothDevice device) {
@@ -162,9 +162,9 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
     /**
      * result of the permission request
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
+     * @param requestCode int code
+     * @param permissions String array
+     * @param grantResults int array
      */
     @Override
     public void onRequestPermissionsResult(final int requestCode,

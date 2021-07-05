@@ -39,31 +39,55 @@ public class DiscoveredBluetoothDevice implements Parcelable {
 	private int previousRssi;
 	private int highestRssi = -128;
 
+	/**
+	 * public constructor
+	 * @param scanResult result of scanning
+	 */
 	public DiscoveredBluetoothDevice(@NonNull final ScanResult scanResult) {
 		device = scanResult.getDevice();
 		update(scanResult);
 	}
 
+	/**
+	 * getter
+	 * @return discovered device
+	 */
 	@NonNull
 	public BluetoothDevice getDevice() {
 		return device;
 	}
 
+	/**
+	 * getter
+	 * @return address of discovered device
+	 */
 	@NonNull
 	public String getAddress() {
 		return device.getAddress();
 	}
 
+	/**
+	 * getter
+	 * @return name of discovered device
+	 */
 	@Nullable
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * getter
+	 * @return rssi value of discovered device
+	 */
 	@SuppressWarnings("WeakerAccess")
 	public int getRssi() {
 		return rssi;
 	}
 
+	/**
+	 * getter
+	 * @return last scan result
+	 */
 	@NonNull
 	public ScanResult getScanResult() {
 		return lastScanResult;
@@ -122,15 +146,29 @@ public class DiscoveredBluetoothDevice implements Parcelable {
 			highestRssi = rssi;
 	}
 
+	/**
+	 * compare two device addresses
+	 * @param scanResult result of scanning
+	 * @return boolean if scan result has the same address as the discovered device
+	 */
 	public boolean matches(@NonNull final ScanResult scanResult) {
 		return device.getAddress().equals(scanResult.getDevice().getAddress());
 	}
 
+	/**
+	 * getter
+	 * @return hash code of discovered device
+	 */
 	@Override
 	public int hashCode() {
 		return device.hashCode();
 	}
 
+	/**
+	 * compare two device addresses
+	 * @param o object
+	 * @return boolean if object has same address as discovered device
+	 */
 	@Override
 	public boolean equals(final Object o) {
 		if (o instanceof DiscoveredBluetoothDevice) {
@@ -142,6 +180,10 @@ public class DiscoveredBluetoothDevice implements Parcelable {
 
 	// Parcelable implementation
 
+	/**
+	 * private constructor
+	 * @param in parcel
+	 */
 	private DiscoveredBluetoothDevice(final Parcel in) {
 		device = in.readParcelable(BluetoothDevice.class.getClassLoader());
 		lastScanResult = in.readParcelable(ScanResult.class.getClassLoader());
@@ -151,6 +193,11 @@ public class DiscoveredBluetoothDevice implements Parcelable {
 		highestRssi = in.readInt();
 	}
 
+	/**
+	 * write to parcel
+	 * @param parcel object
+	 * @param flags integer
+	 */
 	@Override
 	public void writeToParcel(final Parcel parcel, final int flags) {
 		parcel.writeParcelable(device, flags);
@@ -161,17 +208,31 @@ public class DiscoveredBluetoothDevice implements Parcelable {
 		parcel.writeInt(highestRssi);
 	}
 
+	/**
+	 *
+	 * @return 0
+	 */
 	@Override
 	public int describeContents() {
 		return 0;
 	}
 
 	public static final Creator<DiscoveredBluetoothDevice> CREATOR = new Creator<DiscoveredBluetoothDevice>() {
+		/**
+		 * create new device with a parcel
+		 * @param source parcel object
+		 * @return new device
+		 */
 		@Override
 		public DiscoveredBluetoothDevice createFromParcel(final Parcel source) {
 			return new DiscoveredBluetoothDevice(source);
 		}
 
+		/**
+		 * makes new array
+		 * @param size integer size of array
+		 * @return empty array with the given size
+		 */
 		@Override
 		public DiscoveredBluetoothDevice[] newArray(final int size) {
 			return new DiscoveredBluetoothDevice[size];

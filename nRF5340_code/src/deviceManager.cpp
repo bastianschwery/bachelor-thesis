@@ -80,6 +80,9 @@ bool deviceManager::connectedP = false;
 bool deviceManager::app_button_state = false;
 bool deviceManager::subscriptionDone = false;
 bool deviceManager::diameterSet = false;
+bool deviceManager::once_speed = false;
+bool deviceManager::once_cadence = false;
+
 uint8_t deviceManager::nbrConnectionsCentral = 0;
 bt_conn* deviceManager::peripheralConn;
 bt_conn* deviceManager::centralConnections[];
@@ -378,10 +381,10 @@ void deviceManager::startScan(){
 void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 			      struct bt_scan_filter_match *filter_match,
 			      bool connectable) {
-	char speed_sensor[18] = "D4:D6:5E:D1:66:D";
+    char speed_sensor_1[18] = "D4:D6:5E:D1:66:D";
+	char speed_sensor_2[18] = "D9:3F:F2:D1:0B:1B";
 	char cadence_sensor_1[18] = "C4:64:9B:C6:7B:AE";
 	char cadence_sensor_2[18] = "E6:6C:AF:76:18:AD";
-	static bool once = false;
 
     char addr[BT_ADDR_LE_STR_LEN];
 	uint8_t err;
@@ -391,17 +394,18 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	printk("Filters matched. Address: %s connectable: %s\n",
 		addr, connectable ? "yes" : "no");
 
-	if (strstr(addr,speed_sensor))
+	if ((strstr(addr,speed_sensor_1) || strstr(addr,speed_sensor_1)) && !once_speed)
 	{
+		once_speed = true;
 		bt_scan_stop();
 		err = bt_conn_le_create(device_info->recv_info->addr,
 								BT_CONN_LE_CREATE_CONN,
 								device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
 	}
 
-	if ((strstr(addr,cadence_sensor_1) || strstr(addr,cadence_sensor_2)) && !once)
+	if ((strstr(addr,cadence_sensor_1) || strstr(addr,cadence_sensor_2)) && !once_cadence)
 	{
-		once = true;
+		once_cadence = true;
 		bt_scan_stop();
 		err = bt_conn_le_create(device_info->recv_info->addr,
 								BT_CONN_LE_CREATE_CONN,
@@ -526,6 +530,7 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 		connectedP = true;
 		peripheralConn = conn;
 		dk_set_led_on(CON_STATUS_LED_PERIPHERAL);	
+		
 
 		// when its in central and peripheral mode -> begin scanning
 		if (getDevice() == 3 && nbrConnectionsCentral == 0) 
@@ -543,6 +548,11 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 	bt_conn_info info;
 	int error = bt_conn_get_info(conn,&info);
+	char speed_sensor_1[18] = "D4:D6:5E:D1:66:D";
+	char speed_sensor_2[18] = "D9:3F:F2:D1:0B:1B";
+	char cadence_sensor_1[18] = "C4:64:9B:C6:7B:AE";
+	char cadence_sensor_2[18] = "E6:6C:AF:76:18:AD";
+	uint8_t disconnectedCode[1];
 
 	if (error)
 	{
@@ -572,6 +582,8 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 			{
 				centralConnections[i] = nullptr;
 				nbrConnectionsCentral--;
+				disconnectedCode[0] = 11;
+				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
 				return;
 			}	
 		}
@@ -579,9 +591,22 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 		if (nbrConnectionsCentral == 0)
 		{
 			connectedC = false;
+			disconnectedCode[0] = 12;
+			data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
 			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 		}
 		// start scanning again
+
+		if (strstr(addr,speed_sensor_1) || strstr(addr,speed_sensor_2))
+		{
+			once_speed = false;
+		}
+
+		if (strstr(addr,cadence_sensor_1) || strstr(addr,cadence_sensor_2))
+		{
+			once_cadence = false;
+		}
+		
 		startScan();	
 	}
 }
@@ -592,6 +617,7 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
  */
 void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 	int err;
+	uint8_t connectedCode[1];
 	// subscribe button characteristic
 	static struct bt_gatt_subscribe_params param = {
 		.notify = onReceived,
@@ -649,10 +675,14 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
+		connectedCode[0] = 13;
+		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		startScan();
 		printk("First discovery completed\n");
 		break;
 	case 2:
+		connectedCode[0] = 14;
+		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Second discovery completed\n");
 		dk_set_led_on(CON_STATUS_LED_CENTRAL);
 		connectedC = true;	
@@ -671,6 +701,10 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	printk("Service not found!\n");
 	static uint8_t cnt = 0;
 	uint8_t err;
+	uint8_t error[1];
+	error[0] = 10;
+	data_service_send(peripheralConn,error, sizeof(error));
+	//bt_conn_disconnect(conn,-5);
 
 	// discovery callback
 	static struct bt_gatt_dm_cb discovery_cb = 
@@ -683,8 +717,8 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	if (cnt < 2)
 	{
 		cnt++;
-		printk("nbr central connections: %d\n", centralConnections);
-		err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb, NULL);
+		printk("nbr central connections: %d\n", nbrConnectionsCentral);
+		err = bt_gatt_dm_start(conn, BT_UUID_CSC, &discovery_cb, NULL);
 		if (err) 
 		{
 			printk("Could not start service discovery, err %d\n", err);
@@ -722,11 +756,8 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 			// save the new received data
 			deviceManager::data.saveData(data);
 
-			uint8_t tx_data;
-			uint8_t type;
-			float test = 12.123;
-			uint8_t idk;
-			uint8_t dataToSend[2];
+			uint8_t val_after_comma;
+			uint8_t dataToSend[3];
 
 			if (getDiameter() != 0 && diameterSet == false)
 			{
@@ -748,16 +779,18 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 
 					if (speed > 0)
 					{
-						type = 1;
-						dataToSend[0] = type;
-						tx_data = (uint8_t) speed;
-						dataToSend[1] = (uint8_t) speed;	
+						// 1. value: type -> speed
+						// 2. value: 8 bit on the left side of comma
+						// 3. value: 8 bit on the right side of comma
+						dataToSend[0] = CSC_SPEED;
+						dataToSend[1] = (uint8_t) (speed/100);	
+						val_after_comma = (uint8_t) (speed);
+						dataToSend[2] = val_after_comma;
+
 						if (peripheralConn != nullptr)
 						{	
-							printk("Speed: %d\n",speed);
-							//data_service_send(peripheralConn,&type, sizeof(idk));
+							printk("Speed: %d\n",speed/100);
 							data_service_send(peripheralConn,dataToSend, sizeof(dataToSend));
-							//data_service_send(peripheralConn, &tx_data, sizeof(idk));
 						}
 					}
 				}
@@ -768,38 +801,24 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 				if (diameterSet)
 				{
 					uint16_t rpm = deviceManager::data.calcRPM();
-					dataToSend[1] = (uint8_t) rpm;
-					tx_data = (uint8_t) rpm;
+					
 					if (rpm > 0)
 					{			
-						type = 2;
-						dataToSend[0] = type;		
+						// 1. value: type -> cadence
+						// 2. value: 8 lsb of cadence value
+						// 3. value: 8 msb of cadence value					
+						dataToSend[0] = CSC_CADENCE;	
+						dataToSend[1] = (uint8_t) rpm;
+						dataToSend[2] = (uint8_t) (rpm >> 8);	
 						if (peripheralConn != nullptr)
 						{
-							printk("Cadence rpm: %d\n",tx_data);
-							//data_service_send(peripheralConn,&type, sizeof(idk));
+							printk("Cadence rpm: %d\n",rpm);
 							data_service_send(peripheralConn,dataToSend, sizeof(dataToSend));
-							//data_service_send(peripheralConn, &tx_data, sizeof(idk));
 						}
 					}
 				}
 			}
 		}
-		
-		/*if (((uint8_t *)data)[0] == 0)
-		{
-			printk("Button released\n");
-			// thingy button released
-			bt_lbs_send_button_state(false);
-			dk_set_led_off(TOGGLE_LED);
-		}
-		else if(((uint8_t *)data)[0] == 1)
-		{
-			printk("Button pressed\n");
-			// thingy button pressed
-			bt_lbs_send_button_state(true);
-			dk_set_led_on(TOGGLE_LED);
-		}*/
 	}
 	return BT_GATT_ITER_CONTINUE;
 }

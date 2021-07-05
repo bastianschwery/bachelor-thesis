@@ -65,7 +65,7 @@ public class CSCActivity extends AppCompatActivity {
 
 	/**
 	 * create all necessary instances and add on click listeners
-	 * @param savedInstanceState
+	 * @param savedInstanceState state
 	 */
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
@@ -98,29 +98,25 @@ public class CSCActivity extends AppCompatActivity {
 		resetButton = findViewById(R.id.reset_button);
 		resetDistanceButton = findViewById(R.id.reset_distance_button);
 
-		resetDistanceButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				distanceValue.setText("0");
-				distance = 0;
-			}
+		resetDistanceButton.setOnClickListener(v -> {
+			distanceValue.setText("0");
+			distance = 0;
 		});
 
-		resetButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				setValueButton.setEnabled(true);
-				diameterValue.setText("0");
-				speedValue.setText("0");
-				cadenceValue.setText("0");
-				viewModel.resetDiameter();
-			}
+		resetButton.setOnClickListener(v -> {
+			setValueButton.setEnabled(true);
+			diameterValue.setText("0");
+			speedValue.setText("0");
+			cadenceValue.setText("0");
+			viewModel.resetDiameter();
 		});
 
-		setValueButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				wheelDiameter = Double.valueOf(diameterValue.getText().toString());
+		setValueButton.setOnClickListener(v -> {
+			wheelDiameter = Double.parseDouble(diameterValue.getText().toString());
+			if (wheelDiameter > 255) {
+				setText("Please enter value smaller than 255");
+			}
+			else {
 				setValueButton.setEnabled(false);
 				if ((int) wheelDiameter == wheelDiameter) {
 					viewModel.setWheelDiameter((int) wheelDiameter);
@@ -129,7 +125,6 @@ public class CSCActivity extends AppCompatActivity {
 					// set last bit to '1', so we know there is .5 in the wheel diameter
 					viewModel.setWheelDiameter((int) wheelDiameter | 0b10000000);
 				}
-
 			}
 		});
 		
@@ -169,7 +164,9 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.getSpeedValue().observe(this,
 				integer -> speedValue.setText(integer.toString()));
 
-		viewModel.getSpeedValue().observe(this,integer -> setDistance(integer));
+		viewModel.getSpeedValue().observe(this, this::setDistance);
+
+		viewModel.getMessageCode().observe(this, this::showMessageCode);
 	}
 
 	/**
@@ -182,29 +179,65 @@ public class CSCActivity extends AppCompatActivity {
 
 	/**
 	 * called when the connection state has been changed
-	 * @param connected
+	 * @param connected state
 	 */
 	private void onConnectionStateChanged(final boolean connected) {
 		if (!connected) {
 			if (firstEntry) {
-				Toast.makeText(this, "Disconnected from Board", Toast.LENGTH_SHORT).show();
+				setText("Disconnected from Board");
 			}
 			firstEntry = true;
 		}
 		else {
-			Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+			setText("Connected");
 			firstEntry = false;
 		}
 	}
 
 	/**
 	 * calculate the distance
-	 * @param speed
+	 * @param speed double speed value
 	 */
 	public void setDistance(Double speed) {
 		double speed_in_km_s = speed / 3600; // speed in km/s
 		distance += speed_in_km_s * 1;	// distance in km, * 1s just to say its in km now
 		n.setMaximumFractionDigits(2);
 		distanceValue.setText((n.format(distance)));
+	}
+
+	/**
+	 * show toast on application
+	 * @param msg string to show
+	 */
+	public void setText(String msg) {
+		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	}
+
+	/**
+	 * show the correct error code
+	 * @param messageCode the error code
+	 */
+	public void showMessageCode(Integer messageCode) {
+		switch (messageCode) {
+			case 10:
+				setText("Service not found");
+				break;
+			case 11:
+				setText("Disconnected from one CSC sensor...");
+				break;
+			case 12:
+				setText("Disconnected from both CSC sensors...");
+				break;
+			case 13:
+				setText("First sensor connected");
+				break;
+			case 14:
+				setText("Second sensor connected");
+				setText("Application ready to use");
+				setText("Please enter diameter value to start measurement");
+				break;
+			default:
+				break;
+		}
 	}
 }

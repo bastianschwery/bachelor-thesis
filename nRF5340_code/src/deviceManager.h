@@ -189,6 +189,8 @@ private:
     static bool app_button_state;
     static bool subscriptionDone;
     static bool diameterSet;
+    static bool once_speed;
+	static bool once_cadence;
 
     static int initButton(void);
     static uint8_t nbrConnectionsCentral;

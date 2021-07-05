@@ -41,7 +41,7 @@ public class CSCViewModel extends AndroidViewModel {
 
 	/**
 	 * constructor
-	 * @param application
+	 * @param application object
 	 */
 	public CSCViewModel(@NonNull final Application application) {
 		super(application);
@@ -62,13 +62,19 @@ public class CSCViewModel extends AndroidViewModel {
 	 * get the rpm value
 	 * @return rpm value
 	 */
-	public LiveData<Integer> getRPMValue() {return CSCManager.getRPMValue();}
+	public LiveData<Integer> getRPMValue() { return CSCManager.getRPMValue();}
 
 	/**
 	 * get the speed value
 	 * @return speed value
 	 */
-	public LiveData<Double> getSpeedValue() {return CSCManager.getSpeedValue();}
+	public LiveData<Double> getSpeedValue() { return CSCManager.getSpeedValue();}
+
+	/**
+	 * get error code
+	 * @return error code
+	 */
+	public LiveData<Integer> getMessageCode() { return  CSCManager.getMessageCode();}
 
 	/**
 	 * Connect to the given peripheral.

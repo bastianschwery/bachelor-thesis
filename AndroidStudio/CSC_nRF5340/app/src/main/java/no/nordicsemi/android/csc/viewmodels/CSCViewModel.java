@@ -121,16 +121,24 @@ public class CSCViewModel extends AndroidViewModel {
 		CSCManager.sendDiameter(value);}
 
 	/**
-	 * sends a command to set notifications manually
+	 * sends a command to set notifications manually to the CSCManager
 	 */
 	public void setNotifications() {
 		CSCManager.setNotificationsOn();}
 
 	/**
-	 * sends command to reset the diameter value
+	 * sends command to reset the diameter value to the CSCManager
 	 */
 	public void resetDiameter() {
 		CSCManager.resetDiameterValue();}
+
+	/**
+	 * sends command to send addresses to the CSCManager
+ 	 * @param addresses
+	 */
+	public void sendAddresses(byte[] addresses) {
+		CSCManager.sendAddresses(addresses);
+	}
 
 	/**
 	 * when connected -> disconnect

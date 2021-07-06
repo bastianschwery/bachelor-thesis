@@ -64,7 +64,8 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     private ScannerViewModel scannerViewModel;
     private ArrayList<DiscoveredBluetoothDevice> devices_list = new ArrayList<>();
     private DiscoveredBluetoothDevice[] devices;
-    int count = 0;
+    private boolean boardSelected = false;
+    private boolean nbrDevicesOK = false;
     private Button connect_btn;
     //final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
 
@@ -131,12 +132,36 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
     private void connect() {
         //final Intent controlBlinkIntent = new Intent(String.valueOf(CSCActivity.class));
-        devices = new DiscoveredBluetoothDevice[devices_list.size()];
-        devices = devices_list.toArray(devices);
-        final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
-        controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
-        //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
-        startActivity(controlBlinkIntent);
+
+        if (devices_list.size() > 4) {
+            nbrDevicesOK = false;
+            setText("Please select not more than 4 devices");
+        }
+        else if (devices_list.size() == 0){
+            setText("Please select minimum one device");
+        }
+        else {
+            nbrDevicesOK = true;
+        }
+
+        for (int i=0;i<devices_list.size()-1;i++) {
+            if (devices_list.get(i).getName().contains("Nordic")) {
+                boardSelected = true;
+                break;
+            }
+        }
+
+        if (boardSelected && nbrDevicesOK) {
+            devices = new DiscoveredBluetoothDevice[devices_list.size()];
+            devices = devices_list.toArray(devices);
+            final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
+            controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
+            //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
+            startActivity(controlBlinkIntent);
+        }
+        else {
+            setText("Please select a Nordic Board to continue");
+        }
     }
 
     /**
@@ -209,8 +234,6 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         else {
             devices_list.remove(device);
         }
-
-        Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show();
     }
 
     /**

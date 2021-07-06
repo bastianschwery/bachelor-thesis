@@ -36,6 +36,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.nio.ByteBuffer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
@@ -58,10 +59,14 @@ public class CSCActivity extends AppCompatActivity {
 	private double wheelDiameter = 0.0;
 	private double distance = 0;
 	private NumberFormat n = NumberFormat.getInstance();
-	private ArrayList<String> addresses;
+	private ArrayList<String> addresses = new ArrayList<>();
 	private DiscoveredBluetoothDevice nordicBoard;
 	private ArrayList<DiscoveredBluetoothDevice> devices = new ArrayList<>();
 	private Parcelable[] receivedArray = new Parcelable[10];
+	byte[] address1;
+	byte[] address2;
+	byte[] address3;
+	byte[] addressesToSend;
 
 	@BindView(R.id.set_button) Button button;
 	@BindView(R.id.reset_button) Button rstBtn;
@@ -91,19 +96,42 @@ public class CSCActivity extends AppCompatActivity {
 				if (devices.get(i).getName().contains("Nordic")) {
 					nordicBoard = devices.get(i);
 				}
+				else {
+					addresses.add(devices.get(i).getAddress());
+				}
 			}
 		}
 
+
 		//final DiscoveredBluetoothDevice device = intent.getParcelableExtra(EXTRA_DEVICE);
-		addresses = new ArrayList<>();
-		/*for (int i=0;i<5;i++) {
-			if (devices[i] == null) {
+
+		ByteBuffer buffer = ByteBuffer.allocate(addresses.size()*17);
+
+		switch (addresses.size()) {
+			case 1:
+				address1 = addresses.get(0).getBytes();
+				buffer.put(address1);
 				break;
-			}
-			else {
-				addresses.add(devices[i].getAddress());
-			}
-		}*/
+			case 2:
+				address1 = addresses.get(0).getBytes();
+				address2 = addresses.get(1).getBytes();
+				buffer.put(address1);
+				buffer.put(address2);
+				break;
+			case 3:
+				address1 = addresses.get(0).getBytes();
+				address2 = addresses.get(1).getBytes();
+				address3 = addresses.get(2).getBytes();
+				buffer.put(address1);
+				buffer.put(address2);
+				buffer.put(address3);
+				break;
+			default:
+				break;
+		}
+
+		addressesToSend = buffer.array();
+
 
 		final String deviceName = nordicBoard.getName();
 		final String deviceAddress = nordicBoard.getAddress();
@@ -116,6 +144,7 @@ public class CSCActivity extends AppCompatActivity {
 
 		// Configure the view model.
 		viewModel = new ViewModelProvider(this).get(CSCViewModel.class);
+		viewModel.sendAddresses(addressesToSend);
 		viewModel.connect(nordicBoard);
 
 		// Set up views.

@@ -128,12 +128,12 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 						standardColor = (ColorDrawable) v.getBackground();
 						standardColorId = standardColor.getColor();
 					}
-					if (colorId == 0xF00bffff) {
+					if (colorId == 0xF00BFFFF) {
 						v.setBackgroundColor(standardColorId);
 						onItemClickListener.onItemClick(devices.get(getAdapterPosition()),false);
 					}
 					else {
-						v.setBackgroundColor(0xF00bffff);
+						v.setBackgroundColor(0xF00BFFFF);
 						onItemClickListener.onItemClick(devices.get(getAdapterPosition()),true);
 					}
 				}

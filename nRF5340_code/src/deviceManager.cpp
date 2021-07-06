@@ -548,7 +548,7 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 	bt_conn_info info;
 	int error = bt_conn_get_info(conn,&info);
-	char speed_sensor_1[18] = "D4:D6:5E:D1:66:D";
+	char speed_sensor_1[18] = "D4:D6:5E:D1:66:DB";
 	char speed_sensor_2[18] = "D9:3F:F2:D1:0B:1B";
 	char cadence_sensor_1[18] = "C4:64:9B:C6:7B:AE";
 	char cadence_sensor_2[18] = "E6:6C:AF:76:18:AD";

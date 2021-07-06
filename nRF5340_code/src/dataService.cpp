@@ -24,6 +24,9 @@
 
 uint8_t diameter;
 double dia;
+char address1[17];
+char address2[17];
+char address3[17];
 
 // defines of the UUID's
 #define BT_UUID_DATA_SERVICE      BT_UUID_DECLARE_128(DATA_SERVICE_UUID)
@@ -73,16 +76,18 @@ static ssize_t on_receive(struct bt_conn *conn,
         }
     }
     
-    if (len == 2)
+    // len = 17 -> address of one sensors to connect received
+    if (len == 17)
     {
-        uint8_t val1 = (uint8_t) buffer[0];
-        uint8_t val2 = (uint8_t) buffer[1];
-        printk("val1: %d\n", val1);
-        printk("val2: %d\n", val2);
+        for (uint8_t i=0; i < 17; i++)
+        {
+           uint8_t val = (uint8_t) buffer[0];
+           char charToSave = (char) val;
+           address1[i] = charToSave;
+           
+        }
+        printk("address: %c\n", address1);
     }
-
-
-    
     
 	printk("Received data, handle %d, conn %p, data: 0x", attr->handle, conn);
  

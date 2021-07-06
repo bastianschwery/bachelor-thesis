@@ -24,6 +24,7 @@ package no.nordicsemi.android.csc;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -36,6 +37,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,6 +49,7 @@ import no.nordicsemi.android.csc.viewmodels.CSCViewModel;
 @SuppressWarnings("ConstantConditions")
 public class CSCActivity extends AppCompatActivity {
 	public static final String EXTRA_DEVICE = "no.nordicsemi.android.csc.EXTRA_DEVICE";
+	public static final String Sensor1 = "no.nordicsemi.android.csc.SENSOR_1";
 
 	private boolean firstEntry = false;
 	private CSCViewModel viewModel;
@@ -55,6 +58,10 @@ public class CSCActivity extends AppCompatActivity {
 	private double wheelDiameter = 0.0;
 	private double distance = 0;
 	private NumberFormat n = NumberFormat.getInstance();
+	private ArrayList<String> addresses;
+	private DiscoveredBluetoothDevice nordicBoard;
+	private ArrayList<DiscoveredBluetoothDevice> devices = new ArrayList<>();
+	private Parcelable[] receivedArray = new Parcelable[10];
 
 	@BindView(R.id.set_button) Button button;
 	@BindView(R.id.reset_button) Button rstBtn;
@@ -74,9 +81,32 @@ public class CSCActivity extends AppCompatActivity {
 		ButterKnife.bind(this);
 
 		final Intent intent = getIntent();
-		final DiscoveredBluetoothDevice device = intent.getParcelableExtra(EXTRA_DEVICE);
-		final String deviceName = device.getName();
-		final String deviceAddress = device.getAddress();
+		receivedArray = intent.getParcelableArrayExtra(EXTRA_DEVICE);
+		for (int i=0;i<receivedArray.length;i++) {
+			if (receivedArray[i] == null) {
+				break;
+			}
+			else {
+				devices.add((DiscoveredBluetoothDevice) receivedArray[i]);
+				if (devices.get(i).getName().contains("Nordic")) {
+					nordicBoard = devices.get(i);
+				}
+			}
+		}
+
+		//final DiscoveredBluetoothDevice device = intent.getParcelableExtra(EXTRA_DEVICE);
+		addresses = new ArrayList<>();
+		/*for (int i=0;i<5;i++) {
+			if (devices[i] == null) {
+				break;
+			}
+			else {
+				addresses.add(devices[i].getAddress());
+			}
+		}*/
+
+		final String deviceName = nordicBoard.getName();
+		final String deviceAddress = nordicBoard.getAddress();
 
 		final MaterialToolbar toolbar = findViewById(R.id.toolbar);
 		toolbar.setTitle(deviceName != null ? deviceName : getString(R.string.unknown_device));
@@ -86,7 +116,7 @@ public class CSCActivity extends AppCompatActivity {
 
 		// Configure the view model.
 		viewModel = new ViewModelProvider(this).get(CSCViewModel.class);
-		viewModel.connect(device);
+		viewModel.connect(nordicBoard);
 
 		// Set up views.
 		final LinearLayout progressContainer = findViewById(R.id.progress_container);
@@ -189,7 +219,7 @@ public class CSCActivity extends AppCompatActivity {
 			firstEntry = true;
 		}
 		else {
-			setText("Connected");
+			setText("Connected with Board");
 			firstEntry = false;
 		}
 	}

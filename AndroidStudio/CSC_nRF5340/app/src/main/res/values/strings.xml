@@ -26,8 +26,9 @@
 	<string name="board_name">Nordic nRF5340 DK</string>
 
 	<string name="menu_filter">Filter</string>
-	<string name="menu_filter_uuid">Only devices advertising LBS UUID</string>
+	<string name="menu_filter_uuid">Only devices advertising CSC UUID</string>
 	<string name="menu_filter_nearby">Only nearby devices</string>
+	<string name="connect_button">Connect...</string>
 
 	<string name="title_speed">Speed [km/h]</string>
 	<string name="title_cadence">Cadence [rpm]</string>

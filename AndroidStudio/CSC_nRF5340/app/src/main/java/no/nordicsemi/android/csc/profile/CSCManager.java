@@ -272,6 +272,10 @@ public class CSCManager extends ObservableBleManager {
 	 * send message to server that the diameter has been reset
 	 */
 	public void resetDiameterValue() {
+		//byte[] test = new byte[2];
+		//test[0] = (byte) 0b10101010;
+		//test[1] = (byte) 0b11110000;
+		//writeCharacteristic(RX_characteristic,test).enqueue();
 		writeCharacteristic(RX_characteristic,Data.opCode((byte) 0)).enqueue();
 	}
 }

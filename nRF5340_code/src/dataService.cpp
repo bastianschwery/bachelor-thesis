@@ -55,18 +55,33 @@ static ssize_t on_receive(struct bt_conn *conn,
 			  uint16_t offset,
 			  uint8_t flags)
 {
-    const uint8_t * buffer = (uint8_t *) buf;
-    diameter = (uint8_t ) *buffer;
 
-    printk("diameter: %d\n", diameter & 0b10000000);
-    // check if last bit is '1', then add 0.5 to dia and convert it to cm
-    if ((diameter & 0b10000000) == 0b10000000)
+    const uint8_t * buffer = (uint8_t *) buf;
+
+    // len = 1 -> new diameter received - or diameter reset (when 0)
+    if (len == 1)
     {
-        dia = (diameter + 0.5) * 2.54;
+        diameter = (uint8_t ) *buffer;
+
+        // check if last bit is '1', then add 0.5 to dia and convert it to cm
+        if ((diameter & 0b10000000) == 0b10000000)
+        {
+            dia = (diameter + 0.5) * 2.54;
+        }
+        else {
+            dia = diameter * 2.54;
+        }
     }
-    else {
-        dia = diameter * 2.54;
+    
+    if (len == 2)
+    {
+        uint8_t val1 = (uint8_t) buffer[0];
+        uint8_t val2 = (uint8_t) buffer[1];
+        printk("val1: %d\n", val1);
+        printk("val2: %d\n", val2);
     }
+
+
     
     
 	printk("Received data, handle %d, conn %p, data: 0x", attr->handle, conn);

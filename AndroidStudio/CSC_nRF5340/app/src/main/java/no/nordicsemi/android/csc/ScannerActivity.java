@@ -27,11 +27,13 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,6 +46,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.google.android.material.appbar.MaterialToolbar;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -58,6 +62,11 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     private static final int REQUEST_ACCESS_FINE_LOCATION = 1022; // random number
 
     private ScannerViewModel scannerViewModel;
+    private ArrayList<DiscoveredBluetoothDevice> devices_list = new ArrayList<>();
+    private DiscoveredBluetoothDevice[] devices;
+    int count = 0;
+    private Button connect_btn;
+    //final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
 
     @BindView(R.id.state_scanning) View scanningView;
     @BindView(R.id.no_devices) View emptyView;
@@ -81,6 +90,27 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         toolbar.setTitle(R.string.app_name);
         setSupportActionBar(toolbar);
 
+        connect_btn = findViewById(R.id.connect_button);
+        connect_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (devices_list.isEmpty()) {
+                    setText("No devices selected !");
+                }
+                else {
+
+                    //final Intent controlBlinkIntent = new Intent(String.valueOf(CSCActivity.class));
+                    //devices = new Parcelable[devices_list.size()];
+                    //devices = devices_list.toArray(devices);
+                    connect();
+                    //final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
+                    //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
+                    //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
+                    //startActivity(controlBlinkIntent);
+                }
+            }
+        });
+
         // Create view model containing utility methods for scanning
         scannerViewModel = new ViewModelProvider(this).get(ScannerViewModel.class);
         scannerViewModel.getScannerState().observe(this, this::startScan);
@@ -89,6 +119,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         final RecyclerView recyclerView = findViewById(R.id.recycler_view_ble_devices);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+
         final RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
@@ -96,6 +127,16 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         final DevicesAdapter adapter = new DevicesAdapter(this, scannerViewModel.getDevices());
         adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
+    }
+
+    private void connect() {
+        //final Intent controlBlinkIntent = new Intent(String.valueOf(CSCActivity.class));
+        devices = new DiscoveredBluetoothDevice[devices_list.size()];
+        devices = devices_list.toArray(devices);
+        final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
+        controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
+        //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
+        startActivity(controlBlinkIntent);
     }
 
     /**
@@ -152,12 +193,24 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     /**
      * get clicked item
      * @param device item
+     * @param set
      */
     @Override
-    public void onItemClick(@NonNull final DiscoveredBluetoothDevice device) {
-        final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
-        controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
-        startActivity(controlBlinkIntent);
+    public void onItemClick(@NonNull final DiscoveredBluetoothDevice device, boolean set) {
+        //final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
+        //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
+        //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
+        //startActivity(controlBlinkIntent);
+        if (set) {
+            devices_list.add(device);
+            //devices[count] = device;
+            //count++;
+        }
+        else {
+            devices_list.remove(device);
+        }
+
+        Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -275,5 +328,13 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     private void clear() {
         scannerViewModel.getDevices().clear();
         scannerViewModel.getScannerState().clearRecords();
+    }
+
+    /**
+     * show toast on application
+     * @param msg string to show
+     */
+    public void setText(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

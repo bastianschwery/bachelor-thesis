@@ -75,6 +75,20 @@
 		app:layout_constraintTop_toBottomOf="@id/appbar_layout"
 		tools:listitem="@layout/device_item" />
 
+	<com.google.android.material.button.MaterialButton
+		android:id="@+id/connect_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:paddingStart="@dimen/activity_horizontal_margin"
+		android:paddingEnd="@dimen/activity_horizontal_margin"
+		android:text="@string/connect_button"
+		android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+		app:layout_constraintBottom_toBottomOf="@+id/recycler_view_ble_devices"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="@+id/appbar_layout"
+		app:layout_constraintVertical_bias="0.98" />
+
 	<include
 		android:id="@+id/no_devices"
 		layout="@layout/info_no_devices"

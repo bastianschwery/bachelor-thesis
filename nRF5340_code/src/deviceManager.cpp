@@ -263,7 +263,6 @@ void deviceManager::startAdvertising() {
 	printk("Waiting for connection...\n");
 }
 
-
 /*-----------------------------------------------------------------------------------------------------
  * CENTRAL ROLE
  *---------------------------------------------------------------------------------------------------*/
@@ -326,17 +325,16 @@ void deviceManager::initCentral(){
  */
 void deviceManager::initScan() {
 	int err;
-
+	
 	BT_SCAN_CB_INIT(scan_cb, scanFilterMatch, NULL, scanConnectionError, NULL);
 
-	struct bt_le_scan_param scanParam =
-        {
-            .type = BT_LE_SCAN_TYPE_ACTIVE,
-            .options = BT_LE_SCAN_OPT_FILTER_DUPLICATE,
-            .interval = BT_GAP_SCAN_FAST_INTERVAL,
-            .window = BT_GAP_SCAN_FAST_WINDOW,
-            .timeout = 0
-        };	
+	struct bt_le_scan_param scanParam = {
+        .type = BT_LE_SCAN_TYPE_ACTIVE,
+        .options = BT_LE_SCAN_OPT_FILTER_DUPLICATE,
+        .interval = BT_GAP_SCAN_FAST_INTERVAL,
+        .window = BT_GAP_SCAN_FAST_WINDOW,
+        .timeout = 0
+    };	
 
 	struct bt_scan_init_param scanInit = {
 		.scan_param = &scanParam,
@@ -387,13 +385,15 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	char cadence_sensor_1[18] = "C4:64:9B:C6:7B:AE";
 	char cadence_sensor_2[18] = "E6:6C:AF:76:18:AD";
 
+	static bool addressesReadDone = false;
 	char sensor1[17]; 
 	char sensor2[17];
 	char sensor3[17];
 
 	uint8_t nbrAddresses = getNbrOfAddresses();
-	if (nbrAddress != 0)
+	if (nbrAddress != 0 && !addressesReadDone)
 	{
+		addressesReadDone = true;
 		switch (nbrAddresses)
 		{
 		case 1:

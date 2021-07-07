@@ -10,23 +10,22 @@
 
 #include "dataCSC.h"
 #include "dataService.h"
+
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/addr.h>
 #include <bluetooth/conn.h>
-#include <string.h>
-
 #include <bluetooth/uuid.h>
 #include <bluetooth/hci.h>
+
 #include <bluetooth/services/lbs.h>
 #include <dk_buttons_and_leds.h>
 #include <settings/settings.h>
 #include <bluetooth/scan.h>
 
-//#include <bluetooth/gatt.h>
 #include <bluetooth/gatt_dm.h>
 #include <bluetooth/att.h>
 #include <sys/byteorder.h>
-//#include "../../xf/xf.h"
+
 
 //using namespace std;
 #define MAX_CONNECTIONS_CENTRAL 5

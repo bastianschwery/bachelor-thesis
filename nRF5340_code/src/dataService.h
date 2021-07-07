@@ -61,3 +61,14 @@ void data_service_send(struct bt_conn *conn, const uint8_t *data, uint16_t len);
  *  @return the diameter value in cm
 */
 double getDiameter();
+
+/** @brief get number of addresses the user selected
+ *  @return number of addresses
+*/
+uint8_t getNbrOfAddresses();
+
+/** @brief save the address with the corresponing number at the given array
+ * @param outArray the address to save the searched array
+ * @param nbr the nbr of the array to save
+*/
+void getAddress(char* outArray, uint8_t nbr);

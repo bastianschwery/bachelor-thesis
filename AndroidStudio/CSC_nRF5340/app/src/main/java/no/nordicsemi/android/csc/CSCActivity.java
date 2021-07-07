@@ -144,7 +144,6 @@ public class CSCActivity extends AppCompatActivity {
 
 		// Configure the view model.
 		viewModel = new ViewModelProvider(this).get(CSCViewModel.class);
-		viewModel.sendAddresses(addressesToSend);
 		viewModel.connect(nordicBoard);
 
 		// Set up views.
@@ -198,6 +197,7 @@ public class CSCActivity extends AppCompatActivity {
 					connectionState.setText(R.string.state_initializing);
 					break;
 				case READY:
+					viewModel.sendAddresses(addressesToSend);
 					progressContainer.setVisibility(View.GONE);
 					content.setVisibility(View.VISIBLE);
 					onConnectionStateChanged(true);

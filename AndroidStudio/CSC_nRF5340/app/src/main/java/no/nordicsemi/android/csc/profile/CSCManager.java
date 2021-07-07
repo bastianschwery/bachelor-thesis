@@ -280,6 +280,9 @@ public class CSCManager extends ObservableBleManager {
 	 * @param addresses to connect
 	 */
 	public void sendAddresses(byte[] addresses) {
+		//byte[] test = new byte[2];
+		//test[0] = (byte) 0b10101010;
+		//test[1] = (byte) 0b11110000;
 		writeCharacteristic(RX_characteristic,addresses).enqueue();
 	}
 }

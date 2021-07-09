@@ -99,15 +99,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
                     setText("No devices selected !");
                 }
                 else {
-
-                    //final Intent controlBlinkIntent = new Intent(String.valueOf(CSCActivity.class));
-                    //devices = new Parcelable[devices_list.size()];
-                    //devices = devices_list.toArray(devices);
                     connect();
-                    //final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
-                    //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
-                    //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
-                    //startActivity(controlBlinkIntent);
                 }
             }
         });
@@ -131,8 +123,6 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     }
 
     private void connect() {
-        //final Intent controlBlinkIntent = new Intent(String.valueOf(CSCActivity.class));
-
         if (devices_list.size() > 4) {
             nbrDevicesOK = false;
             setText("Please select not more than 4 devices");
@@ -156,7 +146,6 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
             devices = devices_list.toArray(devices);
             final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
             controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
-            //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
             startActivity(controlBlinkIntent);
         }
         else if (!boardSelected){
@@ -179,6 +168,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     @Override
     protected void onStop() {
         super.onStop();
+        //devices_list.clear();
         stopScan();
     }
 
@@ -222,14 +212,8 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
      */
     @Override
     public void onItemClick(@NonNull final DiscoveredBluetoothDevice device, boolean set) {
-        //final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
-        //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
-        //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
-        //startActivity(controlBlinkIntent);
         if (set) {
             devices_list.add(device);
-            //devices[count] = device;
-            //count++;
         }
         else {
             devices_list.remove(device);
@@ -349,6 +333,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
      * Clears the list of devices, which will notify the observer.
      */
     private void clear() {
+        devices_list.clear();
         scannerViewModel.getDevices().clear();
         scannerViewModel.getScannerState().clearRecords();
     }

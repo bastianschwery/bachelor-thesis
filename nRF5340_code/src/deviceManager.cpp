@@ -418,13 +418,18 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
     char addr[BT_ADDR_LE_STR_LEN];
 	uint8_t err;
 	bt_addr_le_to_str(device_info->recv_info->addr, addr, sizeof(addr));
+	char addrShort[18];
+	bt_addr_le_to_str(device_info->recv_info->addr, addrShort, sizeof(addrShort));
+
 
 	printk("Filters matched. Address: %s connectable: %s\n",
 		addr, connectable ? "yes" : "no");
 
 	if (ready)
 	{
-		if ((strstr(addr,sensor1)) && once_sensor1)
+		printk("once1 %d\n", once_sensor1);
+		printk("once2 %d\n", once_sensor2);
+		if ((strstr(addrShort,sensor1) != nullptr) && once_sensor1)
 		{
 			once_sensor1 = false;
 			bt_scan_stop();
@@ -433,7 +438,7 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
 		}
 
-		if ((strstr(addr,sensor2)) && once_sensor2)
+		if ((strstr(addrShort,sensor2) != nullptr) && once_sensor2)
 		{
 			once_sensor2 = false;
 			bt_scan_stop();
@@ -602,7 +607,9 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 	{
 		printk("Disconnected from Application (reason %u)\n", reason);
 		connectedP = false;
-		peripheralConn = nullptr;
+		//bt_conn_unref(peripheralConn);
+		//peripheralConn = nullptr;
+		
 		dk_set_led_off(CON_STATUS_LED_PERIPHERAL);
 		startAdvertising();
 	}
@@ -619,6 +626,7 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 		{
 			if (centralConnections[i] == conn)
 			{
+				bt_conn_unref(centralConnections[i]);
 				centralConnections[i] = nullptr;
 				nbrConnectionsCentral--;
 				disconnectedCode[0] = 11;
@@ -760,10 +768,10 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	uint8_t error[1];
 	error[0] = 10;
 	data_service_send(peripheralConn,error, sizeof(error));
-	//bt_conn_disconnect(conn,-5);
+	bt_conn_disconnect(conn,-5);
 
 	// discovery callback
-	static struct bt_gatt_dm_cb discovery_cb = 
+	/*static struct bt_gatt_dm_cb discovery_cb = 
 	{
 		.completed = deviceManager::discoveryCompleted,
 		.service_not_found = deviceManager::discovery_service_not_found,
@@ -784,7 +792,7 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	{
 		cnt = 0;
 		printk("Service definitly not found -> Restart application\n");
-	}	
+	}	*/
 }
 
 /*

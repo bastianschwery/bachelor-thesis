@@ -191,6 +191,7 @@ private:
     static bool once_sensor1;
 	static bool once_sensor2;
     static bool once_sensor3;
+    static uint8_t nbrAddresses;
 
     static int initButton(void);
     static uint8_t nbrConnectionsCentral;

@@ -144,7 +144,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
             nbrDevicesOK = true;
         }
 
-        for (int i=0;i<devices_list.size()-1;i++) {
+        for (int i=0;i<devices_list.size();i++) {
             if (devices_list.get(i).getName().contains("Nordic")) {
                 boardSelected = true;
                 break;

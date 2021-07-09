@@ -168,7 +168,7 @@ public class CSCActivity extends AppCompatActivity {
 			default:
 				break;
 		}
-		
+
 		final String deviceName = nordicBoard.getName();
 		final String deviceAddress = nordicBoard.getAddress();
 
@@ -342,9 +342,14 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Disconnected from both CSC sensors...");
 				break;
 			case 13:
-				setText("First sensor connected");
+				setText("Sensor connected");
+				setText("Application ready to use");
+				setText("Please enter diameter value to start measurement");
 				break;
 			case 14:
+				setText("First sensor connected");
+				break;
+			case 15:
 				setText("Second sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");

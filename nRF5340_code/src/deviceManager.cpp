@@ -87,8 +87,7 @@ bool deviceManager::diameterSet = false;
 bool deviceManager::once_sensor1 = true;
 bool deviceManager::once_sensor2 = true;
 bool deviceManager::once_sensor3 = true;
-
-
+uint8_t deviceManager::nbrAddresses = 0;
 uint8_t deviceManager::nbrConnectionsCentral = 0;
 bt_conn* deviceManager::peripheralConn;
 bt_conn* deviceManager::centralConnections[];
@@ -388,7 +387,7 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 
 	static bool ready = false;
 
-	uint8_t nbrAddresses = getNbrOfAddresses();
+	nbrAddresses = getNbrOfAddresses();
 	if (nbrAddresses != 0)
 	{
 		ready = true;
@@ -722,13 +721,23 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
-		connectedCode[0] = 13;
-		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-		startScan();
-		printk("First discovery completed\n");
+		if (nbrAddresses == 1)
+		{
+			connectedCode[0] = 13;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+			printk("Discovery completed\n");
+			subscriptionDone = true;
+		}
+		else if (nbrAddresses == 2)	
+		{
+			connectedCode[0] = 14;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+			startScan();
+			printk("First discovery completed\n");
+		}
 		break;
 	case 2:
-		connectedCode[0] = 14;
+		connectedCode[0] = 15;
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Second discovery completed\n");
 		dk_set_led_on(CON_STATUS_LED_CENTRAL);

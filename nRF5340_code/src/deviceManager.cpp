@@ -72,6 +72,10 @@ static struct devices{
     int CENTRAL_PERIPHERAL;
 }device;
 
+static char sensor1[17]; 
+static char sensor2[17];
+static char sensor3[17];
+
 // initalize static attributes
 bool deviceManager::isCentral = false;
 bool deviceManager::isPeripheral = false;
@@ -80,9 +84,10 @@ bool deviceManager::connectedP = false;
 bool deviceManager::app_button_state = false;
 bool deviceManager::subscriptionDone = false;
 bool deviceManager::diameterSet = false;
-bool deviceManager::once_sensor1 = false;
-bool deviceManager::once_sensor2 = false;
-bool deviceManager::once_sensor3 = false;
+bool deviceManager::once_sensor1 = true;
+bool deviceManager::once_sensor2 = true;
+bool deviceManager::once_sensor3 = true;
+
 
 uint8_t deviceManager::nbrConnectionsCentral = 0;
 bt_conn* deviceManager::peripheralConn;
@@ -380,20 +385,13 @@ void deviceManager::startScan(){
 void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 			      struct bt_scan_filter_match *filter_match,
 			      bool connectable) {
-    char speed_sensor_1[18] = "D4:D6:5E:D1:66:DB";
-	char speed_sensor_2[18] = "D9:3F:F2:D1:0B:1B";
-	char cadence_sensor_1[18] = "C4:64:9B:C6:7B:AE";
-	char cadence_sensor_2[18] = "E6:6C:AF:76:18:AD";
 
-	static bool addressesReadDone = false;
-	char sensor1[17]; 
-	char sensor2[17];
-	char sensor3[17];
+	static bool ready = false;
 
 	uint8_t nbrAddresses = getNbrOfAddresses();
-	if (nbrAddress != 0 && !addressesReadDone)
+	if (nbrAddresses != 0)
 	{
-		addressesReadDone = true;
+		ready = true;
 		switch (nbrAddresses)
 		{
 		case 1:
@@ -413,40 +411,46 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 			break;
 		}
 	}
+	else 
+	{
+		ready = false;
+	}
 	
     char addr[BT_ADDR_LE_STR_LEN];
 	uint8_t err;
-
 	bt_addr_le_to_str(device_info->recv_info->addr, addr, sizeof(addr));
 
 	printk("Filters matched. Address: %s connectable: %s\n",
 		addr, connectable ? "yes" : "no");
 
-	if ((strstr(addr,sensor1)  && !once_sensor1)
+	if (ready)
 	{
-		once_sensor1 = true;
-		bt_scan_stop();
-		err = bt_conn_le_create(device_info->recv_info->addr,
-								BT_CONN_LE_CREATE_CONN,
-								device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
-	}
+		if ((strstr(addr,sensor1)) && once_sensor1)
+		{
+			once_sensor1 = false;
+			bt_scan_stop();
+			err = bt_conn_le_create(device_info->recv_info->addr,
+									BT_CONN_LE_CREATE_CONN,
+									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
+		}
 
-	if ((strstr(addr,sensor2) && !once_sensor2)
-	{
-		once_sensor2 = true;
-		bt_scan_stop();
-		err = bt_conn_le_create(device_info->recv_info->addr,
-								BT_CONN_LE_CREATE_CONN,
-								device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
-	}
+		if ((strstr(addr,sensor2)) && once_sensor2)
+		{
+			once_sensor2 = false;
+			bt_scan_stop();
+			err = bt_conn_le_create(device_info->recv_info->addr,
+									BT_CONN_LE_CREATE_CONN,
+									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
+		}
 
-	if ((strstr(addr,sensor3) && !once_sensor3)
-	{
-		once_sensor3 = true;
-		bt_scan_stop();
-		err = bt_conn_le_create(device_info->recv_info->addr,
-								BT_CONN_LE_CREATE_CONN,
-								device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
+		if ((strstr(addr,sensor3) && once_sensor3))
+		{
+			once_sensor3 = false;
+			bt_scan_stop();
+			err = bt_conn_le_create(device_info->recv_info->addr,
+									BT_CONN_LE_CREATE_CONN,
+									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
+		}
 	}
 }
 
@@ -631,18 +635,25 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 			data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
 			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 		}
-		// start scanning again
+		
 
-		if (strstr(addr,speed_sensor_1) || strstr(addr,speed_sensor_2))
+		if (strstr(addr,sensor1))
 		{
-			once_speed = false;
+			once_sensor1 = true;
 		}
 
-		if (strstr(addr,cadence_sensor_1) || strstr(addr,cadence_sensor_2))
+		if (strstr(addr,sensor2))
 		{
-			once_cadence = false;
+			once_sensor2 = true;
+		}
+
+		if (strstr(addr,sensor3))
+		{
+			once_sensor3 = true;
 		}
 		
+		
+		// start scanning again
 		startScan();	
 	}
 }

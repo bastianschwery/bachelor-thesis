@@ -159,7 +159,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
             //controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
             startActivity(controlBlinkIntent);
         }
-        else {
+        else if (!boardSelected){
             setText("Please select a Nordic Board to continue");
         }
     }

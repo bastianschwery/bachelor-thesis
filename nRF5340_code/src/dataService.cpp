@@ -22,6 +22,7 @@
 
 #include "dataService.h"
 
+uint8_t cntAddresses = 0;
 uint8_t diameter;
 double dia;
 uint8_t nbrAddresses = 0;
@@ -30,12 +31,12 @@ char address2[17];
 char address3[17];
 const uint8_t* addresses;
 
-// defines of the UUID's
+// declaration of the UUID's
 #define BT_UUID_DATA_SERVICE      BT_UUID_DECLARE_128(DATA_SERVICE_UUID)
 #define BT_UUID_DATA_SERVICE_RX   BT_UUID_DECLARE_128(RX_CHARACTERISTIC_UUID)
 #define BT_UUID_DATA_SERVICE_TX   BT_UUID_DECLARE_128(TX_CHARACTERISTIC_UUID)
 
-#define MAX_TRANSMIT_SIZE 240//TODO figure this out
+#define MAX_TRANSMIT_SIZE 240
 
 // data arrays
 uint8_t data_rx[MAX_TRANSMIT_SIZE];
@@ -51,6 +52,7 @@ int data_service_init(void)
 
     return err;
 }
+
 
 /* This function is called whenever the RX Characteristic has been written to by a Client */
 static ssize_t on_receive(struct bt_conn *conn,
@@ -78,18 +80,76 @@ static ssize_t on_receive(struct bt_conn *conn,
         }
     }
     
-    // len = 17 -> address of one sensors to connect received
-    if (len == 17)
+    // len = 18 -> addresses of one or more sensors to connect received
+    if (len == 18)
     {
-        nbrAddresses = 1;
-        
-        for (uint8_t i=0; i<17; i++)
+        nbrAddresses = (uint8_t) buffer[17];
+
+        switch (nbrAddresses)
         {
-           uint8_t val = (uint8_t) buffer[i];
-           char charToSave = (char) val;
-           address1[i] = charToSave;
-           
-        } 
+        case 1:
+            for (uint8_t i=0; i<17; i++)
+            {
+                uint8_t val = (uint8_t) buffer[i];
+                char charToSave = (char) val;
+                address1[i] = charToSave;
+            } 
+            break;
+        case 2:
+            cntAddresses++;
+            if (cntAddresses == 1)
+            {
+                for (uint8_t i=0; i<17; i++)
+                {
+                    uint8_t val = (uint8_t) buffer[i];
+                    char charToSave = (char) val;
+                    address1[i] = charToSave;
+                } 
+            }
+            else if (cntAddresses == 2)
+            {
+                for (uint8_t i=0; i<17; i++)
+                {
+                    uint8_t val = (uint8_t) buffer[i];
+                    char charToSave = (char) val;
+                    address2[i] = charToSave;
+                } 
+                cntAddresses = 0;
+            }
+            break;
+        case 3:
+            cntAddresses++;
+            if (cntAddresses == 1)
+            {
+                for (uint8_t i=0; i<17; i++)
+                {
+                    uint8_t val = (uint8_t) buffer[i];
+                    char charToSave = (char) val;
+                    address1[i] = charToSave;
+                } 
+            }
+            else if (cntAddresses == 2)
+            {
+                for (uint8_t i=0; i<17; i++)
+                {
+                    uint8_t val = (uint8_t) buffer[i];
+                    char charToSave = (char) val;
+                    address2[i] = charToSave;
+                } 
+            } else if (cntAddresses == 3)
+            {
+                for (uint8_t i=0; i<17; i++)
+                {
+                    uint8_t val = (uint8_t) buffer[i];
+                    char charToSave = (char) val;
+                    address3[i] = charToSave;
+                } 
+                cntAddresses = 0;
+            }     
+            break;
+        default:
+            break;
+        }
     }
 
     // len = 34 -> addresses of two sensors to connect received

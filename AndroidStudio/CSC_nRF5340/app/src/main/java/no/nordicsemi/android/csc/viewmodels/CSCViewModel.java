@@ -117,7 +117,7 @@ public class CSCViewModel extends AndroidViewModel {
 	 * sends a command to set the wheel diameter to value
 	 * @param value diameter of the wheels in inch
 	 */
-	public void setWheelDiameter(final Integer value) {
+	public void sendWheelDiameter(final Integer value) {
 		CSCManager.sendDiameter(value);}
 
 	/**

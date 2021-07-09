@@ -67,6 +67,7 @@ public class CSCActivity extends AppCompatActivity {
 	byte[] address2;
 	byte[] address3;
 	byte[] addressesToSend;
+	int nbrAddresses = 0;
 
 	@BindView(R.id.set_button) Button button;
 	@BindView(R.id.reset_button) Button rstBtn;
@@ -102,37 +103,72 @@ public class CSCActivity extends AppCompatActivity {
 			}
 		}
 
-
-		//final DiscoveredBluetoothDevice device = intent.getParcelableExtra(EXTRA_DEVICE);
-
-		ByteBuffer buffer = ByteBuffer.allocate(addresses.size()*17);
+		// for every sensor is a buffer
+		// buffer is user to add 1 byte at the end
+		// this 1 byte indicates how many sensor
+		// there are to connect
+		ByteBuffer buffer1 = ByteBuffer.allocate(18);
+		ByteBuffer buffer2 = ByteBuffer.allocate(18);
+		ByteBuffer buffer3 = ByteBuffer.allocate(18);
 
 		switch (addresses.size()) {
 			case 1:
+				// save address 1 from the pool of addresses
 				address1 = addresses.get(0).getBytes();
-				buffer.put(address1);
+				nbrAddresses = 1;
+				// put this address in the buffer
+				buffer1.put(address1);
+				// put information byte at the end
+				buffer1.put((byte) nbrAddresses);
+				// restore array in address 1
+				address1 = buffer1.array();
+				// clear buffer
+				buffer1.clear();
 				break;
 			case 2:
+				nbrAddresses = 2;
+				// save address 1 and 2 from the pool of addresses
 				address1 = addresses.get(0).getBytes();
 				address2 = addresses.get(1).getBytes();
-				buffer.put(address1);
-				buffer.put(address2);
+				// put address 1 in the buffer
+				buffer1.put(address1);
+				// put information byte at the end
+				buffer1.put((byte) nbrAddresses);
+				// restore array in address 1
+				address1 = buffer1.array();
+				// clear buffer
+				buffer1.clear();
+				// put address 1 in the buffer
+				buffer2.put(address2);
+				// put information byte at the end
+				buffer2.put((byte) nbrAddresses);
+				// restore array in address 2
+				address2 = buffer2.array();
+				// clear buffer
+				buffer2.clear();
 				break;
 			case 3:
+				nbrAddresses = 3;
 				address1 = addresses.get(0).getBytes();
 				address2 = addresses.get(1).getBytes();
 				address3 = addresses.get(2).getBytes();
-				buffer.put(address1);
-				buffer.put(address2);
-				buffer.put(address3);
+				buffer1.put(address1);
+				buffer1.put((byte) nbrAddresses);
+				address1 = buffer1.array();
+				buffer1.clear();
+				buffer2.put(address2);
+				buffer2.put((byte) nbrAddresses);
+				address2 = buffer2.array();
+				buffer2.clear();
+				buffer3.put(address3);
+				buffer3.put((byte) nbrAddresses);
+				address3 = buffer3.array();
+				buffer3.clear();
 				break;
 			default:
 				break;
 		}
-
-		addressesToSend = buffer.array();
-
-
+		
 		final String deviceName = nordicBoard.getName();
 		final String deviceAddress = nordicBoard.getAddress();
 
@@ -172,16 +208,18 @@ public class CSCActivity extends AppCompatActivity {
 		setValueButton.setOnClickListener(v -> {
 			wheelDiameter = Double.parseDouble(diameterValue.getText().toString());
 			if (wheelDiameter > 255) {
-				setText("Please enter value smaller than 255");
+				setText("Please enter value smaller than 255 Inch");
 			}
-			else {
+			else if (wheelDiameter < 1) {
+				setText("Please enter value bigger than 1 Inch");
+			} else {
 				setValueButton.setEnabled(false);
 				if ((int) wheelDiameter == wheelDiameter) {
-					viewModel.setWheelDiameter((int) wheelDiameter);
+					viewModel.sendWheelDiameter((int) wheelDiameter);
 				}
 				else {
 					// set last bit to '1', so we know there is .5 in the wheel diameter
-					viewModel.setWheelDiameter((int) wheelDiameter | 0b10000000);
+					viewModel.sendWheelDiameter((int) wheelDiameter | 0b10000000);
 				}
 			}
 		});
@@ -197,6 +235,22 @@ public class CSCActivity extends AppCompatActivity {
 					connectionState.setText(R.string.state_initializing);
 					break;
 				case READY:
+					switch (nbrAddresses) {
+						case 1:
+							viewModel.sendAddresses(address1);
+							break;
+						case 2:
+							viewModel.sendAddresses(address1);
+							viewModel.sendAddresses(address2);
+							break;
+						case 3:
+							viewModel.sendAddresses(address1);
+							viewModel.sendAddresses(address2);
+							viewModel.sendAddresses(address3);
+							break;
+						default:
+							break;
+					}
 					viewModel.sendAddresses(addressesToSend);
 					progressContainer.setVisibility(View.GONE);
 					content.setVisibility(View.VISIBLE);

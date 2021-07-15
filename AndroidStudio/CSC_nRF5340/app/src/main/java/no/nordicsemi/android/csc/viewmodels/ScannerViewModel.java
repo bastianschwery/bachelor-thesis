@@ -134,7 +134,7 @@ public class ScannerViewModel extends AndroidViewModel {
 	 * even if they move away from the phone, or change the advertising packet. This is to
 	 * avoid removing devices from the list.
 	 *
-	 * @param uuidRequired if true, the list will display only devices with Led-Button Service UUID
+	 * @param uuidRequired if true, the list will display only devices with CSC Service UUID
 	 *                     in the advertising packet.
 	 */
 	public void filterByUuid(final boolean uuidRequired) {

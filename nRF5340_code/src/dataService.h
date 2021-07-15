@@ -42,7 +42,7 @@ typedef void (*data_rx_cb_t)(uint8_t *data, uint8_t length);
 struct data_service_cb 
 {
 	/** Data received callback. */
-	data_rx_cb_t    data_rx_cb;
+	data_rx_cb_t data_rx_cb;
 };
 
 /** @brief initialize service 
@@ -72,3 +72,5 @@ uint8_t getNbrOfAddresses();
  * @param nbr the nbr of the array to save
 */
 void getAddress(char* outArray, uint8_t nbr);
+
+uint8_t getAddressInfos();

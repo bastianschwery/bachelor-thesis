@@ -10,6 +10,7 @@
 
 #include "dataCSC.h"
 #include "dataService.h"
+#include "BatteryManager.h"
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/addr.h>
@@ -18,6 +19,10 @@
 #include <bluetooth/hci.h>
 
 #include <bluetooth/services/lbs.h>
+//#include <bluetooth/services/bas.h>
+
+//#include <../../nrf/subsys/bluetooth/services/bas_client.c>
+//#include <../../nrf/include/bluetooth/services/bas_client.h>
 #include <dk_buttons_and_leds.h>
 #include <settings/settings.h>
 #include <bluetooth/scan.h>
@@ -27,9 +32,13 @@
 #include <sys/byteorder.h>
 
 
+//#include <bluetooth/services/bas_client.h>
+//#include "../../../nrf/include/bluetooth/services/bas_client.h"
+
 //using namespace std;
 #define MAX_CONNECTIONS_CENTRAL 5
 #define NBR_WANTED_CONNECTIONS 2
+#define BAS_READ_VALUE_INTERVAL 1000
 
 class deviceManager {
 public:
@@ -171,11 +180,22 @@ public:
 			      struct bt_scan_filter_match *filter_match,
 			      bool connectable);
 
-   /**
+    /**
      * @brief callback function, is called when an error occurs while scanning
      * @param device_info information structure about the found device
     */                     
     static void scanConnectionError(struct bt_scan_device_info *device_info);
+
+    static void notify_battery_level_cb(struct bt_bas_client *bas,
+				    uint8_t battery_level);
+
+    /**
+     * @brief compare two addresses
+     * @param addr1 first address to compare
+     * @param addr2 second address to compare
+     * @return true if the address are equal, else return false
+    */
+    static bool checkAddresses(char addr1[],char addr2[]);
 
 private:    
     /*
@@ -204,6 +224,9 @@ private:
 
     // data object, containts all the received data with the calculate functions
     static dataCSC data;
+
+    static BatteryManager battManager;
+    //static struct bt_bas_client bas;
 
     // connection/disconnection callback structure
     struct bt_conn_cb conn_callbacks = {

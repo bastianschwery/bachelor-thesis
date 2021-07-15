@@ -92,6 +92,16 @@ uint8_t deviceManager::nbrConnectionsCentral = 0;
 bt_conn* deviceManager::peripheralConn;
 bt_conn* deviceManager::centralConnections[];
 dataCSC deviceManager::data;
+BatteryManager deviceManager::battManager;
+//bt_bas_client deviceManager::bas;
+
+static struct bt_gatt_dm_cb discovery_cb = 
+{
+	.completed = deviceManager::discoveryCompleted,
+	.service_not_found = deviceManager::discovery_service_not_found,
+	.error_found = deviceManager::discovery_error_found,
+};
+
 
 /*-----------------------------------------------------------------------------------------------------
  * GENERAL METHODS
@@ -317,7 +327,13 @@ void deviceManager::initCentral(){
 			}
 			
 		}
-
+		
+		//bt_bas_get_battery_level()
+//		static struct bt_bas_client bas;
+//		bt_bas_client_init(&bas);
+		//initBattery();
+		//battManager.initBatteryManager();
+		//BatteryManager::initBatteryManager();
 		bt_conn_cb_register(&conn_callbacks);
 		initScan();
 		startScan();	
@@ -348,6 +364,8 @@ void deviceManager::initScan() {
 
 	bt_scan_init(&scanInit);
 	bt_scan_cb_register(&scan_cb);
+
+
 
 	// add CSC UUID filter
 	err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_CSC);
@@ -421,7 +439,6 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	char addrShort[18];
 	bt_addr_le_to_str(device_info->recv_info->addr, addrShort, sizeof(addrShort));
 
-
 	printk("Filters matched. Address: %s connectable: %s\n",
 		addr, connectable ? "yes" : "no");
 
@@ -429,31 +446,33 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	{
 		printk("once1 %d\n", once_sensor1);
 		printk("once2 %d\n", once_sensor2);
-		if ((strstr(addrShort,sensor1) != nullptr) && once_sensor1)
+		bt_scan_stop();
+			
+		if (checkAddresses(addrShort,sensor1) && once_sensor1)
 		{
 			once_sensor1 = false;
-			bt_scan_stop();
 			err = bt_conn_le_create(device_info->recv_info->addr,
 									BT_CONN_LE_CREATE_CONN,
 									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
 		}
-
-		if ((strstr(addrShort,sensor2) != nullptr) && once_sensor2)
+		else if (checkAddresses(addrShort,sensor2) && once_sensor2)
 		{
 			once_sensor2 = false;
-			bt_scan_stop();
 			err = bt_conn_le_create(device_info->recv_info->addr,
 									BT_CONN_LE_CREATE_CONN,
 									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
 		}
-
-		if ((strstr(addr,sensor3) && once_sensor3))
+		else if (checkAddresses(addrShort,sensor3) && once_sensor3))
 		{
 			once_sensor3 = false;
 			bt_scan_stop();
 			err = bt_conn_le_create(device_info->recv_info->addr,
 									BT_CONN_LE_CREATE_CONN,
 									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
+		}
+		else 
+		{
+			startScan();
 		}
 	}
 }
@@ -547,16 +566,19 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 		printk("Connected: %s\n", addr);
 		
 		// discovery callback
-		static struct bt_gatt_dm_cb discovery_cb = 
+		/*static struct bt_gatt_dm_cb discovery_cb = 
 		{
 			.completed = deviceManager::discoveryCompleted,
 			.service_not_found = deviceManager::discovery_service_not_found,
 			.error_found = deviceManager::discovery_error_found,
-		};
+		};*/
 
 		// save connection 
 		centralConnections[nbrConnectionsCentral] = conn;
 		nbrConnectionsCentral++;
+
+		//bt_gatt_dm_start(conn,BT_UUID_BAS,&discovery_cb,NULL);
+
 		err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb, NULL);
 		if (err) 
 		{
@@ -672,58 +694,95 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 	int err;
 	uint8_t connectedCode[1];
-	// subscribe button characteristic
-	static struct bt_gatt_subscribe_params param = {
-		.notify = onReceived,
-		.value = BT_GATT_CCC_NOTIFY,
-	};
+	if (!subscriptionDone)
+	{
+		// subscribe button characteristic
+		static struct bt_gatt_subscribe_params param = {
+			.notify = onReceived,
+			.value = BT_GATT_CCC_NOTIFY,
+		};
 
-	const struct bt_gatt_dm_attr *chrc;
-	const struct bt_gatt_dm_attr *desc;
+		const struct bt_gatt_dm_attr *chrc;
+		const struct bt_gatt_dm_attr *desc;
 
-	// Get the characteristic by its UUID
-	chrc = bt_gatt_dm_char_by_uuid(disc,BT_UUID_CSC_MEASUREMENT);
-	if (!chrc) {
-		printk("Missing CSC measurement characteristic\n");
-		err = bt_gatt_dm_data_release(disc);
-		if (err) {
-			printk("Could not release discovery data, err: %d\n", err);
+		// Get the characteristic by its UUID
+		chrc = bt_gatt_dm_char_by_uuid(disc,BT_UUID_CSC_MEASUREMENT);
+		if (!chrc) {
+			printk("Missing CSC measurement characteristic\n");
+			err = bt_gatt_dm_data_release(disc);
+			if (err) {
+				printk("Could not release discovery data, err: %d\n", err);
+			}
+			return;
 		}
-		return;
-	}
 
-	// Search the descriptor by its UUID
-	desc = bt_gatt_dm_desc_by_uuid(disc, chrc, BT_UUID_CSC_MEASUREMENT);
-	if (!desc) {
-		printk("Missing CSC measurement char CCC descriptor\n");
-		err = bt_gatt_dm_data_release(disc);
-		if (err) {
-			printk("Could not release discovery data, err: %d\n", err);
+		// Search the descriptor by its UUID
+		desc = bt_gatt_dm_desc_by_uuid(disc, chrc, BT_UUID_CSC_MEASUREMENT);
+		if (!desc) {
+			printk("Missing CSC measurement char CCC descriptor\n");
+			err = bt_gatt_dm_data_release(disc);
+			if (err) {
+				printk("Could not release discovery data, err: %d\n", err);
+			}
+			return;
 		}
-		return;
-	}
 
-	param.value_handle = desc->handle;
+		param.value_handle = desc->handle;
 
-	// Search the CCC descriptor by its UUID
-	desc = bt_gatt_dm_desc_by_uuid(disc, chrc, BT_UUID_GATT_CCC);
-	if (!desc) {
-		printk("Missing CSC measurement char CCC descriptor\n");
-		err = bt_gatt_dm_data_release(disc);
-		if (err) {
-			printk("Could not release discovery data, err: %d\n", err);
+		// Search the CCC descriptor by its UUID
+		desc = bt_gatt_dm_desc_by_uuid(disc, chrc, BT_UUID_GATT_CCC);
+		if (!desc) {
+			printk("Missing CSC measurement char CCC descriptor\n");
+			err = bt_gatt_dm_data_release(disc);
+			if (err) {
+				printk("Could not release discovery data, err: %d\n", err);
+			}
+			return;
 		}
-		return;
-	}
 
-	param.ccc_handle = desc->handle;
+		param.ccc_handle = desc->handle;
+		
+		// Subscribe Attribute Value Notification
+		err = bt_gatt_subscribe(bt_gatt_dm_conn_get(disc), &param);
+		if (err) {
+			printk("Subscribtion failed (err %d)\n", err);
+		}
+		bt_gatt_dm_data_release(disc);
+	}
+	else 
+	{
+		/*err = bt_bas_handles_assign(disc, &bas);
+		if (err) 
+		{
+			printk("Could not init BAS client object, error: %d\n", err);
+		}
+		if (bt_bas_notify_supported(&bas)) {
+			err = bt_bas_subscribe_battery_level(&bas,
+						     notify_battery_level_cb);
+			if (err) 
+			{
+				printk("Cannot subscribe to BAS value notification "
+				"(err: %d)\n", err);
+			}
+		} else 
+		{
+			err = bt_bas_start_per_read_battery_level(
+			&bas, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb);
+			if (err)
+			{
+				printk("Could not start periodic read of BAS value\n");
+			}
+		}	
+
+		err = bt_gatt_dm_data_release(disc);
+		if (err) 
+		{
+			printk("Could not release the discovery data, error "
+				"code: %d\n", err);
+		}*/
+	}
 	
-	// Subscribe Attribute Value Notification
-	err = bt_gatt_subscribe(bt_gatt_dm_conn_get(disc), &param);
-	if (err) {
-		printk("Subscribtion failed (err %d)\n", err);
-	}
-	bt_gatt_dm_data_release(disc);
+	
 
 	// check number of connections -> can be modified for more devices
 	switch (nbrConnectionsCentral)
@@ -741,7 +800,7 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 			connectedCode[0] = 14;
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			startScan();
-			printk("First discovery completed\n");
+			printk("First discovery completed\n");			
 		}
 		break;
 	case 2:
@@ -751,6 +810,16 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 		dk_set_led_on(CON_STATUS_LED_CENTRAL);
 		connectedC = true;	
 		subscriptionDone = true;
+
+		//bt_bas_get_battery_level();
+		
+		//battManager.gatt_discover(centralConnections[nbrConnectionsCentral-1]);
+		/*err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1],BT_UUID_BAS,&discovery_cb,NULL);
+		if (err)
+		{
+			printk("Could not start service discovery of BAS\n");
+		}*/
+
 		break;
 	default:
 		break;
@@ -885,4 +954,44 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 		}
 	}
 	return BT_GATT_ITER_CONTINUE;
+}
+
+void deviceManager::notify_battery_level_cb(struct bt_bas_client *bas,
+				    uint8_t battery_level) {
+	char addr[BT_ADDR_LE_STR_LEN];
+
+	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
+			  addr, sizeof(addr));
+	if (battery_level == BT_BAS_VAL_INVALID) {
+		printk("[%s] Battery notification aborted\n", addr);
+	} else {
+		printk("[%s] Battery notification: %"PRIu8"%%\n",
+		       addr, battery_level);
+	}
+}
+
+bool deviceManager::checkAddresses(char addr1[],char addr2[])
+{
+	uint8_t cnt = 0;
+	bool retVal = false;
+	for (uint8_t i = 0; i < 17; i++)
+	{
+		if (addr1[i] == addr2[i])
+		{
+			cnt++;
+		}
+	}
+	if (cnt == 17)
+	{
+		printk("Address OK\n");
+		cnt = 0;
+		retVal = true;
+	}
+	else
+	{
+		printk("address NOT OK\n");
+		cnt = 0;
+		retVal = false;
+	}
+	return retVal;
 }

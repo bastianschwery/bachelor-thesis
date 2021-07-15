@@ -39,6 +39,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import java.nio.ByteBuffer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,12 +63,14 @@ public class CSCActivity extends AppCompatActivity {
 	private ArrayList<String> addresses = new ArrayList<>();
 	private DiscoveredBluetoothDevice nordicBoard;
 	private ArrayList<DiscoveredBluetoothDevice> devices = new ArrayList<>();
+	private ArrayList<DiscoveredBluetoothDevice> sensors = new ArrayList<>();
 	private Parcelable[] receivedArray = new Parcelable[10];
 	byte[] address1;
 	byte[] address2;
 	byte[] address3;
 	byte[] addressesToSend;
 	int nbrAddresses = 0;
+	int infoDevices = 0;
 
 	@BindView(R.id.set_button) Button button;
 	@BindView(R.id.reset_button) Button rstBtn;
@@ -98,18 +101,66 @@ public class CSCActivity extends AppCompatActivity {
 					nordicBoard = devices.get(i);
 				}
 				else {
+					sensors.add((DiscoveredBluetoothDevice) receivedArray[i]);
 					addresses.add(devices.get(i).getAddress());
 				}
 			}
 		}
 
-		// for every sensor is a buffer
-		// buffer is user to add 1 byte at the end
-		// this 1 byte indicates how many sensor
-		// there are to connect
-		ByteBuffer buffer1 = ByteBuffer.allocate(18);
-		ByteBuffer buffer2 = ByteBuffer.allocate(18);
-		ByteBuffer buffer3 = ByteBuffer.allocate(18);
+		/*
+		if there is just one speed or cadence sensor -> info devices: 1
+		if there are a speed and a cadence sensor -> info devices: 2
+		if there are a speed and cadence and a heart rate sensor -> info devices: 3
+		if there are a speed or a cadence and a heart rate sensor -> info devices: 4
+		if there is just a heart rate sensor -> info devices: 5
+
+		make sure that the sequence is like: first speed/cadence sensors and at the end heart rate sensor
+		 */
+		infoDevices = 0;
+		switch (sensors.size()) {
+			case 1:
+				if (sensors.get(0).getName().contains("SPD") || sensors.get(0).getName().contains("CAD")) {
+					infoDevices = 1;
+				} else if (sensors.get(0).getName().contains("HR")) {
+					infoDevices = 5;
+				}
+				break;
+			case 2:
+				if (sensors.get(0).getName().contains("SPD") || sensors.get(0).getName().contains("CAD")) {
+					if (sensors.get(1).getName().contains("SPD") || sensors.get(1).getName().contains("CAD")) {
+						infoDevices = 2;
+					} else if (sensors.get(1).getName().contains("HR")) {
+						infoDevices = 4;
+					}
+				} else if (sensors.get(0).getName().contains("HR")) {
+					if (sensors.get(1).getName().contains("SPD") || sensors.get(1).getName().contains("CAD")) {
+						infoDevices = 4;
+						Collections.swap(sensors,1,2);
+					}
+				}
+				break;
+			case 3:
+				infoDevices = 3;
+				if (sensors.get(0).getName().contains("HR")) {
+					Collections.swap(sensors,1,3);
+				} else if (sensors.get(1).getName().contains("HR")) {
+					Collections.swap(sensors,2,3);
+				}
+				break;
+			default:
+				break;
+		}
+
+
+		/*
+		for every sensor is a buffer
+		buffer is user to add 1 byte at the end
+		this 1 byte indicates how many sensor
+		there are to connect
+		*/
+		ByteBuffer buffer1 = ByteBuffer.allocate(19);
+		ByteBuffer buffer2 = ByteBuffer.allocate(19);
+		ByteBuffer buffer3 = ByteBuffer.allocate(19);
 
 		switch (addresses.size()) {
 			case 1:
@@ -118,8 +169,10 @@ public class CSCActivity extends AppCompatActivity {
 				nbrAddresses = 1;
 				// put this address in the buffer
 				buffer1.put(address1);
-				// put information byte at the end
+				// put information about how many sensors to connect
 				buffer1.put((byte) nbrAddresses);
+				// put information which sensors to connect at the end
+				buffer1.put((byte) infoDevices);
 				// restore array in address 1
 				address1 = buffer1.array();
 				// clear buffer
@@ -134,6 +187,8 @@ public class CSCActivity extends AppCompatActivity {
 				buffer1.put(address1);
 				// put information byte at the end
 				buffer1.put((byte) nbrAddresses);
+				// put information which sensors to connect at the end
+				buffer1.put((byte) infoDevices);
 				// restore array in address 1
 				address1 = buffer1.array();
 				// clear buffer
@@ -142,6 +197,8 @@ public class CSCActivity extends AppCompatActivity {
 				buffer2.put(address2);
 				// put information byte at the end
 				buffer2.put((byte) nbrAddresses);
+				// put information which sensors to connect at the end
+				buffer2.put((byte) infoDevices);
 				// restore array in address 2
 				address2 = buffer2.array();
 				// clear buffer
@@ -154,14 +211,17 @@ public class CSCActivity extends AppCompatActivity {
 				address3 = addresses.get(2).getBytes();
 				buffer1.put(address1);
 				buffer1.put((byte) nbrAddresses);
+				buffer1.put((byte) infoDevices);
 				address1 = buffer1.array();
 				buffer1.clear();
 				buffer2.put(address2);
 				buffer2.put((byte) nbrAddresses);
+				buffer2.put((byte) infoDevices);
 				address2 = buffer2.array();
 				buffer2.clear();
 				buffer3.put(address3);
 				buffer3.put((byte) nbrAddresses);
+				buffer3.put((byte) infoDevices);
 				address3 = buffer3.array();
 				buffer3.clear();
 				break;
@@ -251,7 +311,7 @@ public class CSCActivity extends AppCompatActivity {
 						default:
 							break;
 					}
-					viewModel.sendAddresses(addressesToSend);
+					//viewModel.sendAddresses(addressesToSend);
 					progressContainer.setVisibility(View.GONE);
 					content.setVisibility(View.VISIBLE);
 					onConnectionStateChanged(true);

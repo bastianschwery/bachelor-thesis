@@ -30,7 +30,15 @@ dataCSC::dataCSC() {
  */
 void dataCSC::saveData(const void *data) {
     type = ((uint8_t*)data)[0];
-
+    uint8_t val1;
+    uint8_t val2;
+    uint8_t val3;
+    val1 = ((uint8_t*)data)[2];
+    val2 = ((uint8_t*)data)[4];
+    val3 = ((uint8_t*)data)[6];
+    printk("val1: %d\n",val1);
+    printk("val2: %d\n",val2);
+    printk("val3: %d\n",val3);
     switch (type)
     {
     case CSC_SPEED:

@@ -73,4 +73,4 @@ uint8_t getNbrOfAddresses();
 */
 void getAddress(char* outArray, uint8_t nbr);
 
-uint8_t getAddressInfos();
+uint8_t getSensorInfos();

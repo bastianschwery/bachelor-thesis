@@ -143,7 +143,7 @@ public:
      *             discover parameter
      * @param ctx context, not used in this case
     */
-    static void discoveryCompleted(struct bt_gatt_dm *disc, void *ctx);
+    static void discoveryCompleted(struct bt_gatt_dm *dm, void *ctx);
 
     /**
      * @brief callback function, is called when service was not found
@@ -158,6 +158,15 @@ public:
      * @param ctx context, not used in this case
     */
     static void discovery_error_found(struct bt_conn *conn, int err, void *ctx);
+
+    static void discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx);
+
+    static void discoverHR();
+    static void discoverCSC();
+
+    static uint8_t notify_func(struct bt_conn *conn,
+		struct bt_gatt_subscribe_params *params,
+		const void *data, uint16_t length);
 
     /**
      * @brief callback function, is called when new data is received over ble
@@ -185,6 +194,8 @@ public:
      * @param device_info information structure about the found device
     */                     
     static void scanConnectionError(struct bt_scan_device_info *device_info);
+
+    static void scanFilterNoMatch(struct bt_scan_device_info *device_info, bool connectable);
 
     static void notify_battery_level_cb(struct bt_bas_client *bas,
 				    uint8_t battery_level);
@@ -215,6 +226,7 @@ private:
 
     static int initButton(void);
     static uint8_t nbrConnectionsCentral;
+    static uint8_t sensorInfos;
 
     // array of central connections
     static struct bt_conn *centralConnections[MAX_CONNECTIONS_CENTRAL];

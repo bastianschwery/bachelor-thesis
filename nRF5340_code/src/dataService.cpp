@@ -30,7 +30,7 @@ char address1[17];
 char address2[17];
 char address3[17];
 const uint8_t* addresses;
-uint8_t infoAddresses = 0;
+uint8_t infoSensors = 0;
 
 // declaration of the UUID's
 #define BT_UUID_DATA_SERVICE      BT_UUID_DECLARE_128(DATA_SERVICE_UUID)
@@ -86,7 +86,7 @@ static ssize_t on_receive(struct bt_conn *conn,
     if (len == 19)
     {
         nbrAddresses = (uint8_t) buffer[17];
-        infoAddresses = (uint8_t) buffer[18];
+        infoSensors = (uint8_t) buffer[18];
 
         switch (nbrAddresses)
         {
@@ -296,6 +296,6 @@ void getAddress(char* outArray, uint8_t nbr) {
     }
 }
 
-void getAddressInfos() {
-    return infoAddresses;
+uint8_t getSensorInfos() {
+    return infoSensors;
 }

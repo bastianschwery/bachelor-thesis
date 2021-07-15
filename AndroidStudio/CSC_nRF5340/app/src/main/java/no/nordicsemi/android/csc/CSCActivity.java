@@ -408,9 +408,18 @@ public class CSCActivity extends AppCompatActivity {
 				break;
 			case 14:
 				setText("First sensor connected");
+				setText("Waiting for next sensor...");
 				break;
 			case 15:
 				setText("Second sensor connected");
+				setText("Application ready to use");
+				setText("Please enter diameter value to start measurement");
+			case 16:
+				setText("Second sensor connected");
+				setText("Waiting for next sensor...");
+				break;
+			case 17:
+				setText("Third sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");
 				break;

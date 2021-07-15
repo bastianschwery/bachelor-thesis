@@ -89,6 +89,7 @@ bool deviceManager::once_sensor2 = true;
 bool deviceManager::once_sensor3 = true;
 uint8_t deviceManager::nbrAddresses = 0;
 uint8_t deviceManager::nbrConnectionsCentral = 0;
+uint8_t deviceManager::sensorInfos = 0;
 bt_conn* deviceManager::peripheralConn;
 bt_conn* deviceManager::centralConnections[];
 dataCSC deviceManager::data;
@@ -98,6 +99,13 @@ BatteryManager deviceManager::battManager;
 static struct bt_gatt_dm_cb discovery_cb = 
 {
 	.completed = deviceManager::discoveryCompleted,
+	.service_not_found = deviceManager::discovery_service_not_found,
+	.error_found = deviceManager::discovery_error_found,
+};
+
+static struct bt_gatt_dm_cb discovery_cb_HR = 
+{
+	.completed = deviceManager::discoveryCompletedHR,
 	.service_not_found = deviceManager::discovery_service_not_found,
 	.error_found = deviceManager::discovery_error_found,
 };
@@ -345,9 +353,8 @@ void deviceManager::initCentral(){
  */
 void deviceManager::initScan() {
 	int err;
+	sensorInfos = getSensorInfos();
 	
-	BT_SCAN_CB_INIT(scan_cb, scanFilterMatch, NULL, scanConnectionError, NULL);
-
 	struct bt_le_scan_param scanParam = {
         .type = BT_LE_SCAN_TYPE_ACTIVE,
         .options = BT_LE_SCAN_OPT_FILTER_DUPLICATE,
@@ -362,28 +369,102 @@ void deviceManager::initScan() {
 		.conn_param = BT_LE_CONN_PARAM_DEFAULT,
 	};
 
-	bt_scan_init(&scanInit);
-	bt_scan_cb_register(&scan_cb);
-
-
-
-	// add CSC UUID filter
-	err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_CSC);
-	if (err) {
-		printk("Scanning filters cannot be set\n");
-		return;
-	}
-
-	// enable filters
-	err = bt_scan_filter_enable(BT_SCAN_UUID_FILTER, false);
-	if (err) {
-		printk("Filters cannot be turned on\n");
+	if (sensorInfos != 0)
+	{
+		BT_SCAN_CB_INIT(scan_cb, scanFilterMatch, NULL, scanConnectionError, NULL);
+		bt_le_scan_stop();
+		bt_scan_init(&scanInit);
+		bt_scan_cb_register(&scan_cb);
+		bt_scan_filter_remove_all();
+		switch (sensorInfos)
+		{
+		case 1:
+			// search just 1 CSC sensor
+			// add CSC UUID filter
+			err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_CSC);
+			if (err) {
+				printk("Scanning filters cannot be set\n");
+				return;
+			}
+			break;
+		case 2:
+			// search just for CSC sensors
+			// add CSC UUID filter
+			err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_CSC);
+			if (err) {
+				printk("Scanning filters cannot be set\n");
+				return;
+			}
+			break;
+		case 3:
+			// first search 2 CSC sensors, after a heart rate sensor
+			if (nbrConnectionsCentral == 0 || nbrConnectionsCentral == 1)
+			{
+				err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_CSC);
+				if (err) {
+					printk("Scanning filters cannot be set\n");
+					return;
+				}
+			}
+			else if (nbrConnectionsCentral == 2)
+			{
+				err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_DIS);
+				if (err) {
+					printk("Scanning filters cannot be set\n");
+					return;
+				}
+			}
+			break;
+		case 4:
+			// first search for a CSC sensor, after a heart rate sensor
+			if (nbrConnectionsCentral == 0)
+			{
+				err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_CSC);
+				if (err) {
+					printk("Scanning filters cannot be set\n");
+					return;
+				}				
+			}
+			else if (nbrConnectionsCentral == 1)
+			{
+				err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_DIS);
+				if (err) {
+					printk("Scanning filters cannot be set\n");
+					return;
+				}
+			}
+			break;
+		case 5:
+			// just a heart rate sensor to connect
+			err = bt_scan_filter_add(BT_SCAN_FILTER_TYPE_UUID, BT_UUID_DIS);
+			if (err) {
+				printk("Scanning filters cannot be set\n");
+				return;
+			}	
+			break;	
+		default:
+			break;
+		}
+		
+		// enable filters
+		err = bt_scan_filter_enable(BT_SCAN_UUID_FILTER, false);
+		if (err) {
+			printk("Filters cannot be turned on\n");
+		}
+		startScan();
+	} 
+	else 
+	{
+		err = bt_le_scan_start(&scanParam, deviceFound);
+		if (err) {
+			//printk("Scanning failed to start (err %d)\n", err);
+		}
 	}
 }
 
 /*
  * start scanning for peripheral devices
- * when device found call callback method deviceFound
+ * when device found call callback method scanFilterMatch
  */
 void deviceManager::startScan(){
     int err;
@@ -406,6 +487,7 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	static bool ready = false;
 
 	nbrAddresses = getNbrOfAddresses();
+	
 	if (nbrAddresses != 0)
 	{
 		ready = true;
@@ -426,10 +508,11 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 		
 		default:
 			break;
-		}
+		}	
 	}
 	else 
 	{
+		initScan();
 		ready = false;
 	}
 	
@@ -444,12 +527,11 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 
 	if (ready)
 	{
-		printk("once1 %d\n", once_sensor1);
-		printk("once2 %d\n", once_sensor2);
 		bt_scan_stop();
 			
 		if (checkAddresses(addrShort,sensor1) && once_sensor1)
 		{
+			printk("Correct sensor found\n");
 			once_sensor1 = false;
 			err = bt_conn_le_create(device_info->recv_info->addr,
 									BT_CONN_LE_CREATE_CONN,
@@ -457,13 +539,15 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 		}
 		else if (checkAddresses(addrShort,sensor2) && once_sensor2)
 		{
+			printk("Correct sensor found\n");
 			once_sensor2 = false;
 			err = bt_conn_le_create(device_info->recv_info->addr,
 									BT_CONN_LE_CREATE_CONN,
 									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
 		}
-		else if (checkAddresses(addrShort,sensor3) && once_sensor3))
+		else if (checkAddresses(addrShort,sensor3) && once_sensor3)
 		{
+			printk("Correct sensor found\n");
 			once_sensor3 = false;
 			bt_scan_stop();
 			err = bt_conn_le_create(device_info->recv_info->addr,
@@ -486,25 +570,32 @@ void deviceManager::scanConnectionError(struct bt_scan_device_info *device_info)
 	startScan();
 }
 
+void deviceManager::scanFilterNoMatch(struct bt_scan_device_info *device_info, bool connectable) {
+	//printk("no match\n");
+	//initScan();
+}
+
 /*
  * callback method
  * called if a device was found during scanning
  * try to connect to this device when its the correct one
  * used for etablish connection with a thingy
  */
-void deviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t type, struct net_buf_simple *ad){
-	char addr_str[BT_ADDR_LE_STR_LEN];
+void deviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t type, struct net_buf_simple *ad) {
+	//printk("init scan\n");
+	initScan();
+	/*char addr_str[BT_ADDR_LE_STR_LEN];
 	char addr_toConnect[18] = "EA:1A:AD:15:54:9F";
 	int err = 0;
 	static int cnt = 0;
 
-	/* We're only interested in connectable events */
+	// We're only interested in connectable events 
 	if (type != BT_GAP_ADV_TYPE_ADV_IND &&
 	    type != BT_GAP_ADV_TYPE_ADV_DIRECT_IND) {
 		return;
 	}
 
-	/* connect only to devices in close proximity */
+	// connect only to devices in close proximity 
 	if (rssi < -70) {
 		return;
 	}
@@ -536,7 +627,7 @@ void deviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t t
 	}
     else{
         startScan();
-    }   
+    }   */
 }
 
 /*
@@ -579,12 +670,40 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 
 		//bt_gatt_dm_start(conn,BT_UUID_BAS,&discovery_cb,NULL);
 
-		err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb, NULL);
-		if (err) 
+		switch (sensorInfos)
 		{
-			printk("Could not start service discovery, err %d\n", err);
+		case 1:
+			discoverCSC();
+			break;
+		case 2:
+			discoverCSC();
+			break;
+		case 3:
+			if (nbrConnectionsCentral <= 2)
+			{
+				discoverCSC();
+			}
+			else
+			{
+				discoverHR();	
+			}
+			break;
+		case 4:
+			if (nbrConnectionsCentral == 1)
+			{
+				discoverCSC();
+			}
+			else
+			{
+				discoverHR();
+			}
+			break;
+		case 5:
+			discoverHR();
+			break;
+		default:
+			break;
 		}
-
 	}
 	else if (info.role == BT_CONN_ROLE_SLAVE)	// slave -> peripheral role
 	{
@@ -602,7 +721,7 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 		if (getDevice() == 3 && nbrConnectionsCentral == 0) 
 		{
 			initScan();
-			startScan();
+			//startScan();
 		}
 	}	
 }
@@ -666,17 +785,17 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 		}
 		
 
-		if (strstr(addr,sensor1))
+		if (checkAddresses(addr,sensor1))
 		{
 			once_sensor1 = true;
 		}
 
-		if (strstr(addr,sensor2))
+		if (checkAddresses(addr,sensor2))
 		{
 			once_sensor2 = true;
 		}
 
-		if (strstr(addr,sensor3))
+		if (checkAddresses(addr,sensor3))
 		{
 			once_sensor3 = true;
 		}
@@ -687,16 +806,34 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 	}
 }
 
+void deviceManager::discoverCSC()
+{
+	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb, NULL);
+	if (err) 
+	{
+		printk("Could not start service discovery, err %d\n", err);
+	}
+}
+
+void deviceManager::discoverHR()
+{
+	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_DIS, &discovery_cb_HR, NULL);
+	if (err) 
+	{
+		printk("Could not start service discovery, err %d\n", err);
+	}
+}
+
 /*
  * callback method
  * called when discovery is finished
  */
-void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
+void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
 	int err;
 	uint8_t connectedCode[1];
 	if (!subscriptionDone)
-	{
-		// subscribe button characteristic
+	{	
+		// subscribe CSC characteristic
 		static struct bt_gatt_subscribe_params param = {
 			.notify = onReceived,
 			.value = BT_GATT_CCC_NOTIFY,
@@ -706,10 +843,10 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 		const struct bt_gatt_dm_attr *desc;
 
 		// Get the characteristic by its UUID
-		chrc = bt_gatt_dm_char_by_uuid(disc,BT_UUID_CSC_MEASUREMENT);
+		chrc = bt_gatt_dm_char_by_uuid(dm,BT_UUID_CSC_MEASUREMENT);
 		if (!chrc) {
 			printk("Missing CSC measurement characteristic\n");
-			err = bt_gatt_dm_data_release(disc);
+			err = bt_gatt_dm_data_release(dm);
 			if (err) {
 				printk("Could not release discovery data, err: %d\n", err);
 			}
@@ -717,10 +854,10 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 		}
 
 		// Search the descriptor by its UUID
-		desc = bt_gatt_dm_desc_by_uuid(disc, chrc, BT_UUID_CSC_MEASUREMENT);
+		desc = bt_gatt_dm_desc_by_uuid(dm, chrc, BT_UUID_CSC_MEASUREMENT);
 		if (!desc) {
 			printk("Missing CSC measurement char CCC descriptor\n");
-			err = bt_gatt_dm_data_release(disc);
+			err = bt_gatt_dm_data_release(dm);
 			if (err) {
 				printk("Could not release discovery data, err: %d\n", err);
 			}
@@ -730,10 +867,10 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 		param.value_handle = desc->handle;
 
 		// Search the CCC descriptor by its UUID
-		desc = bt_gatt_dm_desc_by_uuid(disc, chrc, BT_UUID_GATT_CCC);
+		desc = bt_gatt_dm_desc_by_uuid(dm, chrc, BT_UUID_GATT_CCC);
 		if (!desc) {
 			printk("Missing CSC measurement char CCC descriptor\n");
-			err = bt_gatt_dm_data_release(disc);
+			err = bt_gatt_dm_data_release(dm);
 			if (err) {
 				printk("Could not release discovery data, err: %d\n", err);
 			}
@@ -743,15 +880,15 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 		param.ccc_handle = desc->handle;
 		
 		// Subscribe Attribute Value Notification
-		err = bt_gatt_subscribe(bt_gatt_dm_conn_get(disc), &param);
+		err = bt_gatt_subscribe(bt_gatt_dm_conn_get(dm), &param);
 		if (err) {
 			printk("Subscribtion failed (err %d)\n", err);
 		}
-		bt_gatt_dm_data_release(disc);
+		bt_gatt_dm_data_release(dm);
 	}
 	else 
 	{
-		/*err = bt_bas_handles_assign(disc, &bas);
+		/*err = bt_bas_handles_assign(dm, &bas);
 		if (err) 
 		{
 			printk("Could not init BAS client object, error: %d\n", err);
@@ -774,7 +911,7 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 			}
 		}	
 
-		err = bt_gatt_dm_data_release(disc);
+		err = bt_gatt_dm_data_release(dm);
 		if (err) 
 		{
 			printk("Could not release the discovery data, error "
@@ -799,17 +936,35 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *disc, void *ctx) {
 		{
 			connectedCode[0] = 14;
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-			startScan();
+			initScan();
 			printk("First discovery completed\n");			
 		}
 		break;
 	case 2:
-		connectedCode[0] = 15;
-		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-		printk("Second discovery completed\n");
-		dk_set_led_on(CON_STATUS_LED_CENTRAL);
-		connectedC = true;	
-		subscriptionDone = true;
+		if (nbrAddresses == 2)
+		{
+			connectedCode[0] = 15;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+			printk("Second discovery completed\n");
+			dk_set_led_on(CON_STATUS_LED_CENTRAL);
+			connectedC = true;	
+			subscriptionDone = true;
+		}
+		else if (nbrAddresses == 3) 
+		{
+			connectedCode[0] = 16;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+			printk("Second discovery completed\n");		
+			initScan();
+		}
+		break;
+	case 3:
+			connectedCode[0] = 17;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+			printk("Third discovery completed\n");
+			dk_set_led_on(CON_STATUS_LED_CENTRAL);
+			connectedC = true;	
+			subscriptionDone = true;		
 
 		//bt_bas_get_battery_level();
 		
@@ -838,30 +993,6 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	error[0] = 10;
 	data_service_send(peripheralConn,error, sizeof(error));
 	bt_conn_disconnect(conn,-5);
-
-	// discovery callback
-	/*static struct bt_gatt_dm_cb discovery_cb = 
-	{
-		.completed = deviceManager::discoveryCompleted,
-		.service_not_found = deviceManager::discovery_service_not_found,
-		.error_found = deviceManager::discovery_error_found,
-	};
-
-	if (cnt < 2)
-	{
-		cnt++;
-		printk("nbr central connections: %d\n", nbrConnectionsCentral);
-		err = bt_gatt_dm_start(conn, BT_UUID_CSC, &discovery_cb, NULL);
-		if (err) 
-		{
-			printk("Could not start service discovery, err %d\n", err);
-		}
-	}
-	else 
-	{
-		cnt = 0;
-		printk("Service definitly not found -> Restart application\n");
-	}	*/
 }
 
 /*
@@ -871,6 +1002,64 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 void deviceManager::discovery_error_found(struct bt_conn *conn, int err, void *ctx)
 {
 	printk("The discovery procedure failed, err %d\n", err);
+}
+
+void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx) 
+{
+	int err;
+
+	const struct bt_gatt_dm_attr *gatt_chrc;
+	const struct bt_gatt_dm_attr *gatt_desc;
+
+	// subscribe CSC characteristic
+	static struct bt_gatt_subscribe_params paramHR;
+
+	struct bt_conn *conn = bt_gatt_dm_conn_get(dm);
+
+	printk("The discovery procedure succeeded\n");
+
+	bt_gatt_dm_data_print(dm);
+
+	/* Heart rate characteristic */
+	gatt_chrc = bt_gatt_dm_char_by_uuid(dm, BT_UUID_HRS_MEASUREMENT);
+	if (!gatt_chrc) {
+		printk("No heart rate measurement characteristic found");
+		return;
+	}
+
+	gatt_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_chrc,
+			BT_UUID_HRS_MEASUREMENT);
+	if (!gatt_desc) {
+		printk("No heat rate measurement characteristic value found");
+		return;
+	}
+
+	paramHR.value_handle = gatt_desc->handle;
+
+	gatt_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_chrc,
+			BT_UUID_GATT_CCC);
+
+	if (!gatt_desc) {
+		printk("No heart rate CCC descriptor found. "
+		       "Heart rate service does not support notifications.");
+		return;
+	}
+
+	paramHR.notify = notify_func;
+	paramHR.value = BT_GATT_CCC_NOTIFY;
+	paramHR.ccc_handle = gatt_desc->handle;
+
+	err = bt_gatt_subscribe(conn, &paramHR);
+	if (err && err != -EALREADY) {
+		printk("Subscribe failed (err %d)\n", err);
+	} else {
+		printk("[SUBSCRIBED]\n");
+	}
+
+	err = bt_gatt_dm_data_release(dm);
+	if (err) {
+		printk("Could not release the discovery data (err %d)\n", err);
+	}
 }
 
  /*
@@ -956,6 +1145,27 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 	return BT_GATT_ITER_CONTINUE;
 }
 
+uint8_t deviceManager::notify_func(struct bt_conn *conn,
+		struct bt_gatt_subscribe_params *params,
+		const void *data, uint16_t length) {
+
+	if (!data) {
+		printk("[UNSUBSCRIBED]\n");
+		params->value_handle = 0U;
+		return BT_GATT_ITER_STOP;
+	}
+
+	if (length == 2) {
+		uint8_t hr_bpm = ((uint8_t *)data)[1];
+
+		printk("[NOTIFICATION] Heart Rate %u bpm\n", hr_bpm);
+	} else {
+		printk("[NOTIFICATION] data %p length %u\n", data, length);
+	}
+
+	return BT_GATT_ITER_CONTINUE;
+}
+
 void deviceManager::notify_battery_level_cb(struct bt_bas_client *bas,
 				    uint8_t battery_level) {
 	char addr[BT_ADDR_LE_STR_LEN];
@@ -983,13 +1193,11 @@ bool deviceManager::checkAddresses(char addr1[],char addr2[])
 	}
 	if (cnt == 17)
 	{
-		printk("Address OK\n");
 		cnt = 0;
 		retVal = true;
 	}
 	else
 	{
-		printk("address NOT OK\n");
 		cnt = 0;
 		retVal = false;
 	}

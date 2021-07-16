@@ -64,6 +64,7 @@ public class CSCManager extends ObservableBleManager {
 	private final MutableLiveData<Integer> rpmValue = new MutableLiveData<>();
 	private final MutableLiveData<Double> speedValue = new MutableLiveData<>();
 	private final MutableLiveData<Integer> messageCode = new MutableLiveData<>();
+	private final MutableLiveData<Integer> heartRateValue = new MutableLiveData<>();
 
 	private BluetoothGattCharacteristic RX_characteristic, TX_characteristic;
 
@@ -75,16 +76,40 @@ public class CSCManager extends ObservableBleManager {
 
 	private final int TYPE_SPEED = 1;
 	private final int TYPE_CADENCE= 2;
+	private final int TYPE_HEARTRATE = 3;
 
+	/**
+	 * constructor
+	 * @param context the context
+	 */
 	public CSCManager(@NonNull final Context context) {
 		super(context);
 	}
 
+	/**
+	 * get the rpm value
+	 * @return the rpm value
+	 */
 	public final LiveData<Integer> getRPMValue() { return  rpmValue;}
 
+	/**
+	 * get the speed value
+	 * @return the speed value
+	 */
 	public final LiveData<Double> getSpeedValue() { return speedValue;}
 
+	/**
+	 * get the heart rate value
+	 * @return the heart rate value
+	 */
+	public final LiveData<Integer> getHeartRateValue() { return heartRateValue;}
+
+	/**
+	 * get the message code
+	 * @return the message code
+	 */
 	public final LiveData<Integer> getMessageCode() { return messageCode;}
+
 
 	@NonNull
 	@Override
@@ -124,11 +149,11 @@ public class CSCManager extends ObservableBleManager {
 		/**
 		 * callback -> called when new data arrived
 		 * @param device the target device
-		 * @param data first value in array is type of sensor, second value is the speed/cadence
+		 * @param data first value in array is type of sensor, second value is the speed/cadence/heart rate
 		 */
 		@Override
 		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer[] data) {
-			log(Log.INFO,"Data received");
+			log(Log.INFO, "Data received");
 
 			if (data.length == 1) {
 				messageCode.setValue(data[0]);
@@ -136,17 +161,17 @@ public class CSCManager extends ObservableBleManager {
 
 			switch (data[0]) {
 				case TYPE_SPEED:
-					// type speed
 					double val = data[2].doubleValue();
-					speed = data[1] + val/100;
+					speed = data[1] + val / 100;
 					speedValue.setValue(speed);
 					break;
 				case TYPE_CADENCE:
-					// type cadence
 					rpmValue.setValue(data[1] + (data[2] << 8));
 					break;
+				case TYPE_HEARTRATE:
+					heartRateValue.setValue(data[1]);
 				default:
-					log(Log.INFO,"Unknown type");
+					log(Log.INFO, "Unknown type");
 					break;
 			}
 		}

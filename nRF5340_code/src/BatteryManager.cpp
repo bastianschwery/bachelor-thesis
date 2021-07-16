@@ -250,7 +250,7 @@ void BatteryManager::initBatteryManager(void)
 	case 2:
 		bt_bas_client_init(&bas_sensor2);
 		break;
-	case 3;
+	case 3:
 		bt_bas_client_init(&bas_sensor3);
 		break;
 	default:
@@ -278,7 +278,7 @@ uint8_t BatteryManager::getBatteryLevel(uint8_t nbrSensor)
 	case 2:
 		err = bt_bas_read_battery_level(&bas_sensor2, read_battery_level_cb);
 		break;
-	case 3;
+	case 3:
 		err = bt_bas_read_battery_level(&bas_sensor3, read_battery_level_cb);
 		break;
 	default:

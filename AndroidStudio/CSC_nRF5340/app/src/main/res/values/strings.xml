@@ -34,11 +34,13 @@
 	<string name="title_cadence">Cadence [rpm]</string>
 	<string name="title_distance">Distance [km]</string>
 	<string name="text_setValue">Set</string>
+	<string name="title_heartRate">Heart Rate [Bpm]</string>
 	<string name="text_resetValue">Reset</string>
 	<string name="speed_default">0</string>
 	<string name="cadence_default">0</string>
 	<string name="distance_default">0</string>
 	<string name="diameter_default">0</string>
+	<string name="heartRate_default">0</string>
 
 	<string name="unknown_device">Unknown Device</string>
 	<string name="turn_on">On</string>

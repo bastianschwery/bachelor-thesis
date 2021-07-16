@@ -59,16 +59,22 @@ public class CSCViewModel extends AndroidViewModel {
 	}
 
 	/**
-	 * get the rpm value
-	 * @return rpm value
+	 * get the rpm value from the CSCManager
+	 * @return the rpm value
 	 */
 	public LiveData<Integer> getRPMValue() { return CSCManager.getRPMValue();}
 
 	/**
-	 * get the speed value
-	 * @return speed value
+	 * get the speed value from the CSCManager
+	 * @return the speed value
 	 */
 	public LiveData<Double> getSpeedValue() { return CSCManager.getSpeedValue();}
+
+	/**
+	 * get the heart rate value from the CSCManager
+	 * @return the heart rate value
+	 */
+	public LiveData<Integer> getHeartRateValue() {return CSCManager.getHeartRateValue();}
 
 	/**
 	 * get error code

@@ -78,6 +78,7 @@ public class CSCActivity extends AppCompatActivity {
 	@BindView(R.id.speed_value) TextView speedValue;
 	@BindView(R.id.cadence_value) TextView cadenceValue;
 	@BindView(R.id.distance_value) TextView distanceValue;
+	@BindView(R.id.heartRate_value) TextView heartRateValue;
 
 	/**
 	 * create all necessary instances and add on click listeners
@@ -150,7 +151,6 @@ public class CSCActivity extends AppCompatActivity {
 			default:
 				break;
 		}
-
 
 		/*
 		for every sensor is a buffer
@@ -337,6 +337,9 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.getSpeedValue().observe(this,
 				integer -> speedValue.setText(integer.toString()));
 
+		viewModel.getHeartRateValue().observe(this,
+				integer -> heartRateValue.setText(integer.toString()));
+
 		viewModel.getSpeedValue().observe(this, this::setDistance);
 
 		viewModel.getMessageCode().observe(this, this::showMessageCode);
@@ -396,29 +399,33 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Service not found");
 				break;
 			case 11:
-				setText("Disconnected from one CSC sensor...");
+				setText("Disconnected from CSC sensor...");
 				break;
 			case 12:
-				setText("Disconnected from both CSC sensors...");
+				setText("Disconnected from heart rate sensor...");
 				break;
 			case 13:
+				setText("Disconnected from all sensors...");
+				break;
+			case 14:
 				setText("Sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");
 				break;
-			case 14:
+			case 15:
 				setText("First sensor connected");
 				setText("Waiting for next sensor...");
 				break;
-			case 15:
+			case 16:
 				setText("Second sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");
-			case 16:
+				break;
+			case 17:
 				setText("Second sensor connected");
 				setText("Waiting for next sensor...");
 				break;
-			case 17:
+			case 18:
 				setText("Third sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");

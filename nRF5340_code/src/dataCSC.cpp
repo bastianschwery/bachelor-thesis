@@ -13,6 +13,7 @@ dataCSC::dataCSC() {
     wheelDiameter = 0.0;
     speed = 0;
     rpm = 0;
+    heartRate = 0;
 }
 
 void dataCSC::saveData(const void *data) {

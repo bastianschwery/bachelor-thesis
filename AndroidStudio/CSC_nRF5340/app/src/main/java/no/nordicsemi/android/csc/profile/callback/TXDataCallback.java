@@ -43,12 +43,26 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
             onInvalidDataReceived(device, data);
             return;
         }
+
+        // error code received
         if (data.size() == 1) {
             Integer[] errorArray = new Integer[1];
             errorArray[0] = data.getIntValue(Data.FORMAT_UINT8,0);
             onCSCDataChanged(device,errorArray);
         }
 
+        // heart rate value received
+        if (data.size() == 2) {
+            Integer[] dataArray = new Integer[2];
+            Integer type = data.getIntValue(Data.FORMAT_UINT8,0);
+            Integer val = data.getIntValue(Data.FORMAT_UINT8,1);
+            dataArray[0] = type;
+            dataArray[1] = val;
+
+            onCSCDataChanged(device,dataArray);
+        }
+
+        // CSC value received
         if (data.size() == 3) {
             // 1. value: type -> 1 = speed, 2 = cadence
             // 2. value: when speed -> 8 bit of speed on the left side of the comma
@@ -65,7 +79,6 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
 
             onCSCDataChanged(device,dataArray);
         }
-
     }
 
     /**

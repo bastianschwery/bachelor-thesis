@@ -79,7 +79,7 @@ static ssize_t on_receive(struct bt_conn *conn,
         else {
             dia = diameter * 2.54;
         }
-    }
+    }   
     
     // len = 19 -> addresses of one or more sensors to connect received
     // bits 0-17 address, bit 18 nbr of total addresses, bit 19 info about which sensors to connect

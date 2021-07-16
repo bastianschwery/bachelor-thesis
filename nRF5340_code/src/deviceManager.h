@@ -52,7 +52,6 @@ public:
     // constructor
     deviceManager();
 
-
    /**
     * @brief Get the Device object
     * 
@@ -62,7 +61,6 @@ public:
     *         1 when central role
     */
     static uint8_t getDevice();
-
 
     /**
      * @brief setter:
@@ -231,7 +229,7 @@ public:
      * @param length the length of the received data
      * @return uint8_t value to continue
      */
-    static uint8_t notify_func(struct bt_conn *conn,
+    static uint8_t notify_HR(struct bt_conn *conn,
 		struct bt_gatt_subscribe_params *params,
 		const void *data, uint16_t length);
 

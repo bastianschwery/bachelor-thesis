@@ -47,7 +47,7 @@ public:
      */
     uint16_t calcSpeed();
 
-    // received data attributes from the CSC sensors
+    // received data from the CSC sensors
     uint16_t sumRevSpeed;
     uint16_t oldSumRevSpeed;
     uint16_t sumRevCadence;
@@ -57,6 +57,9 @@ public:
     uint16_t lastEventCadence;
     uint16_t oldLastEventCadence;
     uint8_t type;
+
+    // received data from heart rate sensor
+    uint8_t heartRate;
 
     // received data from application
     double wheelDiameter;

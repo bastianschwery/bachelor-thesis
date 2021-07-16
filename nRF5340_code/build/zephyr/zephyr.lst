@@ -1095,11 +1095,11 @@ Disassembly of section text:
     8e46:	bf00      	nop
 
 00008e48 <_ZN7dataCSC9calcSpeedEv>:
+    }
+
+    return retVal;
 }
 
-/*
- * calculate speed
- */
 uint16_t dataCSC::calcSpeed() {
     8e48:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
     8e4c:	4605      	mov	r5, r0
@@ -1468,9 +1468,9 @@ void main(void)
     9090:	0001e264 	.word	0x0001e264
 
 00009094 <_ZN13deviceManager13app_button_cbEv>:
-/*
- * button callback method
- */
+    dk_set_led(USER_LED,led_state);
+}
+
 bool deviceManager::app_button_cb(void){
     return app_button_state;
 }
@@ -1481,9 +1481,9 @@ bool deviceManager::app_button_cb(void){
     909c:	2000bef7 	.word	0x2000bef7
 
 000090a0 <_ZN13deviceManager21discovery_error_foundEP7bt_conniPv>:
- * callback method
- * called when while discovering an error appears
- */
+}
+
+
 void deviceManager::discovery_error_found(struct bt_conn *conn, int err, void *ctx)
 {
 	printk("The discovery procedure failed, err %d\n", err);
@@ -1494,6 +1494,7 @@ void deviceManager::discovery_error_found(struct bt_conn *conn, int err, void *c
 
 000090ac <_ZN13deviceManager20discoveryCompletedHREP10bt_gatt_dmPv>:
 }
+
 
 void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx) 
 {
@@ -2270,25 +2271,25 @@ void deviceManager::initScan() {
     95dc:	0001e601 	.word	0x0001e601
     95e0:	00019809 	.word	0x00019809
 
-000095e4 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv>:
-void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
+000095e4 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv>:
+void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
     95e4:	b5f7      	push	{r0, r1, r2, r4, r5, r6, r7, lr}
 	if (!subscriptionDone)
-    95e6:	4e4d      	ldr	r6, [pc, #308]	; (971c <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x138>)
-void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
+    95e6:	4e4d      	ldr	r6, [pc, #308]	; (971c <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x138>)
+void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
     95e8:	4604      	mov	r4, r0
 	if (!subscriptionDone)
     95ea:	7833      	ldrb	r3, [r6, #0]
     95ec:	2b00      	cmp	r3, #0
-    95ee:	d135      	bne.n	965c <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x78>
+    95ee:	d135      	bne.n	965c <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x78>
 		chrc = bt_gatt_dm_char_by_uuid(dm,BT_UUID_CSC_MEASUREMENT);
-    95f0:	494b      	ldr	r1, [pc, #300]	; (9720 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x13c>)
+    95f0:	494b      	ldr	r1, [pc, #300]	; (9720 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x13c>)
     95f2:	f002 fd33 	bl	c05c <bt_gatt_dm_char_by_uuid>
 		if (!chrc) {
     95f6:	4605      	mov	r5, r0
-    95f8:	b970      	cbnz	r0, 9618 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x34>
+    95f8:	b970      	cbnz	r0, 9618 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x34>
 			printk("Missing CSC measurement characteristic\n");
-    95fa:	484a      	ldr	r0, [pc, #296]	; (9724 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x140>)
+    95fa:	484a      	ldr	r0, [pc, #296]	; (9724 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x140>)
 			printk("Missing CSC measurement char CCC descriptor\n");
     95fc:	f010 f9b5 	bl	1996a <printk>
 			err = bt_gatt_dm_data_release(dm);
@@ -2297,9 +2298,9 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
 			if (err) {
     9606:	4601      	mov	r1, r0
     9608:	2800      	cmp	r0, #0
-    960a:	d040      	beq.n	968e <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xaa>
+    960a:	d040      	beq.n	968e <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xaa>
 				printk("Could not release discovery data, err: %d\n", err);
-    960c:	4846      	ldr	r0, [pc, #280]	; (9728 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x144>)
+    960c:	4846      	ldr	r0, [pc, #280]	; (9728 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x144>)
 }
     960e:	b003      	add	sp, #12
     9610:	e8bd 40f0 	ldmia.w	sp!, {r4, r5, r6, r7, lr}
@@ -2307,28 +2308,28 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
     9614:	f010 b9a9 	b.w	1996a <printk>
 		desc = bt_gatt_dm_desc_by_uuid(dm, chrc, BT_UUID_CSC_MEASUREMENT);
     9618:	4601      	mov	r1, r0
-    961a:	4a44      	ldr	r2, [pc, #272]	; (972c <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x148>)
+    961a:	4a44      	ldr	r2, [pc, #272]	; (972c <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x148>)
     961c:	4620      	mov	r0, r4
     961e:	f010 fe2d 	bl	1a27c <bt_gatt_dm_desc_by_uuid>
 		if (!desc) {
-    9622:	b908      	cbnz	r0, 9628 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x44>
+    9622:	b908      	cbnz	r0, 9628 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x44>
 			printk("Missing CSC measurement char CCC descriptor\n");
-    9624:	4842      	ldr	r0, [pc, #264]	; (9730 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x14c>)
-    9626:	e7e9      	b.n	95fc <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x18>
+    9624:	4842      	ldr	r0, [pc, #264]	; (9730 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x14c>)
+    9626:	e7e9      	b.n	95fc <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x18>
 		param.value_handle = desc->handle;
     9628:	8883      	ldrh	r3, [r0, #4]
-    962a:	4f42      	ldr	r7, [pc, #264]	; (9734 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x150>)
+    962a:	4f42      	ldr	r7, [pc, #264]	; (9734 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x150>)
 		desc = bt_gatt_dm_desc_by_uuid(dm, chrc, BT_UUID_GATT_CCC);
     962c:	4629      	mov	r1, r5
     962e:	4620      	mov	r0, r4
-    9630:	4a41      	ldr	r2, [pc, #260]	; (9738 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x154>)
+    9630:	4a41      	ldr	r2, [pc, #260]	; (9738 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x154>)
 		param.value_handle = desc->handle;
     9632:	813b      	strh	r3, [r7, #8]
 		desc = bt_gatt_dm_desc_by_uuid(dm, chrc, BT_UUID_GATT_CCC);
     9634:	f010 fe22 	bl	1a27c <bt_gatt_dm_desc_by_uuid>
 		if (!desc) {
     9638:	2800      	cmp	r0, #0
-    963a:	d0f3      	beq.n	9624 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x40>
+    963a:	d0f3      	beq.n	9624 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x40>
 		param.ccc_handle = desc->handle;
     963c:	8883      	ldrh	r3, [r0, #4]
 		err = bt_gatt_subscribe(bt_gatt_dm_conn_get(dm), &param);
@@ -2341,38 +2342,38 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
     9648:	f00a fc9a 	bl	13f80 <bt_gatt_subscribe>
 		if (err) {
     964c:	4601      	mov	r1, r0
-    964e:	b110      	cbz	r0, 9656 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x72>
+    964e:	b110      	cbz	r0, 9656 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x72>
 			printk("Subscribtion failed (err %d)\n", err);
-    9650:	483a      	ldr	r0, [pc, #232]	; (973c <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x158>)
+    9650:	483a      	ldr	r0, [pc, #232]	; (973c <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x158>)
     9652:	f010 f98a 	bl	1996a <printk>
 		bt_gatt_dm_data_release(dm);
     9656:	4620      	mov	r0, r4
     9658:	f010 fe22 	bl	1a2a0 <bt_gatt_dm_data_release>
 	switch (nbrConnectionsCentral)
-    965c:	4b38      	ldr	r3, [pc, #224]	; (9740 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x15c>)
+    965c:	4b38      	ldr	r3, [pc, #224]	; (9740 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x15c>)
     965e:	781a      	ldrb	r2, [r3, #0]
     9660:	2a02      	cmp	r2, #2
-    9662:	d026      	beq.n	96b2 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xce>
+    9662:	d026      	beq.n	96b2 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xce>
     9664:	2a03      	cmp	r2, #3
-    9666:	d04d      	beq.n	9704 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x120>
+    9666:	d04d      	beq.n	9704 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x120>
     9668:	2a01      	cmp	r2, #1
-    966a:	d110      	bne.n	968e <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xaa>
+    966a:	d110      	bne.n	968e <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xaa>
 		if (nbrAddresses == 1)
-    966c:	4b35      	ldr	r3, [pc, #212]	; (9744 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x160>)
+    966c:	4b35      	ldr	r3, [pc, #212]	; (9744 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x160>)
     966e:	781c      	ldrb	r4, [r3, #0]
     9670:	2c01      	cmp	r4, #1
-    9672:	d10e      	bne.n	9692 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xae>
+    9672:	d10e      	bne.n	9692 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xae>
 			connectedCode[0] = 13;
     9674:	230d      	movs	r3, #13
     9676:	f88d 3004 	strb.w	r3, [sp, #4]
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-    967a:	4b33      	ldr	r3, [pc, #204]	; (9748 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x164>)
+    967a:	4b33      	ldr	r3, [pc, #204]	; (9748 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x164>)
     967c:	4622      	mov	r2, r4
     967e:	6818      	ldr	r0, [r3, #0]
     9680:	a901      	add	r1, sp, #4
     9682:	f000 fb59 	bl	9d38 <_Z17data_service_sendP7bt_connPKht>
 			printk("Discovery completed\n");
-    9686:	4831      	ldr	r0, [pc, #196]	; (974c <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x168>)
+    9686:	4831      	ldr	r0, [pc, #196]	; (974c <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x168>)
     9688:	f010 f96f 	bl	1996a <printk>
 			subscriptionDone = true;
     968c:	7034      	strb	r4, [r6, #0]
@@ -2381,37 +2382,37 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
     9690:	bdf0      	pop	{r4, r5, r6, r7, pc}
 		else if (nbrAddresses == 2)	
     9692:	2c02      	cmp	r4, #2
-    9694:	d1fb      	bne.n	968e <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xaa>
+    9694:	d1fb      	bne.n	968e <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xaa>
 			connectedCode[0] = 14;
     9696:	230e      	movs	r3, #14
     9698:	f88d 3004 	strb.w	r3, [sp, #4]
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-    969c:	4b2a      	ldr	r3, [pc, #168]	; (9748 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x164>)
+    969c:	4b2a      	ldr	r3, [pc, #168]	; (9748 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x164>)
     969e:	a901      	add	r1, sp, #4
     96a0:	6818      	ldr	r0, [r3, #0]
     96a2:	f000 fb49 	bl	9d38 <_Z17data_service_sendP7bt_connPKht>
 			initScan();
     96a6:	f7ff ff21 	bl	94ec <_ZN13deviceManager8initScanEv>
 			printk("First discovery completed\n");			
-    96aa:	4829      	ldr	r0, [pc, #164]	; (9750 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x16c>)
+    96aa:	4829      	ldr	r0, [pc, #164]	; (9750 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x16c>)
     96ac:	f010 f95d 	bl	1996a <printk>
-    96b0:	e7ed      	b.n	968e <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xaa>
+    96b0:	e7ed      	b.n	968e <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xaa>
 		if (nbrAddresses == 2)
-    96b2:	4b24      	ldr	r3, [pc, #144]	; (9744 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x160>)
+    96b2:	4b24      	ldr	r3, [pc, #144]	; (9744 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x160>)
     96b4:	781b      	ldrb	r3, [r3, #0]
     96b6:	2b02      	cmp	r3, #2
-    96b8:	d113      	bne.n	96e2 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xfe>
+    96b8:	d113      	bne.n	96e2 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xfe>
 			connectedCode[0] = 15;
     96ba:	230f      	movs	r3, #15
     96bc:	f88d 3004 	strb.w	r3, [sp, #4]
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-    96c0:	4b21      	ldr	r3, [pc, #132]	; (9748 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x164>)
+    96c0:	4b21      	ldr	r3, [pc, #132]	; (9748 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x164>)
     96c2:	2201      	movs	r2, #1
     96c4:	6818      	ldr	r0, [r3, #0]
     96c6:	a901      	add	r1, sp, #4
     96c8:	f000 fb36 	bl	9d38 <_Z17data_service_sendP7bt_connPKht>
 			printk("Second discovery completed\n");
-    96cc:	4821      	ldr	r0, [pc, #132]	; (9754 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x170>)
+    96cc:	4821      	ldr	r0, [pc, #132]	; (9754 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x170>)
 			printk("Third discovery completed\n");
     96ce:	f010 f94c 	bl	1996a <printk>
 			dk_set_led_on(CON_STATUS_LED_CENTRAL);
@@ -2419,43 +2420,43 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
     96d4:	f013 f87a 	bl	1c7cc <dk_set_led_on>
 			connectedC = true;	
     96d8:	2301      	movs	r3, #1
-    96da:	4a1f      	ldr	r2, [pc, #124]	; (9758 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x174>)
+    96da:	4a1f      	ldr	r2, [pc, #124]	; (9758 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x174>)
 			subscriptionDone = true;		
     96dc:	7033      	strb	r3, [r6, #0]
 			connectedC = true;	
     96de:	7013      	strb	r3, [r2, #0]
 		break;
-    96e0:	e7d5      	b.n	968e <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xaa>
+    96e0:	e7d5      	b.n	968e <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xaa>
 		else if (nbrAddresses == 3) 
     96e2:	2b03      	cmp	r3, #3
-    96e4:	d1d3      	bne.n	968e <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xaa>
+    96e4:	d1d3      	bne.n	968e <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xaa>
 			connectedCode[0] = 16;
     96e6:	2310      	movs	r3, #16
     96e8:	f88d 3004 	strb.w	r3, [sp, #4]
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-    96ec:	4b16      	ldr	r3, [pc, #88]	; (9748 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x164>)
+    96ec:	4b16      	ldr	r3, [pc, #88]	; (9748 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x164>)
     96ee:	2201      	movs	r2, #1
     96f0:	6818      	ldr	r0, [r3, #0]
     96f2:	a901      	add	r1, sp, #4
     96f4:	f000 fb20 	bl	9d38 <_Z17data_service_sendP7bt_connPKht>
 			printk("Second discovery completed\n");		
-    96f8:	4816      	ldr	r0, [pc, #88]	; (9754 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x170>)
+    96f8:	4816      	ldr	r0, [pc, #88]	; (9754 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x170>)
     96fa:	f010 f936 	bl	1996a <printk>
 			initScan();
     96fe:	f7ff fef5 	bl	94ec <_ZN13deviceManager8initScanEv>
-    9702:	e7c4      	b.n	968e <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xaa>
+    9702:	e7c4      	b.n	968e <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xaa>
 			connectedCode[0] = 17;
     9704:	2311      	movs	r3, #17
     9706:	f88d 3004 	strb.w	r3, [sp, #4]
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-    970a:	4b0f      	ldr	r3, [pc, #60]	; (9748 <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x164>)
+    970a:	4b0f      	ldr	r3, [pc, #60]	; (9748 <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x164>)
     970c:	2201      	movs	r2, #1
     970e:	6818      	ldr	r0, [r3, #0]
     9710:	a901      	add	r1, sp, #4
     9712:	f000 fb11 	bl	9d38 <_Z17data_service_sendP7bt_connPKht>
 			printk("Third discovery completed\n");
-    9716:	4811      	ldr	r0, [pc, #68]	; (975c <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0x178>)
-    9718:	e7d9      	b.n	96ce <_ZN13deviceManager18discoveryCompletedEP10bt_gatt_dmPv+0xea>
+    9716:	4811      	ldr	r0, [pc, #68]	; (975c <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0x178>)
+    9718:	e7d9      	b.n	96ce <_ZN13deviceManager21discoveryCompletedCSCEP10bt_gatt_dmPv+0xea>
     971a:	bf00      	nop
     971c:	2000bef8 	.word	0x2000bef8
     9720:	0001e1b0 	.word	0x0001e1b0

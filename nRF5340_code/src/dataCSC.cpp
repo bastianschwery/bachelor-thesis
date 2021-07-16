@@ -1,15 +1,5 @@
-/*
- * Author: Schwery Bastian
- * Date: 06/2021
- * Cours: Bachelor Thesis
- */
-
 #include "dataCSC.h"
 
-/*
- * constructor
- * initialize attributes
- */
 dataCSC::dataCSC() {
     sumRevSpeed = 0;
     oldSumRevSpeed = 0;
@@ -25,9 +15,6 @@ dataCSC::dataCSC() {
     rpm = 0;
 }
 
-/*
- * save the new received data
- */
 void dataCSC::saveData(const void *data) {
     type = ((uint8_t*)data)[0];
     uint8_t val1;
@@ -61,9 +48,6 @@ void dataCSC::saveData(const void *data) {
     }
 }
 
-/*
- * calculate rounds per minute
- */
 uint16_t dataCSC::calcRPM() {
     uint16_t retVal = 0;
     uint16_t maxVal = 0xffff;
@@ -90,9 +74,6 @@ uint16_t dataCSC::calcRPM() {
     return retVal;
 }
 
-/*
- * calculate speed
- */
 uint16_t dataCSC::calcSpeed() {
     uint16_t retVal = 0;
     //wheelDiameter = 0.08; // in m

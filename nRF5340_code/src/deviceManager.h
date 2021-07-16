@@ -1,11 +1,14 @@
 /**
- * @author  Schwery Bastian
- * @file    deviceManager.h    
- * @date    05/2021
+ * @file    deviceManager.h
+ * @author  Schwery Bastian (bastian98@gmx.ch)
+ * @brief   handle peripheral and central connections and 
+ *          the data flow between the sensors and the android
+ *          application
+ * @version 0.1
+ * @date    2021-05
  * 
- * @brief    This class manages the peripheral and central
- *           bluetooth connections and the characterstic
- *           subscriptions
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 #include "dataCSC.h"
@@ -49,11 +52,14 @@ public:
     // constructor
     deviceManager();
 
-    /**
-     * @brief getter
-     * @return 3 when central & peripheral role
-     *         2 when peripheral role
-     *         1 when central role
+
+   /**
+    * @brief Get the Device object
+    * 
+    * @return uint8_t 
+    *         3 when central & peripheral role
+    *         2 when peripheral role
+    *         1 when central role
     */
     static uint8_t getDevice();
 
@@ -64,6 +70,7 @@ public:
      *        if it should be a central and peripheral, start with the initialitation
      *        of the peripheral and wait till the connection is etablished
      *        after that, start the initialitation of the central
+     * 
      * @param c true = central role
      * @param p true = peripheral role
     */
@@ -75,6 +82,7 @@ public:
 
      /**
      * @brief callback function is called when connection is etablished
+     * 
      * @param conn etablished connection structure
      * @param err error code, 0 if success
     */
@@ -82,6 +90,7 @@ public:
 
     /**
      * @brief callback function is called when connection gets disconnected
+     * 
      * @param conn structure of the disconnected connection
      * @param reason reason code for the disconnection
     */
@@ -93,16 +102,44 @@ public:
 
     /**
      * @brief initialize peripheral ble part
+     * 
     */
     void initPeripheral();
 
     /**
      * @brief start with the advertising process
+     * 
     */
     static void startAdvertising();
 
+    /**
+     * @brief send notification that button state has changed
+     * 
+     * @param button_state new button state
+     * @param has_changed the button number
+     */
     static void buttonChanged(uint32_t button_state, uint32_t has_changed);
+
+    /**
+     * @brief get button state
+     * 
+     * @return true button pressed
+     * @return false button released
+     */
     static bool app_button_cb();
+
+    /**
+     * @brief initialize button service
+     * 
+     * @return int error code, 0 if success
+     */
+    static int initButton(void);
+
+    /**
+     * @brief send notification with new led state
+     * 
+     * @param led_state true led on, false led off
+     */
     static void app_led_cb(bool led_state);
 
 /*---------------------------------------------------------------------------
@@ -111,22 +148,26 @@ public:
 
     /**
      * @brief initialize central ble part
+     * 
     */
     void initCentral();
 
     /**
      * @brief initialize all for starting the scan process
+     * 
     */
     static void initScan();
 
     /**
      * @brief start the scanning process
+     * 
     */
     static void startScan();
 
     /**
      * @brief callback function, is called when a device is found
      *        used to find the correct thingy
+     * 
      * @param addr address of the found device
      * @param rssi rssi value of the found device in db
      * @param type tyoe of the found device
@@ -137,16 +178,16 @@ public:
     
     // add service callbacks
     /**
-     * @brief callback function, is called when discovery of the service 
-     *        is completed
-     * @param disc holds the address of the connected device, user context and 
-     *             discover parameter
+     * @brief callback function, is called when discovery of the service is completed
+     * 
+     * @param dm holds the address of the connected device, user context and discover parameter        
      * @param ctx context, not used in this case
     */
-    static void discoveryCompleted(struct bt_gatt_dm *dm, void *ctx);
+    static void discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx);
 
     /**
      * @brief callback function, is called when service was not found
+     * 
      * @param conn connection structure which does not include the service
      * @param ctx context, not used in this case
     */
@@ -154,26 +195,54 @@ public:
 
     /**
      * @brief callback function, is called when an error occurs while discovering the service
+     * 
      * @param conn connection structure which the error occurs
+     * @param err error code, 0 if success
      * @param ctx context, not used in this case
     */
     static void discovery_error_found(struct bt_conn *conn, int err, void *ctx);
 
+    /**
+     * @brief callback function, is called when discovery of the service is completed
+     * 
+     * @param dm holds the address of the connected device, user context and discover parameter
+     * @param ctx context, not used in this case
+     */
     static void discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx);
 
+    /**
+     * @brief start discovery process for the heart rate sensor
+     * 
+     */
     static void discoverHR();
+
+    /**
+     * @brief start discovery process for the CSC sensors
+     * 
+     */
     static void discoverCSC();
 
+    /**
+     * @brief callback function, is called when new data is received over ble
+     * 
+     * @param conn connection structure which sends the data
+     * @param params subscribe parameter
+     * @param data the received data
+     * @param length the length of the received data
+     * @return uint8_t value to continue
+     */
     static uint8_t notify_func(struct bt_conn *conn,
 		struct bt_gatt_subscribe_params *params,
 		const void *data, uint16_t length);
 
     /**
      * @brief callback function, is called when new data is received over ble
+     * 
      * @param conn connection structure which sends the data
      * @param params subscribe parameter, not used in this case
      * @param data the received data
      * @param length the length of the received data
+     * @return uint8_t value to continue
     */    
     static uint8_t onReceived(struct bt_conn *conn,
 			struct bt_gatt_subscribe_params *params,
@@ -181,6 +250,7 @@ public:
 
     /**
      * @brief callback function, is called when a device with the applicable filter is found
+     * 
      * @param device_info information structure about the found device
      * @param filter_match information about the used filter
      * @param connectable information if the found device is connectable 
@@ -191,20 +261,35 @@ public:
 
     /**
      * @brief callback function, is called when an error occurs while scanning
+     * 
      * @param device_info information structure about the found device
     */                     
     static void scanConnectionError(struct bt_scan_device_info *device_info);
 
+    /**
+     * @brief callback function, is called when device found but not with the given filter
+     * 
+     * @param device_info info about the found device
+     * @param connectable info if device is connectable
+     */
     static void scanFilterNoMatch(struct bt_scan_device_info *device_info, bool connectable);
 
+    /**
+     * @brief callback function, is called when new data is received over ble
+     * 
+     * @param bas the battery service client 
+     * @param battery_level the battery level (0-100%)
+     */
     static void notify_battery_level_cb(struct bt_bas_client *bas,
 				    uint8_t battery_level);
 
     /**
      * @brief compare two addresses
+     * 
      * @param addr1 first address to compare
      * @param addr2 second address to compare
-     * @return true if the address are equal, else return false
+     * @return true if the addresses are equal
+     * @return false if the addresses are not equal
     */
     static bool checkAddresses(char addr1[],char addr2[]);
 
@@ -224,7 +309,6 @@ private:
     static bool once_sensor3;
     static uint8_t nbrAddresses;
 
-    static int initButton(void);
     static uint8_t nbrConnectionsCentral;
     static uint8_t sensorInfos;
 
@@ -237,6 +321,7 @@ private:
     // data object, containts all the received data with the calculate functions
     static dataCSC data;
 
+    // the battery manager instance
     static BatteryManager battManager;
     //static struct bt_bas_client bas;
 
@@ -252,6 +337,7 @@ private:
         .button_cb = app_button_cb,
     };
 
+    // connection authorize callback structure
     struct bt_conn_auth_cb conn_auth_callbacks = {
     };
 };

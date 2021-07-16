@@ -1,9 +1,3 @@
-/*
- * Author: Schwery Bastian
- * Date: 05/2021
- * Cours: Bachelor Thesis
- */
-
 #include "deviceManager.h"
 
 // defines
@@ -98,7 +92,7 @@ BatteryManager deviceManager::battManager;
 
 static struct bt_gatt_dm_cb discovery_cb = 
 {
-	.completed = deviceManager::discoveryCompleted,
+	.completed = deviceManager::discoveryCompletedCSC,
 	.service_not_found = deviceManager::discovery_service_not_found,
 	.error_found = deviceManager::discovery_error_found,
 };
@@ -115,9 +109,6 @@ static struct bt_gatt_dm_cb discovery_cb_HR =
  * GENERAL METHODS
  *---------------------------------------------------------------------------------------------------*/
 
-/*
- * constructor
- */
 deviceManager::deviceManager(){
     device.CENTRAL = 1;
     device.PERIPHERAL = 2;
@@ -132,9 +123,6 @@ deviceManager::deviceManager(){
 	connectedC = false;
 }
 
-/*
- * getter
- */
 uint8_t deviceManager::getDevice(){
     if(isCentral && isPeripheral){
         return 3;
@@ -147,9 +135,6 @@ uint8_t deviceManager::getDevice(){
     }
 }
 
-/*
- * setter
- */
 void deviceManager::setDevice(bool c, bool p){
     isPeripheral = p;
     isCentral = c;  
@@ -168,25 +153,15 @@ void deviceManager::setDevice(bool c, bool p){
 	}
 }
 
-/*
- * led callback method
- */
 void deviceManager::app_led_cb(bool led_state){
 	// set led to led_state
     dk_set_led(USER_LED,led_state);
 }
 
-/*
- * button callback method
- */
 bool deviceManager::app_button_cb(void){
     return app_button_state;
 }
 
-/*
- * callback method
- * called when user button has been pressed or released
- */
 void deviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed){
    	if (has_changed & USER_BUTTON) {
 		bt_lbs_send_button_state(button_state);
@@ -194,9 +169,6 @@ void deviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed){
 	} 
 }
 
-/*
- * initialize button service
- */
 int deviceManager::initButton(){
     int err;
 
@@ -213,9 +185,6 @@ int deviceManager::initButton(){
  * PERIPHERAL ROLE
  *---------------------------------------------------------------------------------------------------*/
 
-/*
- * initialize all necessary settings to use the board in peripheral role 
- */
 void deviceManager::initPeripheral(){
     int err;
     if(getDevice() == 3 || getDevice() == 2){
@@ -270,9 +239,6 @@ void deviceManager::initPeripheral(){
     }
 }
 
-/*
- * starts advertising and waites to be connected to a central device
- */
 void deviceManager::startAdvertising() {
 	int err;
 	err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad),
@@ -289,9 +255,6 @@ void deviceManager::startAdvertising() {
  * CENTRAL ROLE
  *---------------------------------------------------------------------------------------------------*/
  
- /*
- * initialize all necessary settings to use the board in central role 
- */
 void deviceManager::initCentral(){
 	printk("Init Central\n");
 	if (getDevice() == 1 || getDevice() == 3)
@@ -348,9 +311,6 @@ void deviceManager::initCentral(){
 	}
 }
 
-/*
- * initialize scan 
- */
 void deviceManager::initScan() {
 	int err;
 	sensorInfos = getSensorInfos();
@@ -462,10 +422,6 @@ void deviceManager::initScan() {
 	}
 }
 
-/*
- * start scanning for peripheral devices
- * when device found call callback method scanFilterMatch
- */
 void deviceManager::startScan(){
     int err;
 	
@@ -476,10 +432,6 @@ void deviceManager::startScan(){
 	printk("Scanning...\n");
 }
 
-/*
- * callback function
- * found a device with the added filters
- */
 void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 			      struct bt_scan_filter_match *filter_match,
 			      bool connectable) {
@@ -575,12 +527,6 @@ void deviceManager::scanFilterNoMatch(struct bt_scan_device_info *device_info, b
 	//initScan();
 }
 
-/*
- * callback method
- * called if a device was found during scanning
- * try to connect to this device when its the correct one
- * used for etablish connection with a thingy
- */
 void deviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t type, struct net_buf_simple *ad) {
 	//printk("init scan\n");
 	initScan();
@@ -630,10 +576,6 @@ void deviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t t
     }   */
 }
 
-/*
- * callback method
- * called when nRF5340 connects to a central or peripheral device
- */
 void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 	bt_conn_info info;
 	int error = bt_conn_get_info(conn,&info);
@@ -659,7 +601,7 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 		// discovery callback
 		/*static struct bt_gatt_dm_cb discovery_cb = 
 		{
-			.completed = deviceManager::discoveryCompleted,
+			.completed = deviceManager::discoveryCompletedCSC,
 			.service_not_found = deviceManager::discovery_service_not_found,
 			.error_found = deviceManager::discovery_error_found,
 		};*/
@@ -726,10 +668,6 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 	}	
 }
 
-/*
- * callback method
- * called when board disconnects from a central or peripheral device
- */
 void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 	bt_conn_info info;
 	int error = bt_conn_get_info(conn,&info);
@@ -824,11 +762,7 @@ void deviceManager::discoverHR()
 	}
 }
 
-/*
- * callback method
- * called when discovery is finished
- */
-void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
+void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 	int err;
 	uint8_t connectedCode[1];
 	if (!subscriptionDone)
@@ -981,10 +915,7 @@ void deviceManager::discoveryCompleted(struct bt_gatt_dm *dm, void *ctx) {
 	}
 }
 
-/*
- * callback method
- * called when discovery service was not found
- */
+
 void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx) {
 	printk("Service not found!\n");
 	static uint8_t cnt = 0;
@@ -995,14 +926,12 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	bt_conn_disconnect(conn,-5);
 }
 
-/*
- * callback method
- * called when while discovering an error appears
- */
+
 void deviceManager::discovery_error_found(struct bt_conn *conn, int err, void *ctx)
 {
 	printk("The discovery procedure failed, err %d\n", err);
 }
+
 
 void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx) 
 {
@@ -1062,10 +991,6 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 	}
 }
 
- /*
- * callback method
- * called every second with data
- */
 uint8_t deviceManager::onReceived(struct bt_conn *conn,
 			struct bt_gatt_subscribe_params *params,
 			const void *data, uint16_t length) {

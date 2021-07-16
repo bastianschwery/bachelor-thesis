@@ -1,20 +1,21 @@
 /**
- * @author  Schwery Bastian
- * @file    dataCSC.h   
- * @date    05/2021
+ * @file dataCSC.h
+ * @author Schwery Bastian (bastian98@gmx.ch)
+ * @brief This class saves all the received 
+ *        data from the nRF5340 and calculates
+ *        the speed and the cadence
+ * @version 0.1
+ * @date 2021-06
  * 
- * @brief   This class saves all the received 
- *          data from the nRF5340 and calculates
- *          the speed and the cadence
+ * @copyright Copyright (c) 2021
+ * 
  */
-
 #include <stdint.h>
 
 #include <bluetooth/bluetooth.h>
 #include <sys/byteorder.h>
 
 // defines
-#define _USE_MATH_DEFINES
 #define PI 3.1415926
 #define CSC_SPEED 1
 #define CSC_CADENCE 2
@@ -22,20 +23,26 @@
 class dataCSC {
 
 public:
-    // constructor
+    /**
+     * @brief Construct a new data CSC object
+     * 
+     */
     dataCSC();
 
     /** @brief save the new received data
+     * 
      * @param data the new received data pointer 
      */
     void saveData(const void *data);
 
     /** @brief function to calculate rpm with the previously saved values
+     * 
      * @return rounds per minute value
      */
     uint16_t calcRPM();
 
     /** @brief function to calculate speed with the previously saved values
+     * 
      * @return speed in km/h
      */
     uint16_t calcSpeed();

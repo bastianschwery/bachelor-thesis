@@ -1,11 +1,13 @@
 /**
- * @author  Schwery Bastian
- * @file    dataService.h   
- * @date    06/2021
+ * @file 	dataService.h
+ * @author 	Schwery Bastian (bastian98@gmx.ch)
+ * @brief 	This class implements a rx/tx service
+ * @version 0.1
+ * @date 	2021-06
  * 
- * @brief   This class implements a rx/tx service
+ * @copyright Copyright (c) 2021
+ * 
  */
-
 #include <zephyr/types.h>
 #include <stddef.h>
 #include <string.h>
@@ -35,42 +37,69 @@
 #define TX_CHARACTERISTIC_UUID  0xED, 0xAA, 0x20, 0x11, 0x92, 0xE7, 0x43, 0x5A, \
 			                    0xAA, 0xE9, 0x94, 0x43, 0x35, 0x6A, 0xD4, 0xD3
 
-/** @brief Callback type for when new data is received */
+/**
+ * @brief Callback type for when new data is received
+ * 
+ */
 typedef void (*data_rx_cb_t)(uint8_t *data, uint8_t length);
 
-/** @brief Callback struct used by the data_service Service */
+/** 
+ * @brief Callback struct used by the data_service Service 
+ * 
+*/
 struct data_service_cb 
 {
-	/** Data received callback. */
+	// Data received callback
 	data_rx_cb_t data_rx_cb;
 };
 
-/** @brief initialize service 
- *  @return error code
+/** 
+ * @brief initialize service 
+ * 
+ *  @return uint8_t error code
 */
-int data_service_init(void);
+uint8_t data_service_init(void);
 
-/** @brief  send data to the device given by connection parameter
+/** 
+ * @brief  send data to the device given by connection parameter
+ * 
  * @param conn connection to send the data
  * @param data the data to send
  * @param len length of the data to send
 */
 void data_service_send(struct bt_conn *conn, const uint8_t *data, uint16_t len);
 
-/** @brief get the diameter value
+/** 
+ *  @brief get the diameter value
+ * 
  *  @return the diameter value in cm
 */
 double getDiameter();
 
-/** @brief get number of addresses the user selected
+/** 
+ *  @brief get number of addresses the user selected
+ * 
  *  @return number of addresses
 */
 uint8_t getNbrOfAddresses();
 
-/** @brief save the address with the corresponing number at the given array
+/** 
+ * @brief save the address with the corresponing number at the given array
+ * 
  * @param outArray the address to save the searched array
  * @param nbr the nbr of the array to save
 */
 void getAddress(char* outArray, uint8_t nbr);
 
+/**
+ * @brief Get informations about which sensors 
+ * 		  the user wants to connect
+ * 
+ * @return uint8_t info value
+ * 		   Speed and Cadence sensor: 1
+ *		   Speed and Cadence sensor: 2
+ *		   Speed and Cadence und heart rate sensor: 3
+ * 		   Speed or Cadence und heart rate sensor: 4
+ * 		   Just one heart rate sensor: 5
+ */
 uint8_t getSensorInfos();

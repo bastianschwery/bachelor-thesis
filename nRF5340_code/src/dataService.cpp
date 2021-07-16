@@ -44,9 +44,9 @@ uint8_t data_rx[MAX_TRANSMIT_SIZE];
 uint8_t data_tx[MAX_TRANSMIT_SIZE];
 
 // must be called befor sending/receiving data
-int data_service_init(void)
+uint8_t data_service_init(void)
 {
-    int err = 0;
+    uint8_t err = 0;
 
     memset(&data_rx, 0, MAX_TRANSMIT_SIZE);
     memset(&data_tx, 0, MAX_TRANSMIT_SIZE);

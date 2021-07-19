@@ -94,6 +94,11 @@ public:
     */
     static void disconnected(struct bt_conn *conn, uint8_t reason);
 
+    static bool le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param);
+
+    static void le_param_updated(struct bt_conn *conn, uint16_t interval,
+				 uint16_t latency, uint16_t timeout);
+
 /*--------------------------------------------------------------------------
  * methods for peripheral role
  *--------------------------------------------------------------------------*/
@@ -327,6 +332,8 @@ private:
     struct bt_conn_cb conn_callbacks = {
 		.connected = connected,
 		.disconnected = disconnected,
+        .le_param_req = le_param_req,
+        .le_param_updated = le_param_updated,
     };
 
     // led & button callback structure

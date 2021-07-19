@@ -18,6 +18,7 @@
 
 void main(void)
 {
+
 	printk("Application start\n");
 
 	//bt_bas_client_init(&bas);

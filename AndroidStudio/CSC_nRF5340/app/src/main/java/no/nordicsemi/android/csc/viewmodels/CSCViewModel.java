@@ -82,6 +82,8 @@ public class CSCViewModel extends AndroidViewModel {
 	 */
 	public LiveData<Integer> getMessageCode() { return  CSCManager.getMessageCode();}
 
+	public LiveData<Boolean> isDisconnected() { return  CSCManager.isDisconnected();}
+
 	/**
 	 * Connect to the given peripheral.
 	 * @param target the target device.

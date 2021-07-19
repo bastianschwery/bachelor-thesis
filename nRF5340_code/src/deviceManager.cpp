@@ -616,8 +616,11 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 		};*/
 
 		// save connection 
+		printk("Error in line 620\n");
 		centralConnections[nbrConnectionsCentral] = bt_conn_ref(conn);
+		printk("Error in line 622\n");
 		bt_conn_unref(conn);
+		printk("Error in line 624\n");
 		nbrConnectionsCentral++;
 
 		//bt_gatt_dm_start(conn,BT_UUID_BAS,&discovery_cb,NULL);
@@ -663,9 +666,10 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 			printk("Connection failed (err %u)\n", err);
 			return;
 		}
-		printk("Connected\n");
+		printk("Connected with application\n");
 		connectedP = true;
-		peripheralConn = conn;
+		peripheralConn = bt_conn_ref(conn);
+		bt_conn_unref(conn);
 		dk_set_led_on(CON_STATUS_LED_PERIPHERAL);	
 		
 
@@ -714,7 +718,6 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 		// delete the correct connection in the array
 		for (uint8_t i = 0; i <= nbrConnectionsCentral-1; i++)
 		{
-			printk("Nbr connections central:%d\n", nbrConnectionsCentral);
 			bt_addr_le_to_str(bt_conn_get_dst(centralConnections[i]), addrToFind, sizeof(addrToFind));
 
 			if (checkAddresses(addr,addrToFind))
@@ -722,7 +725,6 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 				bt_conn_unref(centralConnections[i]);
 				centralConnections[i] = nullptr;
 				nbrConnectionsCentral--;
-				printk("Nbr connections central:%d\n", nbrConnectionsCentral);
 			}
 			
 			/*if (centralConnections[i] == conn)
@@ -740,13 +742,15 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 			connectedC = false;
 			disconnectedCode[0] = 13;
 			data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
-			dk_set_led_off(CON_STATUS_LED_CENTRAL);
+			subscriptionDone = false;
 		}
 		
 
 		if (checkAddresses(addr,sensor1))
 		{
 			once_sensor1 = true;
+			subscriptionDone = false;
+			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 			if (sensorInfos == 5)
 			{
 				disconnectedCode[0] = 12;
@@ -763,6 +767,8 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 		if (checkAddresses(addr,sensor2))
 		{
 			once_sensor2 = true;
+			subscriptionDone = false;
+			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 			if (sensorInfos == 2 || sensorInfos == 3)
 			{
 				disconnectedCode[0] = 11;
@@ -777,7 +783,9 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 
 		if (checkAddresses(addr,sensor3))
 		{
+			subscriptionDone = false;
 			once_sensor3 = true;
+			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 			disconnectedCode[0] = 12;
 			data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
 		}
@@ -788,8 +796,22 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 	}
 }
 
+bool deviceManager::le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param)
+{
+	printk("Accept new parameters\n");
+
+	return true;
+}
+
+void deviceManager::le_param_updated(struct bt_conn *conn, uint16_t interval,
+				 uint16_t latency, uint16_t timeout)
+{
+	printk("Params updated!\n");
+}
+
 void deviceManager::discoverCSC()
 {
+	printk("Error in line 800\n");
 	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb, NULL);
 	if (err) 
 	{
@@ -812,6 +834,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 	if (!subscriptionDone)
 	{	
 		// subscribe CSC characteristic
+		printk("Error in line 823\n");
 		static struct bt_gatt_subscribe_params param = {
 			.notify = onReceived,
 			.value = BT_GATT_CCC_NOTIFY,
@@ -821,6 +844,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 		const struct bt_gatt_dm_attr *desc;
 
 		// Get the characteristic by its UUID
+		printk("Error in line 833\n");
 		chrc = bt_gatt_dm_char_by_uuid(dm,BT_UUID_CSC_MEASUREMENT);
 		if (!chrc) {
 			printk("Missing CSC measurement characteristic\n");
@@ -831,6 +855,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 			return;
 		}
 
+		printk("Error in line 844\n");
 		// Search the descriptor by its UUID
 		desc = bt_gatt_dm_desc_by_uuid(dm, chrc, BT_UUID_CSC_MEASUREMENT);
 		if (!desc) {
@@ -841,7 +866,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 			}
 			return;
 		}
-
+		printk("Error in line 855\n");
 		param.value_handle = desc->handle;
 
 		// Search the CCC descriptor by its UUID
@@ -854,7 +879,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 			}
 			return;
 		}
-
+		printk("Error in line 868\n");
 		param.ccc_handle = desc->handle;
 		
 		// Subscribe Attribute Value Notification
@@ -862,7 +887,9 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 		if (err) {
 			printk("Subscribtion failed (err %d)\n", err);
 		}
+		printk("Error in line 876\n");
 		bt_gatt_dm_data_release(dm);
+		printk("Error in line 677\n");
 	}
 	else 
 	{
@@ -898,6 +925,8 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 	}
 	
 	// check number of connections -> can be modified for more devices
+	printk("Error in line 909\n");
+	printk("nbr connections %d\n",nbrConnectionsCentral);
 	switch (nbrConnectionsCentral)
 	{
 	case 1:

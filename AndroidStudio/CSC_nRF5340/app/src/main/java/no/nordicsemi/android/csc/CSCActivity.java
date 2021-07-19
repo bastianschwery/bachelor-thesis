@@ -56,7 +56,7 @@ public class CSCActivity extends AppCompatActivity {
 	private boolean firstEntry = false;
 	private CSCViewModel viewModel;
 	private TextView diameterValue;
-	private Button setValueButton, resetButton, resetDistanceButton;
+	private Button setValueButton, resetButton, resetDistanceButton, reconnectButton;
 	private double wheelDiameter = 0.0;
 	private double distance = 0;
 	private NumberFormat n = NumberFormat.getInstance();
@@ -251,6 +251,11 @@ public class CSCActivity extends AppCompatActivity {
 		setValueButton = findViewById(R.id.set_button);
 		resetButton = findViewById(R.id.reset_button);
 		resetDistanceButton = findViewById(R.id.reset_distance_button);
+		reconnectButton = findViewById(R.id.reconnect_button);
+
+		reconnectButton.setOnClickListener(v -> {
+			viewModel.reconnect();
+		});
 
 		resetDistanceButton.setOnClickListener(v -> {
 			distanceValue.setText("0");
@@ -259,6 +264,7 @@ public class CSCActivity extends AppCompatActivity {
 
 		resetButton.setOnClickListener(v -> {
 			setValueButton.setEnabled(true);
+			diameterValue.setCursorVisible(true);
 			diameterValue.setText("0");
 			speedValue.setText("0");
 			cadenceValue.setText("0");
@@ -266,20 +272,31 @@ public class CSCActivity extends AppCompatActivity {
 		});
 
 		setValueButton.setOnClickListener(v -> {
-			wheelDiameter = Double.parseDouble(diameterValue.getText().toString());
-			if (wheelDiameter > 255) {
-				setText("Please enter value smaller than 255 Inch");
+			boolean valueIsValid = false;
+			try {
+				wheelDiameter = Double.parseDouble(diameterValue.getText().toString());
+				valueIsValid = true;
 			}
-			else if (wheelDiameter < 1) {
-				setText("Please enter value bigger than 1 Inch");
-			} else {
-				setValueButton.setEnabled(false);
-				if ((int) wheelDiameter == wheelDiameter) {
-					viewModel.sendWheelDiameter((int) wheelDiameter);
+			catch (NumberFormatException e) {
+				showMessageCode(19);	// entered not a number
+				valueIsValid = false;
+			}
+			if (valueIsValid) {
+				if (wheelDiameter > 255) {
+					showMessageCode(20);	// entered to big value
 				}
-				else {
-					// set last bit to '1', so we know there is .5 in the wheel diameter
-					viewModel.sendWheelDiameter((int) wheelDiameter | 0b10000000);
+				else if (wheelDiameter < 1) {
+					showMessageCode(21);	// entered to small value
+				} else {
+					setValueButton.setEnabled(false);
+					diameterValue.setCursorVisible(false);
+					if ((int) wheelDiameter == wheelDiameter) {
+						viewModel.sendWheelDiameter((int) wheelDiameter);
+					}
+					else {
+						// set last bit to '1', so we know there is .5 in the wheel diameter
+						viewModel.sendWheelDiameter((int) wheelDiameter | 0b10000000);
+					}
 				}
 			}
 		});
@@ -343,6 +360,8 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.getSpeedValue().observe(this, this::setDistance);
 
 		viewModel.getMessageCode().observe(this, this::showMessageCode);
+
+		viewModel.isDisconnected().observe(this, this::reconnect);
 	}
 
 	/**
@@ -351,6 +370,12 @@ public class CSCActivity extends AppCompatActivity {
 	@OnClick(R.id.action_clear_cache)
 	public void onTryAgainClicked() {
 		viewModel.reconnect();
+	}
+
+	public void reconnect(Boolean isDisconnected) {
+		if (isDisconnected) {
+			viewModel.reconnect();
+		}
 	}
 
 	/**
@@ -397,6 +422,7 @@ public class CSCActivity extends AppCompatActivity {
 		switch (messageCode) {
 			case 10:
 				setText("Service not found");
+				setText("Retrying...");
 				break;
 			case 11:
 				setText("Disconnected from CSC sensor...");
@@ -429,6 +455,15 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Third sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");
+				break;
+			case 19:
+				setText("Diameter value must be a number!");
+				break;
+			case 20:
+				setText("Please enter value smaller than 255 Inch");
+				break;
+			case 21:
+				setText("Please enter value bigger than 1 Inch");
 				break;
 			default:
 				break;

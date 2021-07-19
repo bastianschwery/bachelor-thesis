@@ -183,6 +183,9 @@ static void on_sent(struct bt_conn *conn, void *user_data)
 void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value)
 {
     ARG_UNUSED(attr);
+
+    uint8_t notificationsCode[1];
+
     switch(value)
     {
         case BT_GATT_CCC_NOTIFY: 

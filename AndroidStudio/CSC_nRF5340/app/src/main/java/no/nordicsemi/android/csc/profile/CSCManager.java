@@ -65,6 +65,7 @@ public class CSCManager extends ObservableBleManager {
 	private final MutableLiveData<Double> speedValue = new MutableLiveData<>();
 	private final MutableLiveData<Integer> messageCode = new MutableLiveData<>();
 	private final MutableLiveData<Integer> heartRateValue = new MutableLiveData<>();
+	private final MutableLiveData<Boolean> isDisconnected = new MutableLiveData<>();
 
 	private BluetoothGattCharacteristic RX_characteristic, TX_characteristic;
 
@@ -109,6 +110,8 @@ public class CSCManager extends ObservableBleManager {
 	 * @return the message code
 	 */
 	public final LiveData<Integer> getMessageCode() { return messageCode;}
+
+	public final LiveData<Boolean> isDisconnected() { return isDisconnected;}
 
 
 	@NonNull
@@ -266,6 +269,7 @@ public class CSCManager extends ObservableBleManager {
 		protected void onDeviceDisconnected() {
 			TX_characteristic = null;
 			RX_characteristic = null;
+			isDisconnected.setValue(true);
 		}
 	}
 
@@ -282,7 +286,7 @@ public class CSCManager extends ObservableBleManager {
 	/**
 	 * set notifications manually
 	 */
-	public void setNotificationsOn(){
+	public void setNotificationsOn() {
 		BluetoothGattService service = mBluetoothGatt.getService(CSC_SERVICE);
 		BluetoothGattCharacteristic TXcharacteristic = service.getCharacteristic(TX_CHARACTERISTIC_UUID);
 		BluetoothGattDescriptor descriptor = TXcharacteristic.getDescriptor(CCCD_ID);
@@ -305,6 +309,7 @@ public class CSCManager extends ObservableBleManager {
 	 * @param addresses to connect
 	 */
 	public void sendAddresses(byte[] addresses) {
+		isDisconnected.setValue(false);
 		writeCharacteristic(RX_characteristic,addresses).enqueue();
 	}
 }

@@ -79,6 +79,9 @@ public class CSCActivity extends AppCompatActivity {
 	@BindView(R.id.cadence_value) TextView cadenceValue;
 	@BindView(R.id.distance_value) TextView distanceValue;
 	@BindView(R.id.heartRate_value) TextView heartRateValue;
+	@BindView(R.id.battery_level_sensor1) TextView batteryLevel1;
+	@BindView(R.id.battery_level_sensor2) TextView batteryLevel2;
+	@BindView(R.id.battery_level_sensor3) TextView batteryLevel3;
 
 	/**
 	 * create all necessary instances and add on click listeners
@@ -360,6 +363,15 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.getSpeedValue().observe(this, this::setDistance);
 
 		viewModel.getMessageCode().observe(this, this::showMessageCode);
+
+		viewModel.getBatteryLevelSensor1().observe(this,
+				integer -> batteryLevel1.setText(integer.toString() + "%"));
+
+		viewModel.getBatteryLevelSensor2().observe(this,
+				integer -> batteryLevel2.setText(integer.toString()+ "%"));
+
+		viewModel.getBatteryLevelSensor3().observe(this,
+				integer -> batteryLevel3.setText(integer.toString()+ "%"));
 
 		viewModel.isDisconnected().observe(this, this::reconnect);
 	}

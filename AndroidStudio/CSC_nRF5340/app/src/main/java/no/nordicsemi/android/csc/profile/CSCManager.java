@@ -65,6 +65,9 @@ public class CSCManager extends ObservableBleManager {
 	private final MutableLiveData<Double> speedValue = new MutableLiveData<>();
 	private final MutableLiveData<Integer> messageCode = new MutableLiveData<>();
 	private final MutableLiveData<Integer> heartRateValue = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelSensor1 = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelSensor2 = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelSensor3 = new MutableLiveData<>();
 	private final MutableLiveData<Boolean> isDisconnected = new MutableLiveData<>();
 
 	private BluetoothGattCharacteristic RX_characteristic, TX_characteristic;
@@ -78,6 +81,7 @@ public class CSCManager extends ObservableBleManager {
 	private final int TYPE_SPEED = 1;
 	private final int TYPE_CADENCE= 2;
 	private final int TYPE_HEARTRATE = 3;
+	private final int TYPE_BATTERY = 4;
 
 	/**
 	 * constructor
@@ -110,6 +114,24 @@ public class CSCManager extends ObservableBleManager {
 	 * @return the message code
 	 */
 	public final LiveData<Integer> getMessageCode() { return messageCode;}
+
+	/**
+	 * get battery level of first sensor
+	 * @return the battery level
+	 */
+	public final LiveData<Integer> getBatteryLevelSensor1() { return batteryLevelSensor1;}
+
+	/**
+	 * get battery level of second sensor
+	 * @return the battery level
+	 */
+	public final LiveData<Integer> getBatteryLevelSensor2() { return batteryLevelSensor2;}
+
+	/**
+	 * get battery level of third sensor
+	 * @return the battery level
+	 */
+	public final LiveData<Integer> getBatteryLevelSensor3() { return batteryLevelSensor3;}
 
 	public final LiveData<Boolean> isDisconnected() { return isDisconnected;}
 
@@ -173,6 +195,20 @@ public class CSCManager extends ObservableBleManager {
 					break;
 				case TYPE_HEARTRATE:
 					heartRateValue.setValue(data[1]);
+				case TYPE_BATTERY:
+					switch (data[1]) {
+						case 0:
+							batteryLevelSensor1.setValue(data[2]);
+							break;
+						case 1:
+							batteryLevelSensor2.setValue(data[2]);
+							break;
+						case 2:
+							batteryLevelSensor3.setValue(data[2]);
+							break;
+						default:
+							break;
+					}
 				default:
 					log(Log.INFO, "Unknown type");
 					break;

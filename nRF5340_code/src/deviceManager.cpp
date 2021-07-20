@@ -1111,26 +1111,28 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 				}
 				
 				static uint8_t cntNbrReceived = 0;
-				if (cntNbrReceived == 120)
+				static uint8_t cntForStart = 0;
+				static uint8_t waitToThisNumber = 200;
+				if (cntForStart == 0 || cntForStart == 10 || cntNbrReceived == waitToThisNumber)
 				{
 					cntNbrReceived = 0;
 					switch (cntSensors)
 					{
-					case 1:
+					case 0:
 						deviceManager::data.battValue_sensor1 = getBatteryLevel(cntSensors);
 						batteryLevelToSend[0] = BATTERY;
 						batteryLevelToSend[1] = cntSensors;
 						batteryLevelToSend[2] = deviceManager::data.battValue_sensor1;
 						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
 						break;
-					case 2:
+					case 1:
 						deviceManager::data.battValue_sensor2 = getBatteryLevel(cntSensors);
 						batteryLevelToSend[0] = BATTERY;
 						batteryLevelToSend[1] = cntSensors;
 						batteryLevelToSend[2] = deviceManager::data.battValue_sensor2;
 						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));					
 						break;
-					case 3:
+					case 2:
 						deviceManager::data.battValue_sensor3 = getBatteryLevel(cntSensors);
 						batteryLevelToSend[0] = BATTERY;
 						batteryLevelToSend[1] = cntSensors;
@@ -1150,6 +1152,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 						cntSensors++;
 					}
 				}
+				cntForStart++;
 				cntNbrReceived++;
 			}
 		}

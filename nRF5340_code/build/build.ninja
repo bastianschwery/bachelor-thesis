@@ -196,10 +196,10 @@ build CMakeFiles/app.dir/src/dataService.cpp.obj: CXX_COMPILER__app_ ../src/data
   OBJECT_DIR = CMakeFiles\app.dir
   OBJECT_FILE_DIR = CMakeFiles\app.dir\src
 
-build CMakeFiles/app.dir/src/BatteryManager.cpp.obj: CXX_COMPILER__app_ ../src/BatteryManager.cpp || cmake_object_order_depends_target_app
+build CMakeFiles/app.dir/src/BatteryManager.c.obj: C_COMPILER__app_ ../src/BatteryManager.c || cmake_object_order_depends_target_app
   DEFINES = -DBUILD_VERSION=v2.4.99-ncs2 -DEXT_API_MAGIC=0x281ee6de,0xb845acea,13570 -DFIRMWARE_INFO_MAGIC=0x281ee6de,0x8fcebb4c,13570 -DKERNEL -DNRF5340_XXAA_APPLICATION -DNRF_TRUSTZONE_NONSECURE -DUSE_PARTITION_MANAGER=1 -D_FORTIFY_SOURCE=2 -D__PROGRAM_START -D__ZEPHYR__=1
-  DEP_FILE = CMakeFiles\app.dir\src\BatteryManager.cpp.obj.d
-  FLAGS = -Os -fcheck-new -fno-exceptions -fno-rtti -imacros C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/zephyr/include/generated/autoconf.h -ffreestanding -fno-common -g -mcpu=cortex-m33 -mthumb -mabi=aapcs -imacros C:/Users/basti/ncs/zephyr/include/toolchain/zephyr_stdint.h -Wall -Wformat -Wformat-security -Wno-format-zero-length -Wno-main -Wno-address-of-packed-member -Wno-unused-but-set-variable -fno-asynchronous-unwind-tables -fno-pie -fno-pic -fno-strict-overflow -fno-reorder-functions -fno-defer-pop -fmacro-prefix-map=C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code=CMAKE_SOURCE_DIR -fmacro-prefix-map=C:/Users/basti/ncs/zephyr=ZEPHYR_BASE -fmacro-prefix-map=C:/Users/basti/ncs=WEST_TOPDIR -ffunction-sections -fdata-sections -nostdinc
+  DEP_FILE = CMakeFiles\app.dir\src\BatteryManager.c.obj.d
+  FLAGS = -Os -imacros C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/zephyr/include/generated/autoconf.h -ffreestanding -fno-common -g -mcpu=cortex-m33 -mthumb -mabi=aapcs -imacros C:/Users/basti/ncs/zephyr/include/toolchain/zephyr_stdint.h -Wall -Wformat -Wformat-security -Wno-format-zero-length -Wno-main -Wno-pointer-sign -Wpointer-arith -Wno-address-of-packed-member -Wno-unused-but-set-variable -Werror=implicit-int -fno-asynchronous-unwind-tables -fno-pie -fno-pic -fno-strict-overflow -fno-reorder-functions -fno-defer-pop -fmacro-prefix-map=C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code=CMAKE_SOURCE_DIR -fmacro-prefix-map=C:/Users/basti/ncs/zephyr=ZEPHYR_BASE -fmacro-prefix-map=C:/Users/basti/ncs=WEST_TOPDIR -ffunction-sections -fdata-sections -std=c99 -nostdinc
   INCLUDES = -I../. -IC:/Users/basti/ncs/zephyr/include -Izephyr/include/generated -IC:/Users/basti/ncs/zephyr/soc/arm/nordic_nrf/nrf53 -IC:/Users/basti/ncs/zephyr/subsys/settings/include -IC:/Users/basti/ncs/zephyr/subsys/bluetooth -IC:/Users/basti/ncs/nrf/include -IC:/Users/basti/ncs/modules/hal/nordic/nrfx -IC:/Users/basti/ncs/modules/hal/nordic/nrfx/drivers/include -IC:/Users/basti/ncs/modules/hal/nordic/nrfx/mdk -IC:/Users/basti/ncs/zephyr/modules/hal_nordic/nrfx/. -IC:/Users/basti/ncs/modules/hal/cmsis/CMSIS/Core/Include -Imodules/libmetal/libmetal/lib/include -IC:/Users/basti/ncs/modules/lib/open-amp/open-amp/lib/include -IC:/Users/basti/ncs/modules/debug/segger/rtt -IC:/Users/basti/ncs/modules/crypto/tinycrypt/lib/include -isystem C:/Users/basti/ncs/zephyr/lib/libc/minimal/include -isystem c:/gnu_arm_embedded/bin/../lib/gcc/arm-none-eabi/10.2.1/include -isystem c:/gnu_arm_embedded/bin/../lib/gcc/arm-none-eabi/10.2.1/include-fixed
   OBJECT_DIR = CMakeFiles\app.dir
   OBJECT_FILE_DIR = CMakeFiles\app.dir\src
@@ -212,7 +212,7 @@ build CMakeFiles/app.dir/src/BatteryManager.cpp.obj: CXX_COMPILER__app_ ../src/B
 #############################################
 # Link the static library app\libapp.a
 
-build app/libapp.a: CXX_STATIC_LIBRARY_LINKER__app_ CMakeFiles/app.dir/src/main.cpp.obj CMakeFiles/app.dir/src/deviceManager.cpp.obj CMakeFiles/app.dir/src/dataCSC.cpp.obj CMakeFiles/app.dir/src/dataService.cpp.obj CMakeFiles/app.dir/src/BatteryManager.cpp.obj || modules/nrf/samples/spm_subimage zephyr/driver_validation_h_target zephyr/kobj_types_h_target zephyr/syscall_list_h_target zephyr/zephyr_generated_headers
+build app/libapp.a: CXX_STATIC_LIBRARY_LINKER__app_ CMakeFiles/app.dir/src/main.cpp.obj CMakeFiles/app.dir/src/deviceManager.cpp.obj CMakeFiles/app.dir/src/dataCSC.cpp.obj CMakeFiles/app.dir/src/dataService.cpp.obj CMakeFiles/app.dir/src/BatteryManager.c.obj || modules/nrf/samples/spm_subimage zephyr/driver_validation_h_target zephyr/kobj_types_h_target zephyr/syscall_list_h_target zephyr/zephyr_generated_headers
   OBJECT_DIR = CMakeFiles\app.dir
   POST_BUILD = cd .
   PRE_LINK = cd .

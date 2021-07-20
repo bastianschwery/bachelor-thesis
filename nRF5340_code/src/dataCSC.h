@@ -64,6 +64,11 @@ public:
     // received data from application
     double wheelDiameter;
 
+    // received battery values from the sensors
+    uint8_t battValue_sensor1;
+    uint8_t battValue_sensor2;
+    uint8_t battValue_sensor3;
+
     // attributes for calculations
 private:
     double speed;

@@ -13,7 +13,10 @@
 
 #include "dataCSC.h"
 #include "dataService.h"
-#include "BatteryManager.h"
+
+extern "C" {
+    #include "BatteryManager.h"
+}
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/addr.h>
@@ -306,6 +309,7 @@ private:
     static bool connectedP;
     static bool app_button_state;
     static bool subscriptionDone;
+    static bool batterySubscriptionDone;
     static bool diameterSet;
     static bool once_sensor1;
 	static bool once_sensor2;
@@ -325,7 +329,7 @@ private:
     static dataCSC data;
 
     // the battery manager instance
-    static BatteryManager battManager;
+    //static BatteryManager battManager;
     //static struct bt_bas_client bas;
 
     // connection/disconnection callback structure

@@ -39,7 +39,7 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
      */
     @Override
     public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-        if (data.size() > 3) {
+        if (data.size() > 4) {
             onInvalidDataReceived(device, data);
             return;
         }
@@ -76,6 +76,18 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
             dataArray[0] = type;
             dataArray[1] = val1;
             dataArray[2] = val2;
+
+            onCSCDataChanged(device,dataArray);
+        }
+
+        if (data.size() == 4) {
+            Integer[] dataArray = new Integer[3];
+            Integer type = data.getIntValue(Data.FORMAT_UINT8,0);
+            Integer sensorCnt = data.getIntValue(Data.FORMAT_UINT8,1);
+            Integer batteryLevel = data.getIntValue(Data.FORMAT_UINT8,2);
+            dataArray[0] = type;
+            dataArray[1] = sensorCnt;
+            dataArray[2] = batteryLevel;
 
             onCSCDataChanged(device,dataArray);
         }

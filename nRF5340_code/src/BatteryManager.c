@@ -119,8 +119,7 @@ uint8_t gatt_discover_battery_service(struct bt_conn *conn)
 
 	static uint8_t cnt = 0;
 	cnt++;
-	printk("Nbr discovering: %d\n", cnt);
-
+	
     static struct bt_gatt_dm_cb discovery_cb = {
         .completed = discovery_completed_cb,
         .service_not_found = discovery_service_not_found_cb,
@@ -241,7 +240,7 @@ void initBatteryManager()
 {
 	int err;
 	cntDevices++;
-	printk("Initialize battery manager nbr: %d\n", cntDevices);
+	printk("Initialize battery manager: # %d\n", cntDevices);
 
 	switch (cntDevices)
 	{

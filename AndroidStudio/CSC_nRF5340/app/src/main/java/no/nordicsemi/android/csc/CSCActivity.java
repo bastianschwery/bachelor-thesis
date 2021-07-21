@@ -128,7 +128,7 @@ public class CSCActivity extends AppCompatActivity {
 			case 1:
 				if (sensors.get(0).getName().contains("SPD") || sensors.get(0).getName().contains("CAD")) {
 					infoDevices = 1;
-				} else if (sensors.get(0).getName().contains("HR")) {
+				} else if (sensors.get(0).getName().contains("Polar")) {
 					infoDevices = 5;
 				}
 				break;
@@ -136,22 +136,22 @@ public class CSCActivity extends AppCompatActivity {
 				if (sensors.get(0).getName().contains("SPD") || sensors.get(0).getName().contains("CAD")) {
 					if (sensors.get(1).getName().contains("SPD") || sensors.get(1).getName().contains("CAD")) {
 						infoDevices = 2;
-					} else if (sensors.get(1).getName().contains("HR")) {
+					} else if (sensors.get(1).getName().contains("Polar")) {
 						infoDevices = 4;
 					}
-				} else if (sensors.get(0).getName().contains("HR")) {
+				} else if (sensors.get(0).getName().contains("Polar")) {
 					if (sensors.get(1).getName().contains("SPD") || sensors.get(1).getName().contains("CAD")) {
 						infoDevices = 4;
-						Collections.swap(sensors,1,2);
+						Collections.swap(sensors,0,1);
 					}
 				}
 				break;
 			case 3:
 				infoDevices = 3;
-				if (sensors.get(0).getName().contains("HR")) {
-					Collections.swap(sensors,1,3);
-				} else if (sensors.get(1).getName().contains("HR")) {
-					Collections.swap(sensors,2,3);
+				if (sensors.get(0).getName().contains("Polar")) {
+					Collections.swap(sensors,0,2);
+				} else if (sensors.get(1).getName().contains("Polar")) {
+					Collections.swap(sensors,1,2);
 				}
 				break;
 			default:
@@ -404,12 +404,13 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Disconnected from Board");
 			}
 			firstEntry = true;
+			viewModel.connect(nordicBoard);
 		}
 		else {
 			setText("Connected with Board");
 			firstEntry = false;
 		}
-		
+
 	}
 
 	/**

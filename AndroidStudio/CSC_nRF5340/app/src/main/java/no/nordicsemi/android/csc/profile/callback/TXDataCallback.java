@@ -80,6 +80,7 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
             onCSCDataChanged(device,dataArray);
         }
 
+        // battery level received
         if (data.size() == 4) {
             Integer[] dataArray = new Integer[3];
             Integer type = data.getIntValue(Data.FORMAT_UINT8,0);

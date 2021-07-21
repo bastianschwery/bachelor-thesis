@@ -1,9 +1,5 @@
 #include "deviceManager.h"
 
-/*extern "C" {
-	initBatteryManager();
-}*/
-
 // defines
 
 #define DEVICE_NAME             CONFIG_BT_DEVICE_NAME
@@ -40,10 +36,10 @@
 			    0x33, 0x49, 0x35, 0x9B, 0x01, 0x03, 0x68, 0xEF)
 
 // Type definitions
-#define CSC_SPEED 1
-#define CSC_CADENCE 2
-#define HEARTRATE 3
-#define BATTERY 4
+#define TYPE_CSC_SPEED 1
+#define TYPE_CSC_CADENCE 2
+#define TYPE_HEARTRATE 3
+#define TYPE_BATTERY 4
 
 BT_GATT_SERVICE_DEFINE(csc_srv,
 	BT_GATT_PRIMARY_SERVICE(BT_UUID_CSC),
@@ -1018,6 +1014,11 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 
 	static uint8_t cntSensors = 0;
 	uint8_t batteryLevelToSend[4];
+	static bool onceSpeed = true;
+	static bool onceCadence = false;
+	static uint8_t cntNbrReceived1 = 0;
+	static uint8_t cntNbrReceived2 = 0;
+	static uint8_t waitCnt = 0;
 	// start calculating and showing data only when all characteristics are subscribed
 	if (subscriptionDone)
 	{
@@ -1031,7 +1032,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 			}
 			else 
 			{
-				if (cnt2 == 0 || cnt2 == 20)
+				if (cnt2 == 0 || cnt2 == 5 || cnt2 == 10) 
 				{
 					initBatteryManager();
 					gatt_discover_battery_service(centralConnections[cnt]);	
@@ -1061,7 +1062,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					diameterSet = false;
 				}
 				
-				if (deviceManager::data.type == CSC_SPEED)
+				if (deviceManager::data.type == TYPE_CSC_SPEED)
 				{
 					// calculate speed
 					if (diameterSet)
@@ -1073,7 +1074,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 							// 1. value: type -> speed
 							// 2. value: 8 bit on the left side of comma
 							// 3. value: 8 bit on the right side of comma
-							dataToSend[0] = CSC_SPEED;
+							dataToSend[0] = TYPE_CSC_SPEED;
 							dataToSend[1] = (uint8_t) (speed/100);	
 							val_after_comma = (uint8_t) (speed);
 							dataToSend[2] = val_after_comma;
@@ -1085,8 +1086,28 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 							}
 						}
 					}
+					if (onceSpeed || cntNbrReceived1 == 50)
+					{
+						onceSpeed = false;
+						cntNbrReceived1 = 0;
+						deviceManager::data.battValue_speed = getBatteryLevel(TYPE_CSC_SPEED);
+						batteryLevelToSend[0] = TYPE_BATTERY;
+						batteryLevelToSend[1] = TYPE_CSC_SPEED;
+						batteryLevelToSend[2] = deviceManager::data.battValue_speed;
+						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
+					}
+					else if (waitCnt == 10)
+					{
+						onceCadence = true;
+						waitCnt++;
+					}
+					else
+					{
+						cntNbrReceived1++;
+						waitCnt++;
+					}		
 				}
-				else if (deviceManager::data.type == CSC_CADENCE)
+				else if (deviceManager::data.type == TYPE_CSC_CADENCE)
 				{
 					// calculate rpm (rounds per minute)
 					if (diameterSet)
@@ -1098,7 +1119,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 							// 1. value: type -> cadence
 							// 2. value: 8 lsb of cadence value
 							// 3. value: 8 msb of cadence value					
-							dataToSend[0] = CSC_CADENCE;	
+							dataToSend[0] = TYPE_CSC_CADENCE;	
 							dataToSend[1] = (uint8_t) rpm;
 							dataToSend[2] = (uint8_t) (rpm >> 8);	
 							if (peripheralConn != nullptr)
@@ -1108,9 +1129,23 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 							}
 						}
 					}
+					if (onceCadence || cntNbrReceived2 == 100)
+					{
+						onceCadence = false;
+						cntNbrReceived2 = 0;
+						deviceManager::data.battValue_cadence = getBatteryLevel(TYPE_CSC_CADENCE);
+						batteryLevelToSend[0] = TYPE_BATTERY;
+						batteryLevelToSend[1] = TYPE_CSC_CADENCE;
+						batteryLevelToSend[2] = deviceManager::data.battValue_cadence;
+						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
+					}
+					else 
+					{
+						cntNbrReceived2++;
+					}					
 				}
 				
-				static uint8_t cntNbrReceived = 0;
+				/*static uint8_t cntNbrReceived = 0;
 				static uint8_t cntForStart = 0;
 				static uint8_t waitToThisNumber = 200;
 				if (cntForStart == 0 || cntForStart == 10 || cntNbrReceived == waitToThisNumber)
@@ -1120,21 +1155,21 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					{
 					case 0:
 						deviceManager::data.battValue_sensor1 = getBatteryLevel(cntSensors);
-						batteryLevelToSend[0] = BATTERY;
+						batteryLevelToSend[0] = TYPE_BATTERY;
 						batteryLevelToSend[1] = cntSensors;
 						batteryLevelToSend[2] = deviceManager::data.battValue_sensor1;
 						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
 						break;
 					case 1:
 						deviceManager::data.battValue_sensor2 = getBatteryLevel(cntSensors);
-						batteryLevelToSend[0] = BATTERY;
+						batteryLevelToSend[0] = TYPE_BATTERY;
 						batteryLevelToSend[1] = cntSensors;
 						batteryLevelToSend[2] = deviceManager::data.battValue_sensor2;
 						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));					
 						break;
 					case 2:
 						deviceManager::data.battValue_sensor3 = getBatteryLevel(cntSensors);
-						batteryLevelToSend[0] = BATTERY;
+						batteryLevelToSend[0] = TYPE_BATTERY;
 						batteryLevelToSend[1] = cntSensors;
 						batteryLevelToSend[2] = deviceManager::data.battValue_sensor3;
 						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));					
@@ -1153,7 +1188,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					}
 				}
 				cntForStart++;
-				cntNbrReceived++;
+				cntNbrReceived++;*/
 			}
 		}
 		
@@ -1166,8 +1201,11 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 		struct bt_gatt_subscribe_params *params,
 		const void *data, uint16_t length) {
 
+	static bool onceHeartRate = true;
+	static uint16_t cntNbrReceived = 0;		
 	uint8_t dataToSend[2];
-	dataToSend[0] = HEARTRATE;
+	uint8_t batteryLevelToSend[4];
+	dataToSend[0] = TYPE_HEARTRATE;
 	if (!data) {
 		printk("[UNSUBSCRIBED]\n");
 		params->value_handle = 0U;
@@ -1183,22 +1221,23 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 	} else {
 		printk("[NOTIFICATION] data %p length %u\n", data, length);
 	}
+	// get battery level every few minutes
+	if (onceHeartRate || cntNbrReceived == 300)
+	{
+		onceHeartRate = false;
+		cntNbrReceived = 0;
+		deviceManager::data.battValue_heartRate = getBatteryLevel(TYPE_HEARTRATE);
+		batteryLevelToSend[0] = TYPE_BATTERY;
+		batteryLevelToSend[1] = TYPE_HEARTRATE;
+		batteryLevelToSend[2] = deviceManager::data.battValue_heartRate;
+		data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
+	}
+	else
+	{
+		cntNbrReceived++;
+	}	
 
 	return BT_GATT_ITER_CONTINUE;
-}
-
-void deviceManager::notify_battery_level_cb(struct bt_bas_client *bas,
-				    uint8_t battery_level) {
-	char addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
-			  addr, sizeof(addr));
-	if (battery_level == BT_BAS_VAL_INVALID) {
-		printk("[%s] Battery notification aborted\n", addr);
-	} else {
-		printk("[%s] Battery notification: %"PRIu8"%%\n",
-		       addr, battery_level);
-	}
 }
 
 bool deviceManager::checkAddresses(char addr1[],char addr2[])

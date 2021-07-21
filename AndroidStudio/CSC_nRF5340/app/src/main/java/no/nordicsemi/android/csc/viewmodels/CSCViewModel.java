@@ -80,19 +80,19 @@ public class CSCViewModel extends AndroidViewModel {
 	 * get the battery level of the first sensor from the CSCManager
 	 * @return the battery level
 	 */
-	public LiveData<Integer> getBatteryLevelSensor1() { return CSCManager.getBatteryLevelSensor1();}
+	public LiveData<Integer> getBatteryLevelSpeed() { return CSCManager.getBatteryLevelSpeed();}
 
 	/**
 	 * get the battery level of the first sensor from the CSCManager
 	 * @return the battery level
 	 */
-	public LiveData<Integer> getBatteryLevelSensor2() { return CSCManager.getBatteryLevelSensor2();}
+	public LiveData<Integer> getBatteryLevelCadence() { return CSCManager.getBatteryLevelCadence();}
 
 	/**
 	 * get the battery level of the first sensor from the CSCManager
 	 * @return the battery level
 	 */
-	public LiveData<Integer> getBatteryLevelSensor3() { return CSCManager.getBatteryLevelSensor3();}
+	public LiveData<Integer> getBatteryLevelHeartRate() { return CSCManager.getBatteryLevelHeartRate();}
 
 	/**
 	 * get error code

@@ -35,10 +35,12 @@
 
 
 /**
- * @brief Construct a new Battery Manager object
+ * @brief callback function, is called when new battery data received over ble
  * 
+ * @param bas the battery service client 
+ * @param battery_level the battery level (0-100%)
  */
-//BatteryManager();
+static void notify_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t battery_level);
 
 /**
  * @brief callback function, is called when new battery data received over ble
@@ -46,7 +48,7 @@
  * @param bas the battery service client 
  * @param battery_level the battery level (0-100%)
  */
-static void notify_battery_level_cb_sensor1(struct bt_bas_client *bas, uint8_t battery_level);
+static void notify_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t battery_level);
 
 /**
  * @brief callback function, is called when new battery data received over ble
@@ -54,15 +56,7 @@ static void notify_battery_level_cb_sensor1(struct bt_bas_client *bas, uint8_t b
  * @param bas the battery service client 
  * @param battery_level the battery level (0-100%)
  */
-static void notify_battery_level_cb_sensor2(struct bt_bas_client *bas, uint8_t battery_level);
-
-/**
- * @brief callback function, is called when new battery data received over ble
- * 
- * @param bas the battery service client 
- * @param battery_level the battery level (0-100%)
- */
-static void notify_battery_level_cb_sensor3(struct bt_bas_client *bas, uint8_t battery_level);
+static void notify_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t battery_level);
 
 /**
  * @brief callback function, is called when discovery is completed
@@ -97,31 +91,31 @@ static void discovery_error_found_cb(struct bt_conn *conn, int err, void *contex
 uint8_t gatt_discover_battery_service(struct bt_conn *conn);
 
 /**
- * @brief callback function, is called when user requests the battery level
+ * @brief callback function, is called when user requests the battery level of speed sensor
  * 
  * @param bas the battery service client
  * @param battery_level the battery level (0-100%)
  * @param err the error code, 0 if success
  */
-static void read_battery_level_cb(struct bt_bas_client *bas, uint8_t battery_level, int err);
-
-
-static void read_battery_level_cb2(struct bt_bas_client *bas, uint8_t battery_level, int err);
-
-static void read_battery_level_cb3(struct bt_bas_client *bas, uint8_t battery_level, int err);
-/**
- * @brief get battery level when button 1 is pressed
- * 
- */
-static void button_readval(void);
+static void read_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t battery_level, int err);
 
 /**
- * @brief callback function, is called when a button is pressed on the board
+ * @brief callback function, is called when user requests the battery level of cadence sensor
  * 
- * @param button_state the state of the button, true = pressed - false = released
- * @param has_changed 
+ * @param bas the battery service client
+ * @param battery_level the battery level (0-100%)
+ * @param err the error code, 0 if success
  */
-static void button_handler(uint32_t button_state, uint32_t has_changed);
+static void read_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t battery_level, int err);
+
+/**
+ * @brief callback function, is called when user requests the battery level of heart rate sensor
+ * 
+ * @param bas the battery service client
+ * @param battery_level the battery level (0-100%)
+ * @param err the error code, 0 if success
+ */
+static void read_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t battery_level, int err);
 
 /**
  * @brief get the battery level 
@@ -136,13 +130,3 @@ uint8_t getBatteryLevel(uint8_t nbrSensor);
  * 
  */
 void initBatteryManager();
-
-
-/*static struct bt_bas_client bas_sensor1;
-static struct bt_bas_client bas_sensor2;
-static struct bt_bas_client bas_sensor3;
-
-static uint8_t batteryLevel_sensor1;
-static uint8_t batteryLevel_sensor2;
-static uint8_t batteryLevel_sensor3;
-static uint8_t cntDevices;*/

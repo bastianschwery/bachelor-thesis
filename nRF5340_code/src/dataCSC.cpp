@@ -14,9 +14,9 @@ dataCSC::dataCSC() {
     speed = 0;
     rpm = 0;
     heartRate = 0;
-    battValue_sensor1 = 0;
-    battValue_sensor2 = 0;
-    battValue_sensor3 = 0;
+    battValue_speed = 0;
+    battValue_cadence = 0;
+    battValue_heartRate = 0;
 }
 
 void dataCSC::saveData(const void *data) {

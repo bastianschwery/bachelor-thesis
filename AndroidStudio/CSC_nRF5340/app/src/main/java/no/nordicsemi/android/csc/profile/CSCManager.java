@@ -65,9 +65,9 @@ public class CSCManager extends ObservableBleManager {
 	private final MutableLiveData<Double> speedValue = new MutableLiveData<>();
 	private final MutableLiveData<Integer> messageCode = new MutableLiveData<>();
 	private final MutableLiveData<Integer> heartRateValue = new MutableLiveData<>();
-	private final MutableLiveData<Integer> batteryLevelSensor1 = new MutableLiveData<>();
-	private final MutableLiveData<Integer> batteryLevelSensor2 = new MutableLiveData<>();
-	private final MutableLiveData<Integer> batteryLevelSensor3 = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelSpeed = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelCadence = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelHeartRate = new MutableLiveData<>();
 	private final MutableLiveData<Boolean> isDisconnected = new MutableLiveData<>();
 
 	private BluetoothGattCharacteristic RX_characteristic, TX_characteristic;
@@ -119,19 +119,19 @@ public class CSCManager extends ObservableBleManager {
 	 * get battery level of first sensor
 	 * @return the battery level
 	 */
-	public final LiveData<Integer> getBatteryLevelSensor1() { return batteryLevelSensor1;}
+	public final LiveData<Integer> getBatteryLevelSpeed() { return batteryLevelSpeed;}
 
 	/**
 	 * get battery level of second sensor
 	 * @return the battery level
 	 */
-	public final LiveData<Integer> getBatteryLevelSensor2() { return batteryLevelSensor2;}
+	public final LiveData<Integer> getBatteryLevelCadence() { return batteryLevelCadence;}
 
 	/**
 	 * get battery level of third sensor
 	 * @return the battery level
 	 */
-	public final LiveData<Integer> getBatteryLevelSensor3() { return batteryLevelSensor3;}
+	public final LiveData<Integer> getBatteryLevelHeartRate() { return batteryLevelHeartRate;}
 
 	public final LiveData<Boolean> isDisconnected() { return isDisconnected;}
 
@@ -197,14 +197,14 @@ public class CSCManager extends ObservableBleManager {
 					heartRateValue.setValue(data[1]);
 				case TYPE_BATTERY:
 					switch (data[1]) {
-						case 0:
-							batteryLevelSensor1.setValue(data[2]);
-							break;
 						case 1:
-							batteryLevelSensor2.setValue(data[2]);
+							batteryLevelSpeed.setValue(data[2]);
 							break;
 						case 2:
-							batteryLevelSensor3.setValue(data[2]);
+							batteryLevelCadence.setValue(data[2]);
+							break;
+						case 3:
+							batteryLevelHeartRate.setValue(data[2]);
 							break;
 						default:
 							break;

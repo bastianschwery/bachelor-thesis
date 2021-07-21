@@ -22,11 +22,13 @@
 
 package no.nordicsemi.android.csc;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +59,7 @@ public class CSCActivity extends AppCompatActivity {
 	private CSCViewModel viewModel;
 	private TextView diameterValue;
 	private Button setValueButton, resetButton, resetDistanceButton, reconnectButton;
+	private ImageView batteryIconSpeed, batteryIconCadence, batteryIconHeartRate;
 	private double wheelDiameter = 0.0;
 	private double distance = 0;
 	private NumberFormat n = NumberFormat.getInstance();
@@ -79,9 +82,9 @@ public class CSCActivity extends AppCompatActivity {
 	@BindView(R.id.cadence_value) TextView cadenceValue;
 	@BindView(R.id.distance_value) TextView distanceValue;
 	@BindView(R.id.heartRate_value) TextView heartRateValue;
-	@BindView(R.id.battery_level_sensor1) TextView batteryLevel1;
-	@BindView(R.id.battery_level_sensor2) TextView batteryLevel2;
-	@BindView(R.id.battery_level_sensor3) TextView batteryLevel3;
+	@BindView(R.id.battery_level_sensor1) TextView batteryLevelSpeed;
+	@BindView(R.id.battery_level_sensor2) TextView batteryLevelCadence;
+	@BindView(R.id.battery_level_sensor3) TextView batteryLevelHeartRate;
 
 	/**
 	 * create all necessary instances and add on click listeners
@@ -255,6 +258,9 @@ public class CSCActivity extends AppCompatActivity {
 		resetButton = findViewById(R.id.reset_button);
 		resetDistanceButton = findViewById(R.id.reset_distance_button);
 		reconnectButton = findViewById(R.id.reconnect_button);
+		batteryIconSpeed =  findViewById(R.id.batteryFull1);
+		batteryIconCadence = findViewById(R.id.batteryFull2);
+		batteryIconHeartRate = findViewById(R.id.batteryFull3);
 
 		reconnectButton.setOnClickListener(v -> {
 			viewModel.reconnect();
@@ -351,6 +357,7 @@ public class CSCActivity extends AppCompatActivity {
 			}
 		});
 
+
 		viewModel.getRPMValue().observe(this,
 				integer -> cadenceValue.setText(integer.toString()));
 
@@ -364,14 +371,11 @@ public class CSCActivity extends AppCompatActivity {
 
 		viewModel.getMessageCode().observe(this, this::showMessageCode);
 
-		viewModel.getBatteryLevelSensor1().observe(this,
-				integer -> batteryLevel1.setText(integer.toString() + "%"));
+		viewModel.getBatteryLevelSpeed().observe(this, this::setBatteryLevelSpeed);
 
-		viewModel.getBatteryLevelSensor2().observe(this,
-				integer -> batteryLevel2.setText(integer.toString()+ "%"));
+		viewModel.getBatteryLevelCadence().observe(this, this::setBatteryLevelCadence);
 
-		viewModel.getBatteryLevelSensor3().observe(this,
-				integer -> batteryLevel3.setText(integer.toString()+ "%"));
+		viewModel.getBatteryLevelHeartRate().observe(this, this::setBatteryLevelHeartRate);
 
 		viewModel.isDisconnected().observe(this, this::reconnect);
 	}
@@ -405,6 +409,7 @@ public class CSCActivity extends AppCompatActivity {
 			setText("Connected with Board");
 			firstEntry = false;
 		}
+		
 	}
 
 	/**
@@ -481,4 +486,38 @@ public class CSCActivity extends AppCompatActivity {
 				break;
 		}
 	}
+
+	public void setBatteryLevelSpeed(Integer level) {
+		batteryLevelSpeed.setText(level.toString() + "%");
+
+		if (level > 10) {
+			batteryIconSpeed.setImageResource(R.drawable.battery_full_icon);
+		}
+		else {
+			batteryIconSpeed.setImageResource(R.drawable.battery_alert_icon);
+		}
+	}
+
+	public void setBatteryLevelCadence(Integer level) {
+		batteryLevelCadence.setText(level.toString() + "%");
+
+		if (level > 10) {
+			batteryIconCadence.setImageResource(R.drawable.battery_full_icon);
+		}
+		else {
+			batteryIconCadence.setImageResource(R.drawable.battery_alert_icon);
+		}
+	}
+
+	public void setBatteryLevelHeartRate(Integer level) {
+		batteryLevelHeartRate.setText(level.toString() + "%");
+
+		if (level > 10) {
+			batteryIconHeartRate.setImageResource(R.drawable.battery_full_icon);
+		}
+		else {
+			batteryIconHeartRate.setImageResource(R.drawable.battery_alert_icon);
+		}
+	}
 }
+

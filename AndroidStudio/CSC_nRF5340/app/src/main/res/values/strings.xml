@@ -41,6 +41,7 @@
 	<string name="distance_default">0</string>
 	<string name="diameter_default">0</string>
 	<string name="heartRate_default">0</string>
+	<string name="batteryLevel_default">0%</string>
 
 	<string name="unknown_device">Unknown Device</string>
 	<string name="turn_on">On</string>

@@ -44,7 +44,6 @@ extern "C" {
 //using namespace std;
 #define MAX_CONNECTIONS_CENTRAL 5
 #define NBR_WANTED_CONNECTIONS 2
-#define BAS_READ_VALUE_INTERVAL 1000
 
 class deviceManager {
 public:
@@ -279,15 +278,6 @@ public:
      * @param connectable info if device is connectable
      */
     static void scanFilterNoMatch(struct bt_scan_device_info *device_info, bool connectable);
-
-    /**
-     * @brief callback function, is called when new data is received over ble
-     * 
-     * @param bas the battery service client 
-     * @param battery_level the battery level (0-100%)
-     */
-    static void notify_battery_level_cb(struct bt_bas_client *bas,
-				    uint8_t battery_level);
 
     /**
      * @brief compare two addresses

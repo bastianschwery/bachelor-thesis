@@ -272,10 +272,11 @@ void initBatteryManager(uint8_t sensorInfos)
 uint8_t getBatteryLevel(uint8_t nbrSensor) 
 {
     int err = 0;
-
+	uint8_t level = 5;
 	switch (nbrSensor)
 	{
 	case 1:
+		//bt_bas_read_battery_level(&bas_speed, read_battery_level_cb_speed);
 		return batteryLevel_speed;
 		break;
 	case 2:
@@ -283,6 +284,8 @@ uint8_t getBatteryLevel(uint8_t nbrSensor)
 		break;
 	case 3:
 		bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
+		//bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
+		printk("Level: %d\n",level);
 		return batteryLevel_heartRate;
 		break;
 	default:

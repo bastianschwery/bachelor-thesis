@@ -305,9 +305,11 @@ private:
 	static bool once_sensor2;
     static bool once_sensor3;
     static uint8_t nbrAddresses;
+    static uint8_t cntBatterySubscriptions;
 
     static uint8_t nbrConnectionsCentral;
     static uint8_t sensorInfos;
+    static bool wasDisconnected;
 
     // array of central connections
     static struct bt_conn *centralConnections[MAX_CONNECTIONS_CENTRAL];

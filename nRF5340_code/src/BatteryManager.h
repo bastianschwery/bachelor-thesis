@@ -128,5 +128,6 @@ uint8_t getBatteryLevel(uint8_t nbrSensor);
 /**
  * @brief initialize the battery manager
  * 
+ * @param sensorInfos info about which sensors are connected
  */
-void initBatteryManager();
+void initBatteryManager(uint8_t sensorInfos);

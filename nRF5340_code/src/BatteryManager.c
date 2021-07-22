@@ -130,6 +130,8 @@ uint8_t gatt_discover_battery_service(struct bt_conn *conn)
 	if (err) {
 		printk("Could not start the discovery procedure, error "
 		       "code: %d\n", err);
+		cnt--;
+		cntDevices--;
 	}
 	return err;
 }
@@ -236,11 +238,20 @@ void read_battery_level_cb_heartRate(struct bt_bas_client *bas,
     batteryLevel_heartRate = battery_level;
 }
 
-void initBatteryManager()
+void initBatteryManager(uint8_t sensorInfos)
 {
 	int err;
 	cntDevices++;
 	printk("Initialize battery manager: # %d\n", cntDevices);
+
+	if (sensorInfos == 4)
+	{
+		cntDevices = 2;
+	}
+	else if (sensorInfos == 5)
+	{
+		cntDevices = 3;
+	}
 
 	switch (cntDevices)
 	{
@@ -271,6 +282,7 @@ uint8_t getBatteryLevel(uint8_t nbrSensor)
 		return batteryLevel_cadence;
 		break;
 	case 3:
+		bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
 		return batteryLevel_heartRate;
 		break;
 	default:

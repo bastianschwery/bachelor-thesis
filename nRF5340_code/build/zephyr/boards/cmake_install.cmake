@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/zephyr/boards/boards/arm/nrf5340dk_nrf5340_cpuappns/cmake_install.cmake")
+  include("C:/Users/basti/ncs/ba/Bachelorarbeit/nRF5340_code/build/zephyr/boards/arm/nrf5340dk_nrf5340/cmake_install.cmake")
 
 endif()
 

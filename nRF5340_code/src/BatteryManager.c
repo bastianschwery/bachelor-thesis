@@ -9,7 +9,8 @@ static struct bt_bas_client bas_heartRate;
 static uint8_t batteryLevel_speed;
 static uint8_t batteryLevel_cadence;
 static uint8_t batteryLevel_heartRate;
-static uint8_t cntDevices;
+static uint8_t cntDevices = 0;
+static uint8_t infoSensors = 0;
 
 void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 {
@@ -18,6 +19,69 @@ void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 	printk("The discovery procedure succeeded\n");
 
 	bt_gatt_dm_data_print(dm);
+
+	switch (infoSensors)
+	{
+	case 1:
+		subscribeBatterySpeed(dm);
+		break;
+	case 2:
+		subscribeBatteryCadence(dm);
+		break;
+	case 3:
+		if (cntDevices == 1)
+		{
+			subscribeBatterySpeed(dm);
+		}
+		else
+		{
+			subscribeBatteryCadence(dm);
+		}
+		break;
+	case 4:
+		if (cntDevices == 1)
+		{
+			subscribeBatterySpeed(dm);
+		}
+		else if (cntDevices == 2)
+		{
+			subscribeBatteryCadence(dm);
+		}		
+		else 
+		{
+			subscribeBatteryHeartRate(dm);
+		}
+		break;
+	case 5:
+		if (cntDevices == 1)
+		{
+			subscribeBatterySpeed(dm);
+		}
+		else
+		{
+			subscribeBatteryHeartRate(dm);
+		}
+		break;
+	case 6:
+		if (cntDevices == 1)
+		{
+			subscribeBatteryCadence(dm);
+		}
+		else
+		{
+			subscribeBatteryHeartRate(dm);
+		}		
+		break;		
+	case 7:
+			subscribeBatteryHeartRate(dm);
+		break;							
+	default:
+		break;
+	}
+
+
+
+
 
 	switch (cntDevices)
 	{
@@ -240,20 +304,12 @@ void read_battery_level_cb_heartRate(struct bt_bas_client *bas,
 
 void initBatteryManager(uint8_t sensorInfos)
 {
+	infoSensors = sensorInfos;
 	int err;
 	cntDevices++;
 	printk("Initialize battery manager: # %d\n", cntDevices);
 
-	if (sensorInfos == 4)
-	{
-		cntDevices = 2;
-	}
-	else if (sensorInfos == 5)
-	{
-		cntDevices = 3;
-	}
-
-	switch (cntDevices)
+	switch (sensorInfos)
 	{
 	case 1:
 		bt_bas_client_init(&bas_speed);
@@ -262,8 +318,52 @@ void initBatteryManager(uint8_t sensorInfos)
 		bt_bas_client_init(&bas_cadence);
 		break;
 	case 3:
-		bt_bas_client_init(&bas_heartRate);
+		if (cntDevices == 1)
+		{
+			bt_bas_client_init(&bas_speed);
+		}
+		else
+		{
+			bt_bas_client_init(&bas_cadence);
+		}
 		break;
+	case 4:
+		if (cntDevices == 1)
+		{
+			bt_bas_client_init(&bas_speed);
+		}
+		else if (cntDevices == 2)
+		{
+			bt_bas_client_init(&bas_cadence);
+		}	
+		else
+		{
+			bt_bas_client_init(&bas_heartRate);
+		}
+		break;
+	case 5:
+		if (cntDevices == 1)
+		{
+			bt_bas_client_init(&bas_speed);
+		}
+		else
+		{
+			bt_bas_client_init(&bas_heartRate);
+		}
+		break;
+	case 6:
+		if (cntDevices == 1)
+		{
+			bt_bas_client_init(&bas_cadence);
+		}
+		else
+		{
+			bt_bas_client_init(&bas_heartRate);
+		}	
+		break;
+	case 7:
+		bt_bas_client_init(&bas_heartRate);
+		break;				
 	default:
 		break;
 	}
@@ -275,7 +375,7 @@ uint8_t getBatteryLevel(uint8_t nbrSensor)
 	uint8_t level = 5;
 	switch (nbrSensor)
 	{
-	case 1:
+	case 1:		
 		//bt_bas_read_battery_level(&bas_speed, read_battery_level_cb_speed);
 		return batteryLevel_speed;
 		break;
@@ -293,4 +393,19 @@ uint8_t getBatteryLevel(uint8_t nbrSensor)
 	}
 
     return err;
+}
+
+void subscribeBatterySpeed(struct bt_gatt_dm *dm) 
+{
+
+}
+
+void subscribeBatteryCadence(struct bt_gatt_dm *dm) 
+{
+	
+}
+
+void subscribeBatteryHeartRate(struct bt_gatt_dm *dm) 
+{
+	
 }

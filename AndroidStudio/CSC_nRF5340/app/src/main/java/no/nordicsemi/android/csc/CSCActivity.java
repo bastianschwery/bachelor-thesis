@@ -126,28 +126,36 @@ public class CSCActivity extends AppCompatActivity {
 		infoDevices = 0;
 		switch (sensors.size()) {
 			case 1:
-				if (sensors.get(0).getName().contains("SPD") || sensors.get(0).getName().contains("CAD")) {
+				if (sensors.get(0).getName().contains("SPD")) {
 					infoDevices = 1;
+				} else if (sensors.get(0).getName().contains("CAD")) {
+					infoDevices = 2;
 				} else if (sensors.get(0).getName().contains("Polar")) {
-					infoDevices = 5;
+					infoDevices = 7;
 				}
 				break;
 			case 2:
 				if (sensors.get(0).getName().contains("SPD") || sensors.get(0).getName().contains("CAD")) {
 					if (sensors.get(1).getName().contains("SPD") || sensors.get(1).getName().contains("CAD")) {
-						infoDevices = 2;
-					} else if (sensors.get(1).getName().contains("Polar")) {
-						infoDevices = 4;
+						infoDevices = 3;
+					} else if (sensors.get(1).getName().contains("Polar") && sensors.get(0).getName().contains("SPD")) {
+						infoDevices = 5;
+					}
+					else if (sensors.get(1).getName().contains("Polar") && sensors.get(0).getName().contains("CAD")) {
+						infoDevices = 6;
 					}
 				} else if (sensors.get(0).getName().contains("Polar")) {
-					if (sensors.get(1).getName().contains("SPD") || sensors.get(1).getName().contains("CAD")) {
-						infoDevices = 4;
+					if (sensors.get(1).getName().contains("SPD")) {
+						infoDevices = 5;
+						Collections.swap(sensors,0,1);
+					} else if (sensors.get(1).getName().contains("CAD")) {
+						infoDevices = 6;
 						Collections.swap(sensors,0,1);
 					}
 				}
 				break;
 			case 3:
-				infoDevices = 3;
+				infoDevices = 4;
 				if (sensors.get(0).getName().contains("Polar")) {
 					Collections.swap(sensors,0,2);
 				} else if (sensors.get(1).getName().contains("Polar")) {

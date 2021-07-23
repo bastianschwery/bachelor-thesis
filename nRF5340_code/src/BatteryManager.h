@@ -131,3 +131,9 @@ uint8_t getBatteryLevel(uint8_t nbrSensor);
  * @param sensorInfos info about which sensors are connected
  */
 void initBatteryManager(uint8_t sensorInfos);
+
+static void subscribeBatterySpeed(struct bt_gatt_dm *dm);
+
+static void subscribeBatteryCadence(struct bt_gatt_dm *dm);
+
+static void subscribeBatteryCadence(struct bt_gatt_dm *dm);

@@ -132,8 +132,27 @@ uint8_t getBatteryLevel(uint8_t nbrSensor);
  */
 void initBatteryManager(uint8_t sensorInfos);
 
+/**
+ * @brief subscribe the battery service for speed sensor
+ * 
+ * @param dm holds the address of the connected device, user context and discover parameter 
+ */
 static void subscribeBatterySpeed(struct bt_gatt_dm *dm);
 
+/**
+ * @brief subscribe the battery service for cadence sensor
+ * 
+ * @param dm holds the address of the connected device, user context and discover parameter  
+ */
 static void subscribeBatteryCadence(struct bt_gatt_dm *dm);
 
+/**
+ * @brief subscribe the battery service for heart rate sensor
+ * 
+ * @param dm holds the address of the connected device, user context and discover parameter  
+ */
 static void subscribeBatteryCadence(struct bt_gatt_dm *dm);
+
+bool isFree();
+
+void askForBatteryLevelHeartRate();

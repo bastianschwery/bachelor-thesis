@@ -86,6 +86,9 @@ public class CSCActivity extends AppCompatActivity {
 	@BindView(R.id.battery_level_sensor2) TextView batteryLevelCadence;
 	@BindView(R.id.battery_level_sensor3) TextView batteryLevelHeartRate;
 
+	public CSCActivity() {
+	}
+
 	/**
 	 * create all necessary instances and add on click listeners
 	 * @param savedInstanceState state
@@ -115,11 +118,13 @@ public class CSCActivity extends AppCompatActivity {
 		}
 
 		/*
-		if there is just one speed or cadence sensor -> info devices: 1
-		if there are a speed and a cadence sensor -> info devices: 2
-		if there are a speed and cadence and a heart rate sensor -> info devices: 3
-		if there are a speed or a cadence and a heart rate sensor -> info devices: 4
-		if there is just a heart rate sensor -> info devices: 5
+		if there is just one speed -> info devices: 1
+		if there is just one cadence -> info devices: 2
+		if there are a speed and a cadence sensor -> info devices: 3
+		if there are a speed and cadence and a heart rate sensor -> info devices: 4
+		if there are a speed and a heart rate sensor -> info devices: 5
+		if there are a cadence and a heart rate sensor -> info devices: 6
+		if there is just a heart rate sensor -> info devices: 7
 
 		make sure that the sequence is like: first speed/cadence sensors and at the end heart rate sensor
 		 */
@@ -396,8 +401,8 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.reconnect();
 	}
 
-	public void reconnect(Boolean isDisconnected) {
-		if (isDisconnected) {
+	public void reconnect(Integer isDisconnected) {
+		if (isDisconnected == 10) {
 			viewModel.reconnect();
 		}
 	}
@@ -409,14 +414,20 @@ public class CSCActivity extends AppCompatActivity {
 	private void onConnectionStateChanged(final boolean connected) {
 		if (!connected) {
 			if (firstEntry) {
+				firstEntry = false;
 				setText("Disconnected from Board");
+
+				viewModel = new ViewModelProvider(this).get(CSCViewModel.class);
+				viewModel.reconnect();
+				//viewModel.resetValues();
+				//viewModel.connect(nordicBoard);
+				//viewModel.setNotifications();
 			}
 			firstEntry = true;
-			viewModel.connect(nordicBoard);
 		}
 		else {
 			setText("Connected with Board");
-			firstEntry = false;
+			firstEntry = true;
 		}
 
 	}
@@ -490,6 +501,10 @@ public class CSCActivity extends AppCompatActivity {
 				break;
 			case 21:
 				setText("Please enter value bigger than 1 Inch");
+				break;
+			case 22:
+				setText("Heart rate sensor connected");
+				setText("Application ready to use");
 				break;
 			default:
 				break;

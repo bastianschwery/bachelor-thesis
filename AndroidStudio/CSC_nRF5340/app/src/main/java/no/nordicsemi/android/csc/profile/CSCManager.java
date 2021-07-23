@@ -68,7 +68,7 @@ public class CSCManager extends ObservableBleManager {
 	private final MutableLiveData<Integer> batteryLevelSpeed = new MutableLiveData<>();
 	private final MutableLiveData<Integer> batteryLevelCadence = new MutableLiveData<>();
 	private final MutableLiveData<Integer> batteryLevelHeartRate = new MutableLiveData<>();
-	private final MutableLiveData<Boolean> isDisconnected = new MutableLiveData<>();
+	private final MutableLiveData<Integer> isDisconnected = new MutableLiveData<>();
 
 	private BluetoothGattCharacteristic RX_characteristic, TX_characteristic;
 
@@ -133,7 +133,7 @@ public class CSCManager extends ObservableBleManager {
 	 */
 	public final LiveData<Integer> getBatteryLevelHeartRate() { return batteryLevelHeartRate;}
 
-	public final LiveData<Boolean> isDisconnected() { return isDisconnected;}
+	public final LiveData<Integer> isDisconnected() { return isDisconnected;}
 
 
 	@NonNull
@@ -305,7 +305,7 @@ public class CSCManager extends ObservableBleManager {
 		protected void onDeviceDisconnected() {
 			TX_characteristic = null;
 			RX_characteristic = null;
-			isDisconnected.setValue(true);
+			isDisconnected.setValue(2);
 		}
 	}
 
@@ -345,7 +345,7 @@ public class CSCManager extends ObservableBleManager {
 	 * @param addresses to connect
 	 */
 	public void sendAddresses(byte[] addresses) {
-		isDisconnected.setValue(false);
+		isDisconnected.setValue(1);
 		writeCharacteristic(RX_characteristic,addresses).enqueue();
 	}
 }

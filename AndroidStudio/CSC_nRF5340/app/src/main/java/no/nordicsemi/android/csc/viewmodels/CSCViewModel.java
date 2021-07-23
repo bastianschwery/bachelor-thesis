@@ -100,7 +100,7 @@ public class CSCViewModel extends AndroidViewModel {
 	 */
 	public LiveData<Integer> getMessageCode() { return  CSCManager.getMessageCode();}
 
-	public LiveData<Boolean> isDisconnected() { return  CSCManager.isDisconnected();}
+	public LiveData<Integer> isDisconnected() { return  CSCManager.isDisconnected();}
 
 	/**
 	 * Connect to the given peripheral.
@@ -175,5 +175,9 @@ public class CSCViewModel extends AndroidViewModel {
 		if (CSCManager.isConnected()) {
 			disconnect();
 		}
+	}
+
+	public void resetValues() {
+		device = null;
 	}
 }

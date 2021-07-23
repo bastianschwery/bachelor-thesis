@@ -99,7 +99,7 @@
 
 					<ImageView
 						android:id="@+id/batteryFull1"
-						android:layout_marginRight="60dp"
+						android:layout_marginRight="65dp"
 						android:layout_width="27dp"
 						android:layout_height="27dp"
 						app:layout_constraintBottom_toBottomOf="parent"
@@ -154,7 +154,7 @@
 
 					<ImageView
 						android:id="@+id/batteryFull2"
-						android:layout_marginRight="60dp"
+						android:layout_marginRight="65dp"
 						android:layout_width="27dp"
 						android:layout_height="27dp"
 						app:layout_constraintBottom_toBottomOf="parent"
@@ -314,7 +314,7 @@
 
 					<ImageView
 						android:id="@+id/batteryFull3"
-						android:layout_marginRight="60dp"
+						android:layout_marginRight="65dp"
 						android:layout_width="27dp"
 						android:layout_height="27dp"
 						app:layout_constraintBottom_toBottomOf="parent"

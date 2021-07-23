@@ -11,11 +11,11 @@ static uint8_t batteryLevel_cadence;
 static uint8_t batteryLevel_heartRate;
 static uint8_t cntDevices = 0;
 static uint8_t infoSensors = 0;
+static bool free = true;
 
 void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 {
 	int err;
-
 	printk("The discovery procedure succeeded\n");
 
 	bt_gatt_dm_data_print(dm);
@@ -77,91 +77,6 @@ void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 		break;							
 	default:
 		break;
-	}
-
-
-
-
-
-	switch (cntDevices)
-	{
-	case 1:
-		err = bt_bas_handles_assign(dm, &bas_speed);
-		if (err) 
-		{
-			printk("Could not init BAS client object from speed sensor, error: %d\n", err);
-		}
-
-		if (bt_bas_notify_supported(&bas_speed))
-		{
-			err = bt_bas_subscribe_battery_level(&bas_speed, notify_battery_level_cb_speed);
-			if (err) 
-			{
-				printk("Cannot subscribe to BAS value notification from speed sensor, (err: %d)\n", err);
-			}
-		} else 
-		{
-			err = bt_bas_start_per_read_battery_level(&bas_speed, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_speed);
-			if (err) 
-			{
-				printk("Could not start periodic read of BAS value for speed sensor\n");
-			}
-		}
-		break;
-	case 2:
-		err = bt_bas_handles_assign(dm, &bas_cadence);
-		if (err) 
-		{
-			printk("Could not init BAS client object from cadence sensor, error: %d\n", err);
-		}
-
-		if (bt_bas_notify_supported(&bas_cadence))
-		{
-			err = bt_bas_subscribe_battery_level(&bas_cadence, notify_battery_level_cb_cadence);
-			if (err) 
-			{
-				printk("Cannot subscribe to BAS value notification from cadence sensor, (err: %d)\n", err);
-			}
-		} else 
-		{
-			err = bt_bas_start_per_read_battery_level(&bas_cadence, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_cadence);
-			if (err) 
-			{
-				printk("Could not start periodic read of BAS value for cadence sensor\n");
-			}
-		}
-		break;
-	case 3:
-		err = bt_bas_handles_assign(dm, &bas_heartRate);
-		if (err) 
-		{
-			printk("Could not init BAS client object from heart rate sensor, error: %d\n", err);
-		}
-
-		if (bt_bas_notify_supported(&bas_heartRate))
-		{
-			err = bt_bas_subscribe_battery_level(&bas_heartRate, notify_battery_level_cb_heartRate);
-			if (err) 
-			{
-				printk("Cannot subscribe to BAS value notification from heart rate sensor, (err: %d)\n", err);
-			}
-		} else 
-		{
-			err = bt_bas_start_per_read_battery_level(&bas_heartRate, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_heartRate);
-			if (err) 
-			{
-				printk("Could not start periodic read of BAS value for heart rate sensor\n");
-			}
-		}	
-		break;
-	default:
-		break;
-	}
-	
-	err = bt_gatt_dm_data_release(dm);
-	if (err) {
-		printk("Could not release the discovery data, error "
-		       "code: %d\n", err);
 	}
 }
 
@@ -304,6 +219,7 @@ void read_battery_level_cb_heartRate(struct bt_bas_client *bas,
 
 void initBatteryManager(uint8_t sensorInfos)
 {
+	free = false;
 	infoSensors = sensorInfos;
 	int err;
 	cntDevices++;
@@ -383,9 +299,7 @@ uint8_t getBatteryLevel(uint8_t nbrSensor)
 		return batteryLevel_cadence;
 		break;
 	case 3:
-		bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
-		//bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
-		printk("Level: %d\n",level);
+		//printk("Level: %d\n",level);
 		return batteryLevel_heartRate;
 		break;
 	default:
@@ -397,15 +311,112 @@ uint8_t getBatteryLevel(uint8_t nbrSensor)
 
 void subscribeBatterySpeed(struct bt_gatt_dm *dm) 
 {
+	uint8_t err = 0;
 
+	err = bt_bas_handles_assign(dm, &bas_speed);
+	if (err) 
+	{
+		printk("Could not init BAS client object from speed sensor, error: %d\n", err);
+	}
+
+	if (bt_bas_notify_supported(&bas_speed))
+	{
+		err = bt_bas_subscribe_battery_level(&bas_speed, notify_battery_level_cb_speed);
+		if (err) 
+		{
+			printk("Cannot subscribe to BAS value notification from speed sensor, (err: %d)\n", err);
+		}
+	} else 
+	{
+		err = bt_bas_start_per_read_battery_level(&bas_speed, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_speed);
+		if (err) 
+		{
+			printk("Could not start periodic read of BAS value for speed sensor\n");
+		}
+	}
+
+	err = bt_gatt_dm_data_release(dm);
+	if (err) {
+		printk("Could not release the discovery data, error "
+		       "code: %d\n", err);
+	}
+	free = true;
 }
 
 void subscribeBatteryCadence(struct bt_gatt_dm *dm) 
 {
-	
+	uint8_t err = 0;
+
+	err = bt_bas_handles_assign(dm, &bas_cadence);
+	if (err) 
+	{
+		printk("Could not init BAS client object from cadence sensor, error: %d\n", err);
+	}
+
+	if (bt_bas_notify_supported(&bas_cadence))
+	{
+		err = bt_bas_subscribe_battery_level(&bas_cadence, notify_battery_level_cb_cadence);
+		if (err) 
+		{
+			printk("Cannot subscribe to BAS value notification from cadence sensor, (err: %d)\n", err);
+		}
+	} else 
+	{
+		err = bt_bas_start_per_read_battery_level(&bas_cadence, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_cadence);
+		if (err) 
+		{
+			printk("Could not start periodic read of BAS value for cadence sensor\n");
+		}
+	}	
+
+	err = bt_gatt_dm_data_release(dm);
+	if (err) {
+		printk("Could not release the discovery data, error "
+		       "code: %d\n", err);
+	}
+	free = true;
 }
 
 void subscribeBatteryHeartRate(struct bt_gatt_dm *dm) 
 {
-	
+	uint8_t err = 0;
+
+	err = bt_bas_handles_assign(dm, &bas_heartRate);
+	if (err) 
+	{
+		printk("Could not init BAS client object from heart rate sensor, error: %d\n", err);
+	}
+
+	if (bt_bas_notify_supported(&bas_heartRate))
+	{
+		err = bt_bas_subscribe_battery_level(&bas_heartRate, notify_battery_level_cb_heartRate);
+		if (err) 
+		{
+			printk("Cannot subscribe to BAS value notification from heart rate sensor, (err: %d)\n", err);
+		}
+	} else 
+	{
+		err = bt_bas_start_per_read_battery_level(&bas_heartRate, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_heartRate);
+		if (err) 
+		{
+			printk("Could not start periodic read of BAS value for heart rate sensor\n");
+		}
+	}	
+
+	err = bt_gatt_dm_data_release(dm);
+	if (err) {
+		printk("Could not release the discovery data, error "
+		       "code: %d\n", err);
+	}	
+	free = true;
+}
+
+bool isFree()
+{
+	return free;
+}
+
+void askForBatteryLevelHeartRate()
+{
+	bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
 }

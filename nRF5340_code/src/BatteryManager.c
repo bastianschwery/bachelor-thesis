@@ -12,6 +12,7 @@ static uint8_t batteryLevel_heartRate;
 static uint8_t cntDevices = 0;
 static uint8_t infoSensors = 0;
 static bool free = true;
+static bool ready = false;
 
 void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 {
@@ -204,6 +205,7 @@ void read_battery_level_cb_heartRate(struct bt_bas_client *bas,
 				  uint8_t battery_level,
 				  int err)
 {
+	ready = true;
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
@@ -401,7 +403,7 @@ void subscribeBatteryHeartRate(struct bt_gatt_dm *dm)
 		{
 			printk("Could not start periodic read of BAS value for heart rate sensor\n");
 		}
-	}	
+	}
 
 	err = bt_gatt_dm_data_release(dm);
 	if (err) {
@@ -418,5 +420,11 @@ bool isFree()
 
 void askForBatteryLevelHeartRate()
 {
+	ready = false;
 	bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
+}
+
+bool isValueReady()
+{
+	return ready;
 }

@@ -97,7 +97,7 @@ dataCSC deviceManager::data;
 //BatteryManager deviceManager::battManager;
 //bt_bas_client deviceManager::bas;
 
-static struct bt_gatt_dm_cb discovery_cb = 
+static struct bt_gatt_dm_cb discovery_cb_CSC = 
 {
 	.completed = deviceManager::discoveryCompletedCSC,
 	.service_not_found = deviceManager::discovery_service_not_found,
@@ -178,7 +178,6 @@ void deviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed){
 
 int deviceManager::initButton(){
     int err;
-
 	// initialize method buttonChanged as callback when state of button changes
     err = dk_buttons_init(buttonChanged);
 	if (err) {
@@ -661,7 +660,7 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 	if (info.role == BT_CONN_ROLE_MASTER)	// master -> central role
 	{
 		char addr[BT_ADDR_LE_STR_LEN];
-		bt_conn_disconnect(peripheralConn,5);
+		//bt_conn_disconnect(peripheralConn,5);
 
 		bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
@@ -888,7 +887,7 @@ void deviceManager::le_param_updated(struct bt_conn *conn, uint16_t interval,
 void deviceManager::discoverCSC()
 {
 	printk("nbr connection: %d\n",nbrConnectionsCentral);
-	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb, NULL);
+	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb_CSC, NULL);
 	if (err) 
 	{
 		printk("Could not start service discovery, err %d\n", err);
@@ -1057,8 +1056,7 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 		return;
 	}
 
-	gatt_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_chrc,
-			BT_UUID_HRS_MEASUREMENT);
+	gatt_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_chrc, BT_UUID_HRS_MEASUREMENT);
 	if (!gatt_desc) {
 		printk("No heat rate measurement characteristic value found\n");
 		return;
@@ -1340,7 +1338,7 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 			{
 				printk("Cannot discover battery service\n");
 			}
-			if (cntBatterySubscriptions == nbrConnectionsCentral)
+			else
 			{
 				batterySubscriptionDone = true;
 			}
@@ -1358,7 +1356,7 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 			//cntNbrReceived = 0;
 			askForBatteryLevelHeartRate();
 		}
-		else if (cntFirst == 4 || cntNbrReceived == 305)
+		else if (isValueReady())
 		{
 			cntNbrReceived = 0;
 			cntFirst++;

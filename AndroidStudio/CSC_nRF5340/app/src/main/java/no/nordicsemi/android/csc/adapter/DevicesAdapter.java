@@ -107,6 +107,12 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 		return getItemCount() == 0;
 	}
 
+	public void reset() {
+		final View v = null;
+		v.findViewById(R.id.device_container);
+		v.setBackgroundColor(-15592942);
+	}
+
 	final class ViewHolder extends RecyclerView.ViewHolder {
 		@BindView(R.id.device_address) TextView deviceAddress;
 		@BindView(R.id.device_name) TextView deviceName;

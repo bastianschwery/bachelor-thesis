@@ -153,6 +153,24 @@ static void subscribeBatteryCadence(struct bt_gatt_dm *dm);
  */
 static void subscribeBatteryCadence(struct bt_gatt_dm *dm);
 
+/**
+ * @brief check if battery service client is busy
+ * 
+ * @return true if its free
+ * @return false if its busy
+ */
 bool isFree();
 
+/**
+ * @brief ask heart rate sensor for the battery level
+ * 
+ */
 void askForBatteryLevelHeartRate();
+
+/**
+ * @brief check if the battery level value is ready to read
+ * 
+ * @return true when battery level value is ready to read
+ * @return false when battery level value is not ready to read
+ */
+bool isValueReady();

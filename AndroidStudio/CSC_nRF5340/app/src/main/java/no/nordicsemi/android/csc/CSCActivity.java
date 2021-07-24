@@ -270,14 +270,9 @@ public class CSCActivity extends AppCompatActivity {
 		setValueButton = findViewById(R.id.set_button);
 		resetButton = findViewById(R.id.reset_button);
 		resetDistanceButton = findViewById(R.id.reset_distance_button);
-		reconnectButton = findViewById(R.id.reconnect_button);
 		batteryIconSpeed =  findViewById(R.id.batteryFull1);
 		batteryIconCadence = findViewById(R.id.batteryFull2);
 		batteryIconHeartRate = findViewById(R.id.batteryFull3);
-
-		reconnectButton.setOnClickListener(v -> {
-			viewModel.reconnect();
-		});
 
 		resetDistanceButton.setOnClickListener(v -> {
 			distanceValue.setText("0");
@@ -389,8 +384,6 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.getBatteryLevelCadence().observe(this, this::setBatteryLevelCadence);
 
 		viewModel.getBatteryLevelHeartRate().observe(this, this::setBatteryLevelHeartRate);
-
-		viewModel.isDisconnected().observe(this, this::reconnect);
 	}
 
 	/**
@@ -399,12 +392,6 @@ public class CSCActivity extends AppCompatActivity {
 	@OnClick(R.id.action_clear_cache)
 	public void onTryAgainClicked() {
 		viewModel.reconnect();
-	}
-
-	public void reconnect(Integer isDisconnected) {
-		if (isDisconnected == 10) {
-			viewModel.reconnect();
-		}
 	}
 
 	/**
@@ -416,12 +403,7 @@ public class CSCActivity extends AppCompatActivity {
 			if (firstEntry) {
 				firstEntry = false;
 				setText("Disconnected from Board");
-
-				viewModel = new ViewModelProvider(this).get(CSCViewModel.class);
-				viewModel.reconnect();
-				//viewModel.resetValues();
-				//viewModel.connect(nordicBoard);
-				//viewModel.setNotifications();
+				setText("Please go 1 step back and reconnect to Board");
 			}
 			firstEntry = true;
 		}

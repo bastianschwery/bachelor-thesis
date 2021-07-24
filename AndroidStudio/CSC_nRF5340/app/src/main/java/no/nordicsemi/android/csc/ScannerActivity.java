@@ -23,8 +23,10 @@
 package no.nordicsemi.android.csc;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -67,7 +69,6 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     private boolean boardSelected = false;
     private boolean nbrDevicesOK = false;
     private Button connect_btn;
-    //final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
 
     @BindView(R.id.state_scanning) View scanningView;
     @BindView(R.id.no_devices) View emptyView;
@@ -168,7 +169,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     @Override
     protected void onStop() {
         super.onStop();
-        //devices_list.clear();
+        devices_list.clear();
         stopScan();
     }
 

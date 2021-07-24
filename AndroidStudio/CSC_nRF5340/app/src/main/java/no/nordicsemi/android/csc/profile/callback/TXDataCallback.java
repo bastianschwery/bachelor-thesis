@@ -44,15 +44,17 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
             return;
         }
 
-        // error code received
+        // message code received
         if (data.size() == 1) {
-            Integer[] errorArray = new Integer[1];
-            errorArray[0] = data.getIntValue(Data.FORMAT_UINT8,0);
-            onCSCDataChanged(device,errorArray);
+            Integer[] messageArray = new Integer[1];
+            messageArray[0] = data.getIntValue(Data.FORMAT_UINT8,0);
+            onCSCDataChanged(device,messageArray);
         }
 
         // heart rate value received
         if (data.size() == 2) {
+            // 1. value: type -> heart rate
+            // 2. value: heart rate value
             Integer[] dataArray = new Integer[2];
             Integer type = data.getIntValue(Data.FORMAT_UINT8,0);
             Integer val = data.getIntValue(Data.FORMAT_UINT8,1);
@@ -82,12 +84,15 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
 
         // battery level received
         if (data.size() == 4) {
+            // 1. value: type -> battery
+            // 2. value: which sensors battery level
+            // 3. value: the battery level
             Integer[] dataArray = new Integer[3];
             Integer type = data.getIntValue(Data.FORMAT_UINT8,0);
-            Integer sensorCnt = data.getIntValue(Data.FORMAT_UINT8,1);
+            Integer sensorType = data.getIntValue(Data.FORMAT_UINT8,1);
             Integer batteryLevel = data.getIntValue(Data.FORMAT_UINT8,2);
             dataArray[0] = type;
-            dataArray[1] = sensorCnt;
+            dataArray[1] = sensorType;
             dataArray[2] = batteryLevel;
 
             onCSCDataChanged(device,dataArray);

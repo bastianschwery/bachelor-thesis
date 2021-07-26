@@ -91,11 +91,12 @@ uint8_t deviceManager::nbrAddresses = 0;
 uint8_t deviceManager::nbrConnectionsCentral = 0;
 uint8_t deviceManager::sensorInfos = 0;
 uint8_t deviceManager::cntBatterySubscriptions = 0;
+uint8_t deviceManager::freePlace = 10;
 bt_conn* deviceManager::peripheralConn;
 bt_conn* deviceManager::centralConnections[];
+bool deviceManager::batterySubscripted[];
 dataCSC deviceManager::data;
-//BatteryManager deviceManager::battManager;
-//bt_bas_client deviceManager::bas;
+
 
 static struct bt_gatt_dm_cb discovery_cb_CSC = 
 {
@@ -121,9 +122,10 @@ deviceManager::deviceManager(){
     device.PERIPHERAL = 2;
     device.CENTRAL_PERIPHERAL = 3;
 
-	for (size_t i = 0; i < MAX_CONNECTIONS_CENTRAL-1; i++)
+	for (uint8_t i = 0; i < MAX_CONNECTIONS_CENTRAL-1; i++)
 	{
 		centralConnections[i] = nullptr;
+		batterySubscripted[i] = false;
 	}
 
 	connectedP = false;
@@ -527,6 +529,9 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 		{
 			CSCDone = true;
 		}*/
+
+		printk("onceSensor 1 %d\n", once_sensor1);
+		printk("onceSensor 2 %d\n", once_sensor2);
 		
 		if (checkAddresses(addrShort,sensor1) && once_sensor1)
 		{
@@ -605,9 +610,26 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
 		}
 
 		printk("Connected: %s\n", addr);
-
 		// save connection 
-		centralConnections[nbrConnectionsCentral] = bt_conn_ref(conn);;
+		/*if (freePlace == 10)
+		{
+			centralConnections[nbrConnectionsCentral] = bt_conn_ref(conn);
+		}
+		else
+		{
+			centralConnections[freePlace] = bt_conn_ref(conn);
+		}
+		freePlace = 10;	*/
+
+		for (uint8_t i=0; i < MAX_CONNECTIONS_CENTRAL-1; i++)
+		{
+			if (centralConnections[i] == nullptr)
+			{
+				centralConnections[i] = bt_conn_ref(conn);
+				break;
+			}		 
+		}
+		
 		bt_conn_unref(conn);
 		nbrConnectionsCentral++;
 
@@ -717,8 +739,8 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 		{
 			//wasDisconnected = true;
 		}
-
-		cntBatterySubscriptions--;
+		subscriptionDone = false;
+		//cntBatterySubscriptions--;
 		bt_addr_le_to_str(bt_conn_get_dst(conn), addr, sizeof(addr));
 
 		printk("Disconnected from Sensor: %s (reason 0x%02x)\n", addr, reason);
@@ -785,6 +807,13 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 				bt_conn_unref(centralConnections[i]);
 				centralConnections[i] = nullptr;
 				nbrConnectionsCentral--;
+				//freePlace = i;
+				//batterySubscripted[i] = false;
+				if (batterySubscriptionDone)
+				{
+					//batterySubscriptionDone = false;
+					//cntBatterySubscriptions--;
+				}
 			}
 		}		
 		
@@ -808,7 +837,7 @@ void deviceManager::le_param_updated(struct bt_conn *conn, uint16_t interval,
 
 void deviceManager::discoverCSC()
 {
-	printk("nbr connection: %d\n",nbrConnectionsCentral);
+	printk("nbr conn: %d\n", nbrConnectionsCentral);
 	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb_CSC, NULL);
 	if (err) 
 	{
@@ -876,7 +905,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 		// Subscribe Attribute Value Notification
 		err = bt_gatt_subscribe(bt_gatt_dm_conn_get(dm), &subscribe_params[nbrConnectionsCentral-1]);
 		if (err) {
-			printk("Subscribtion failed (err %d)\n", err);
+			printk("Subscription failed (err %d)\n", err);
 		}
 		bt_gatt_dm_data_release(dm);
 	}
@@ -1017,7 +1046,7 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
-		connectedCode[0] = 23;
+		connectedCode[0] = 24;
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Discovery completed\n");
 		break;
@@ -1059,13 +1088,14 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 	static uint8_t cntNbrReceived1 = 0;
 	static uint8_t cntNbrReceived2 = 0;
 	static uint8_t waitCnt = 0;
+	static uint8_t cnt2 = 0;
+	static bool onceInit = true;
 
 	// start calculating and showing data only when all characteristics are subscribed
 	if (subscriptionDone)
 	{
 		if (!batterySubscriptionDone)
-		{
-			static uint8_t cnt2 = 0;
+		{	
 			uint8_t err = 0;
 			if (cntBatterySubscriptions == nbrConnectionsCentral)
 			{
@@ -1078,8 +1108,10 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					if (cnt2 == 0 || cnt2 == 7 || cnt2 == 14) 
 					{
 						initBatteryManager(sensorInfos);
-			
-						err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);
+						err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);	
+						
+						printk("Nbr connections %d\n", cntBatterySubscriptions);
+
 						if (err == 0)
 						{
 							cntBatterySubscriptions++;
@@ -1198,6 +1230,10 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 		
 
 	}
+	else
+	{
+		cnt2 = 0;
+	}
 	return BT_GATT_ITER_CONTINUE;
 }
 
@@ -1216,7 +1252,7 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 
 	if (onceHeartRate)
 	{
-		if (isFree)
+		if (isFree())
 		{
 			onceHeartRate = false;
 			initBatteryManager(sensorInfos);

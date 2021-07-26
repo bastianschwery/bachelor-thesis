@@ -310,6 +310,8 @@ private:
     static uint8_t nbrConnectionsCentral;
     static uint8_t sensorInfos;
     static bool wasDisconnected;
+    static uint8_t freePlace;
+    static bool batterySubscripted[MAX_CONNECTIONS_CENTRAL];
 
     // array of central connections
     static struct bt_conn *centralConnections[MAX_CONNECTIONS_CENTRAL];

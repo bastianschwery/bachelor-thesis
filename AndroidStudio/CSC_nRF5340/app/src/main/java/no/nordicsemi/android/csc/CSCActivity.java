@@ -62,7 +62,8 @@ public class CSCActivity extends AppCompatActivity {
 	private ImageView batteryIconSpeed, batteryIconCadence, batteryIconHeartRate;
 	private double wheelDiameter = 0.0;
 	private double distance = 0;
-	private NumberFormat n = NumberFormat.getInstance();
+	private NumberFormat n1 = NumberFormat.getInstance();
+	private NumberFormat n2 = NumberFormat.getInstance();
 	private ArrayList<String> addresses = new ArrayList<>();
 	private DiscoveredBluetoothDevice nordicBoard;
 	private ArrayList<DiscoveredBluetoothDevice> devices = new ArrayList<>();
@@ -369,8 +370,7 @@ public class CSCActivity extends AppCompatActivity {
 		viewModel.getRPMValue().observe(this,
 				integer -> cadenceValue.setText(integer.toString()));
 
-		viewModel.getSpeedValue().observe(this,
-				integer -> speedValue.setText(integer.toString()));
+		viewModel.getSpeedValue().observe(this, this::setSpeedValue);
 
 		viewModel.getHeartRateValue().observe(this,
 				integer -> heartRateValue.setText(integer.toString()));
@@ -415,14 +415,23 @@ public class CSCActivity extends AppCompatActivity {
 	}
 
 	/**
+	 * set speed value with maximum two digits after the comma
+	 * @param speed the speed value in km/h
+	 */
+	public void setSpeedValue(Double speed) {
+		n2.setMaximumFractionDigits(2);
+		speedValue.setText(n2.format(speed));
+	}
+
+	/**
 	 * calculate the distance
 	 * @param speed double speed value
 	 */
 	public void setDistance(Double speed) {
 		double speed_in_km_s = speed / 3600; // speed in km/s
 		distance += speed_in_km_s * 1;	// distance in km, * 1s just to say its in km now
-		n.setMaximumFractionDigits(2);
-		distanceValue.setText((n.format(distance)));
+		n1.setMaximumFractionDigits(2);
+		distanceValue.setText((n1.format(distance)));
 	}
 
 	/**
@@ -453,38 +462,46 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Disconnected from all sensors...");
 				break;
 			case 14:
-				setText("Sensor connected");
+				setText("Speed sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");
 				break;
 			case 15:
+				setText("Cadence sensor connected");
+				setText("Application ready to use");
+				break;
+			case 16:
 				setText("First sensor connected");
 				setText("Waiting for next sensor...");
 				break;
-			case 16:
+			case 17:
 				setText("Second sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");
 				break;
-			case 17:
+			case 18:
+				setText("Second sensor connected");
+				setText("Application ready to use");
+				break;
+			case 19:
 				setText("Second sensor connected");
 				setText("Waiting for next sensor...");
 				break;
-			case 18:
+			case 20:
 				setText("Third sensor connected");
 				setText("Application ready to use");
 				setText("Please enter diameter value to start measurement");
 				break;
-			case 19:
+			case 21:
 				setText("Diameter value must be a number!");
 				break;
-			case 20:
+			case 22:
 				setText("Please enter value smaller than 255 Inch");
 				break;
-			case 21:
+			case 23:
 				setText("Please enter value bigger than 1 Inch");
 				break;
-			case 22:
+			case 24:
 				setText("Heart rate sensor connected");
 				setText("Application ready to use");
 				break;

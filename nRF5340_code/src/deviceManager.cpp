@@ -575,78 +575,12 @@ void deviceManager::scanFilterNoMatch(struct bt_scan_device_info *device_info, b
 	char addr[BT_ADDR_LE_STR_LEN];
 	bt_addr_le_to_str(device_info->recv_info->addr, addr,
 				  sizeof(addr));
-	//printk("Filters not matched. Address: %s \n", addr);
-
-	/*if (checkAddresses(addr,sensor1) && once_sensor1)
-	{
-		printk("Correct sensor found\n");
-		once_sensor1 = false;
-		err = bt_conn_le_create(device_info->recv_info->addr,
-								BT_CONN_LE_CREATE_CONN,
-								device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
-	}
-	else if (checkAddresses(addr,sensor2) && once_sensor2)
-	{
-		if ((nbrConnectionsCentral == 1 && sensorInfos == 3) || (nbrConnectionsCentral == 1 && sensorInfos == 4))
-		{
-			printk("Correct sensor found\n");
-			once_sensor2 = false;
-			err = bt_conn_le_create(device_info->recv_info->addr,
-									BT_CONN_LE_CREATE_CONN,
-									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
-		}	
-	}*/
 
 	initScan();
 }
 
 void deviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t type, struct net_buf_simple *ad) {
-	//printk("init scan\n");
 	initScan();
-	/*char addr_str[BT_ADDR_LE_STR_LEN];
-	char addr_toConnect[18] = "EA:1A:AD:15:54:9F";
-	int err = 0;
-	static int cnt = 0;
-
-	// We're only interested in connectable events 
-	if (type != BT_GAP_ADV_TYPE_ADV_IND &&
-	    type != BT_GAP_ADV_TYPE_ADV_DIRECT_IND) {
-		return;
-	}
-
-	// connect only to devices in close proximity 
-	if (rssi < -70) {
-		return;
-	}
-
-	if (bt_le_scan_stop()) {
-		return;
-	}
-
-	bt_addr_le_to_str(addr, addr_str, sizeof(addr_str));
-	printk("Device Found: %s\n",addr_str);
-	cnt++;
-	printk("Count devices %i\n",cnt);
-	if(strstr(addr_str,addr_toConnect)){
-        struct bt_conn_le_create_param param = {
-            .options = BT_CONN_LE_OPT_NONE,
-            .interval = BT_GAP_SCAN_FAST_INTERVAL,
-            .window = BT_GAP_SCAN_FAST_INTERVAL,
-            .interval_coded = 0,
-            .window_coded = 0,
-            .timeout = 0,
-        };
-		printk("Device found: %s (RSSI %d)\n", addr_str, rssi);
-        err = bt_conn_le_create(addr, BT_CONN_LE_CREATE_CONN,
-                                BT_LE_CONN_PARAM_DEFAULT, &centralConnections[nbrConnectionsCentral-1]);
-        if (err) {
-            printk("Create conn to %s failed (%u)\n", addr_str, err);
-            startScan();
-        }
-	}
-    else{
-        startScan();
-    }   */
 }
 
 void deviceManager::connected(struct bt_conn *conn, uint8_t err) {
@@ -812,13 +746,7 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 			{
 				disconnectedCode[0] = 11;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
-			}
-			/*error = bt_gatt_unsubscribe(conn,&param);
-			if (error != 0)
-			{
-				printk("Cannot unsubscribe\n");
-			}*/
-			
+			}			
 		}
 
 		if (checkAddresses(addr,sensor2))
@@ -826,7 +754,7 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 			once_sensor2 = true;
 			subscriptionDone = false;
 			dk_set_led_off(CON_STATUS_LED_CENTRAL);
-			if (sensorInfos == 4)
+			if (sensorInfos == 3)
 			{
 				disconnectedCode[0] = 11;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -836,11 +764,6 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 				disconnectedCode[0] = 12;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
 			}
-			/*error = bt_gatt_unsubfscribe(conn,&param);
-			if (error != 0)
-			{
-				printk("Cannot unsubscribe\n");
-			}*/
 		}
 
 		if (checkAddresses(addr,sensor3))
@@ -865,9 +788,8 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) {
 			}
 		}		
 		
-		
 		// start scanning again
-		startScan();
+		initScan();
 	}
 }
 
@@ -908,12 +830,6 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 	uint8_t connectedCode[1];
 	if (!subscriptionDone)
 	{	
-		// subscribe CSC characteristic
-		/*static struct bt_gatt_subscribe_params param = {
-			.notify = onReceived,
-			.value = BT_GATT_CCC_NOTIFY,
-		};*/
-
 		//struct bt_gatt_subscribe_params param = subscribe_params[nbrConnectionsCentral-1];
 		subscribe_params[nbrConnectionsCentral-1].value = BT_GATT_CCC_NOTIFY;
 		subscribe_params[nbrConnectionsCentral-1].notify = onReceived;
@@ -969,31 +885,39 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
-		if (nbrAddresses == 1)
+		if (nbrAddresses == 1 && sensorInfos == 1)
 		{
-			connectedCode[0] = 14;
-			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			printk("Discovery completed\n");
 			subscriptionDone = true;
+			connectedCode[0] = 14;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+		}
+		else if (nbrAddresses == 1 && sensorInfos == 2)
+		{
+			printk("Discovery completed\n");
+			subscriptionDone = true;
+			connectedCode[0] = 15;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		}
 		else if (nbrAddresses == 2)	
 		{
-			connectedCode[0] = 15;
+			connectedCode[0] = 16;
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			initScan();
 			printk("First discovery completed\n");			
 		}
 		else if (nbrAddresses == 3)
 		{
+			connectedCode[0] = 16;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			initScan();
 			printk("First discovery completed\n");	
 		}
-		
 		break;
 	case 2:
 		if (nbrAddresses == 2)
 		{
-			connectedCode[0] = 16;
+			connectedCode[0] = 17;
 			data_service_send(peripheralConn, connectedCode, sizeof(connectedCode));
 			printk("Second discovery completed\n");
 			dk_set_led_on(CON_STATUS_LED_CENTRAL);
@@ -1002,7 +926,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) {
 		}
 		else if (nbrAddresses == 3) 
 		{
-			connectedCode[0] = 17;
+			connectedCode[0] = 19;
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			printk("Second discovery completed\n");		
 			initScan();
@@ -1093,17 +1017,25 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
-		connectedCode[0] = 22;
+		connectedCode[0] = 23;
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Discovery completed\n");
 		break;
 	case 2:
-		connectedCode[0] = 16;
-		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
-		printk("Seconde discovery completed\n");
+		printk("Second discovery completed\n");
+		if (sensorInfos == 5)
+		{
+			connectedCode[0] = 17;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+		}
+		else if (sensorInfos == 6)
+		{
+			connectedCode[0] = 18;
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+		}
 		break;
 	case 3:
-		connectedCode[0] = 18;
+		connectedCode[0] = 20;
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Third discovery completed\n");
 		break;
@@ -1127,6 +1059,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 	static uint8_t cntNbrReceived1 = 0;
 	static uint8_t cntNbrReceived2 = 0;
 	static uint8_t waitCnt = 0;
+
 	// start calculating and showing data only when all characteristics are subscribed
 	if (subscriptionDone)
 	{
@@ -1145,7 +1078,8 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					if (cnt2 == 0 || cnt2 == 7 || cnt2 == 14) 
 					{
 						initBatteryManager(sensorInfos);
-						err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);	
+			
+						err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);
 						if (err == 0)
 						{
 							cntBatterySubscriptions++;
@@ -1225,25 +1159,23 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 				else if (deviceManager::data.type == TYPE_CSC_CADENCE)
 				{
 					// calculate rpm (rounds per minute)
-					if (diameterSet)
-					{
-						uint16_t rpm = deviceManager::data.calcRPM();
-						
-						if (rpm > 0)
-						{			
-							// 1. value: type -> cadence
-							// 2. value: 8 lsb of cadence value
-							// 3. value: 8 msb of cadence value					
-							dataToSend[0] = TYPE_CSC_CADENCE;	
-							dataToSend[1] = (uint8_t) rpm;
-							dataToSend[2] = (uint8_t) (rpm >> 8);	
-							if (peripheralConn != nullptr)
-							{
-								printk("Cadence rpm: %d\n",rpm);
-								data_service_send(peripheralConn,dataToSend, sizeof(dataToSend));
-							}
+					uint16_t rpm = deviceManager::data.calcRPM();
+					
+					if (rpm > 0 && rpm < 500)
+					{			
+						// 1. value: type -> cadence
+						// 2. value: 8 lsb of cadence value
+						// 3. value: 8 msb of cadence value					
+						dataToSend[0] = TYPE_CSC_CADENCE;	
+						dataToSend[1] = (uint8_t) rpm;
+						dataToSend[2] = (uint8_t) (rpm >> 8);	
+						if (peripheralConn != nullptr)
+						{
+							printk("Cadence rpm: %d\n",rpm);
+							data_service_send(peripheralConn,dataToSend, sizeof(dataToSend));
 						}
 					}
+
 					if (cntFirstCadence == 5 || cntNbrReceived2 == 100)
 					{
 						onceCadence = false;
@@ -1261,51 +1193,6 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 						cntNbrReceived2++;
 					}					
 				}
-				
-				/*static uint8_t cntNbrReceived = 0;
-				static uint8_t cntForStart = 0;
-				static uint8_t waitToThisNumber = 200;
-				if (cntForStart == 0 || cntForStart == 10 || cntNbrReceived == waitToThisNumber)
-				{
-					cntNbrReceived = 0;
-					switch (cntSensors)
-					{
-					case 0:
-						deviceManager::data.battValue_sensor1 = getBatteryLevel(cntSensors);
-						batteryLevelToSend[0] = TYPE_BATTERY;
-						batteryLevelToSend[1] = cntSensors;
-						batteryLevelToSend[2] = deviceManager::data.battValue_sensor1;
-						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
-						break;
-					case 1:
-						deviceManager::data.battValue_sensor2 = getBatteryLevel(cntSensors);
-						batteryLevelToSend[0] = TYPE_BATTERY;
-						batteryLevelToSend[1] = cntSensors;
-						batteryLevelToSend[2] = deviceManager::data.battValue_sensor2;
-						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));					
-						break;
-					case 2:
-						deviceManager::data.battValue_sensor3 = getBatteryLevel(cntSensors);
-						batteryLevelToSend[0] = TYPE_BATTERY;
-						batteryLevelToSend[1] = cntSensors;
-						batteryLevelToSend[2] = deviceManager::data.battValue_sensor3;
-						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));					
-						break;				
-					default:
-						break;
-					}
-
-					if (cntSensors == nbrConnectionsCentral)
-					{
-						cntSensors = 0;
-					}
-					else
-					{
-						cntSensors++;
-					}
-				}
-				cntForStart++;
-				cntNbrReceived++;*/
 			}
 		}
 		

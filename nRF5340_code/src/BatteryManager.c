@@ -96,7 +96,7 @@ void discovery_error_found_cb(struct bt_conn *conn,
 uint8_t gatt_discover_battery_service(struct bt_conn *conn)
 {
 	int err;
-
+	free = false;
 	static uint8_t cnt = 0;
 	cnt++;
 	
@@ -285,6 +285,7 @@ void initBatteryManager(uint8_t sensorInfos)
 	default:
 		break;
 	}
+	free = true;
 }
 
 uint8_t getBatteryLevel(uint8_t nbrSensor) 

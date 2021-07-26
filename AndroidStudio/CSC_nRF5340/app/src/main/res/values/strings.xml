@@ -21,7 +21,7 @@
   -->
 
 <resources>
-	<string name="app_name">HES-SO CSC</string>
+	<string name="app_name">HES-SO BIKE</string>
 	<string name="feature_name">CSC</string>
 	<string name="board_name">Nordic nRF5340 DK</string>
 

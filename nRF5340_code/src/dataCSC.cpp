@@ -80,12 +80,10 @@ uint16_t dataCSC::calcRPM() {
 
 uint16_t dataCSC::calcSpeed() {
     uint16_t retVal = 0;
-    //wheelDiameter = 0.08; // in m
     uint16_t nbrRevSpeed = sumRevSpeed - oldSumRevSpeed;
     uint32_t maxVal = 0xffffffff;   // 32 bit
     double wheelCircumference = 0;
     double rpm_speed = 0;
-
     
     if (nbrRevSpeed < 0)
     {
@@ -109,13 +107,8 @@ uint16_t dataCSC::calcSpeed() {
         }
         else   
         {
-            //retVal = (uint16_t) (speed/100); // speed is in m/min
-            //speed = (nbrRevSpeed*wheelCircumference)/(time);
-            //rpm_speed = time/nbrRevSpeed *60;
-            //printk("rpm1%d\n",rpm_speed);
             rpm_speed = (nbrRevSpeed) * 60 / time;
-            //printk("rpm2%d\n",rpm_speed);
-            speed = rpm_speed * wheelCircumference;
+            speed = (rpm_speed * wheelCircumference) * 60 / 1000; // km/h * 100 for the values after the comma
             retVal = (uint16_t) (speed);
             return retVal;
         }  

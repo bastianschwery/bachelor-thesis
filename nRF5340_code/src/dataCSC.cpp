@@ -1,6 +1,7 @@
 #include "dataCSC.h"
 
-dataCSC::dataCSC() {
+dataCSC::dataCSC() 
+{
     sumRevSpeed = 0;
     oldSumRevSpeed = 0;
     sumRevCadence = 0;
@@ -11,22 +12,17 @@ dataCSC::dataCSC() {
     oldLastEventCadence = 0;
     type = 0;
     wheelDiameter = 0.0;
-    speed = 0;
-    rpm = 0;
     heartRate = 0;
     battValue_speed = 0;
     battValue_cadence = 0;
     battValue_heartRate = 0;
+    speed = 0;
+    rpm = 0;
 }
 
-void dataCSC::saveData(const void *data) {
+void dataCSC::saveData(const void *data) 
+{
     type = ((uint8_t*)data)[0];
-    uint8_t val1;
-    uint8_t val2;
-    uint8_t val3;
-    val1 = ((uint8_t*)data)[2];
-    val2 = ((uint8_t*)data)[4];
-    val3 = ((uint8_t*)data)[6];
     switch (type)
     {
     case CSC_SPEED:
@@ -52,7 +48,8 @@ void dataCSC::saveData(const void *data) {
     }
 }
 
-uint16_t dataCSC::calcRPM() {
+uint16_t dataCSC::calcRPM() 
+{
     uint16_t retVal = 0;
     uint16_t maxVal = 0xffff;
     uint16_t nbrRev = sumRevCadence-oldSumRevCadence;
@@ -78,7 +75,8 @@ uint16_t dataCSC::calcRPM() {
     return retVal;
 }
 
-uint16_t dataCSC::calcSpeed() {
+uint16_t dataCSC::calcSpeed() 
+{
     uint16_t retVal = 0;
     uint16_t nbrRevSpeed = sumRevSpeed - oldSumRevSpeed;
     uint32_t maxVal = 0xffffffff;   // 32 bit
@@ -93,7 +91,7 @@ uint16_t dataCSC::calcSpeed() {
     if ((lastEventSpeed != oldLastEventSpeed) && nbrRevSpeed > 0)
     {
         wheelCircumference = wheelDiameter;
-        wheelCircumference = (wheelDiameter) * 3.1415;
+        wheelCircumference = (wheelDiameter) * PI;
         double time = (lastEventSpeed - oldLastEventSpeed)/1024.0;
         double oldSpeed = speed;
 

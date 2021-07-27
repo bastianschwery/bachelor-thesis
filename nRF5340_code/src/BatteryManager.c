@@ -14,7 +14,9 @@ static uint8_t batteryLevel_heartRate;
 static uint8_t cntDevices = 0;
 static uint8_t infoSensors = 0;
 static bool free = true;
-static bool ready = false;
+static bool readySpeed = false;
+static bool readyCadence = false;
+static bool readyHeartRate = false;
 
 void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 {
@@ -179,6 +181,7 @@ void read_battery_level_cb_speed(struct bt_bas_client *bas,
 				  uint8_t battery_level,
 				  int err)
 {
+	readySpeed = true;
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
@@ -197,6 +200,7 @@ void read_battery_level_cb_cadence(struct bt_bas_client *bas,
 				  uint8_t battery_level,
 				  int err)
 {
+	readyCadence = true;
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
@@ -215,7 +219,7 @@ void read_battery_level_cb_heartRate(struct bt_bas_client *bas,
 				  uint8_t battery_level,
 				  int err)
 {
-	ready = true;
+	readyHeartRate = true;
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
@@ -296,7 +300,7 @@ void initBatteryManager(uint8_t sensorInfos)
 		break;
 	}
 
-	free = true;
+	//free = true;
 }
 
 uint8_t getBatteryLevel(uint8_t nbrSensor) 
@@ -435,13 +439,60 @@ bool isFree()
 	return free;
 }
 
-void askForBatteryLevelHeartRate()
+void askForBatteryLevel(uint8_t type)
 {
-	ready = false;
-	bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
+	readySpeed = false;
+	readyCadence = false;
+	readyHeartRate = false;
+	switch (type)
+	{
+	case 1:
+		bt_bas_read_battery_level(&bas_speed, read_battery_level_cb_speed);
+		break;
+	case 2: 
+		bt_bas_read_battery_level(&bas_cadence, read_battery_level_cb_cadence);
+		break;
+	case 3:
+		bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
+		break;
+	default:
+		break;
+	}
 }
 
-bool isValueReady()
+bool isValueReady(uint8_t type)
 {
-	return ready;
+	switch (type)
+	{
+	case 1:
+		return readySpeed;
+		break;
+	case 2:
+		return readyCadence;
+		break;
+	case 3:
+		return readyHeartRate;
+		break;			
+	default:
+		return false;
+		break;
+	}	
+}
+
+void resetReadyValue(uint8_t type)
+{
+	switch (type)
+	{
+	case 1:
+		readySpeed = false;
+		break;
+	case 2:
+		readyCadence = false;
+		break;
+	case 3:
+		readyHeartRate = false;
+		break;			
+	default:
+		break;
+	}		
 }

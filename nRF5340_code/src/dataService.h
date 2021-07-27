@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
+
 #include <zephyr/types.h>
 #include <stddef.h>
 #include <string.h>
@@ -16,18 +17,15 @@
 #include <soc.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/conn.h>
 #include <bluetooth/uuid.h>
 #include <bluetooth/gatt.h>
 
-
-/*
- * defines
- * service / characteristics UUID's
- */
+/*---------------------------------------------------------------------------
+ * DEFINES
+ *--------------------------------------------------------------------------*/ 
 #define DATA_SERVICE_UUID 0xd4, 0x86, 0x48, 0x24, 0x54, 0xB3, 0x43, 0xA1, \
 			            0xBC, 0x20, 0x97, 0x8F, 0xC3, 0x76, 0xC2, 0x75
 
@@ -36,6 +34,13 @@
 
 #define TX_CHARACTERISTIC_UUID  0xED, 0xAA, 0x20, 0x11, 0x92, 0xE7, 0x43, 0x5A, \
 			                    0xAA, 0xE9, 0x94, 0x43, 0x35, 0x6A, 0xD4, 0xD3
+
+// declaration of the UUID's
+#define BT_UUID_DATA_SERVICE      BT_UUID_DECLARE_128(DATA_SERVICE_UUID)
+#define BT_UUID_DATA_SERVICE_RX   BT_UUID_DECLARE_128(RX_CHARACTERISTIC_UUID)
+#define BT_UUID_DATA_SERVICE_TX   BT_UUID_DECLARE_128(TX_CHARACTERISTIC_UUID)
+
+#define MAX_TRANSMIT_SIZE 240			
 
 /**
  * @brief Callback type for when new data is received
@@ -95,12 +100,13 @@ void getAddress(char* outArray, uint8_t nbr);
  * @brief Get informations about which sensors 
  * 		  the user wants to connect
  * 
- * @return uint8_t info value
- * 		   Speed and Cadence sensor: 1
- *		   Speed and Cadence sensor: 2
- *		   Speed and Cadence und heart rate sensor: 3
- * 		   Speed or Cadence und heart rate sensor: 4
- * 		   Just one heart rate sensor: 5
+ * @return uint8_t info about sensors
+ * 		   just one speed sensor: 1
+ *		   just one cadence sensor: 2
+ *		   speed and cadence sensors: 3
+ *		   speed and cadence and heart rate sensor: 4
+ * 		   speed and heart rate sensor: 5
+ * 		   cadence and heart rate sensor: 6
+ * 		   just one heart rate sensor: 7
  */
 uint8_t getSensorInfos();
-

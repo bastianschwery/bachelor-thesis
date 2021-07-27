@@ -74,7 +74,7 @@ extern "C" {
 #define TYPE_BATTERY 4
 
 // define maximum of central connections
-#define MAX_CONNECTIONS_CENTRAL 3
+#define MAX_CONNECTIONS_CENTRAL 4
 
 class deviceManager {
 public:
@@ -217,6 +217,13 @@ public:
     static void startScan();
 
     /**
+     * @brief start scanning after disconnect
+     * 
+     * @param type of sensors which has disconnected
+     */
+    static void reScan(uint8_t type);
+
+    /**
      * @brief callback function, is called when a device is found
      *        used at the start befor scan with filters
      * 
@@ -345,6 +352,7 @@ private:
     static bool app_button_state;
     static bool subscriptionDone;
     static bool batterySubscriptionDone;
+    static bool batteryReadCSCDone;
     static bool diameterSet;
     static bool once_sensor1;
 	static bool once_sensor2;

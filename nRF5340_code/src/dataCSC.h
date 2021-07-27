@@ -11,20 +11,20 @@
  * 
  */
 #include <stdint.h>
-
 #include <bluetooth/bluetooth.h>
 #include <sys/byteorder.h>
 
-// defines
-#define PI 3.1415926
+/*---------------------------------------------------------------------------
+ * DEFINES
+ *--------------------------------------------------------------------------*/ 
 #define CSC_SPEED 1
 #define CSC_CADENCE 2
+#define PI 3.1515926
 
 class dataCSC {
-
 public:
     /**
-     * @brief Construct a new data CSC object
+     * @brief constructor
      * 
      */
     dataCSC();
@@ -58,11 +58,11 @@ public:
     uint16_t oldLastEventCadence;
     uint8_t type;
 
-    // received data from heart rate sensor
-    uint8_t heartRate;
-
     // received data from application
     double wheelDiameter;
+
+    // received data from heart rate sensor
+    uint8_t heartRate;
 
     // received battery values from the sensors
     uint8_t battValue_speed;

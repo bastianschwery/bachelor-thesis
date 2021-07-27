@@ -21,6 +21,10 @@
 #include <bluetooth/addr.h>
 #include <bluetooth/gatt.h>
 
+
+/*---------------------------------------------------------------------------
+ * GLOBAL VARIABLES
+ *--------------------------------------------------------------------------*/ 
 uint8_t cntAddresses = 0;
 uint8_t diameter;
 double dia;
@@ -30,13 +34,6 @@ char address2[17];
 char address3[17];
 const uint8_t* addresses;
 uint8_t infoSensors = 0;
-
-// declaration of the UUID's
-#define BT_UUID_DATA_SERVICE      BT_UUID_DECLARE_128(DATA_SERVICE_UUID)
-#define BT_UUID_DATA_SERVICE_RX   BT_UUID_DECLARE_128(RX_CHARACTERISTIC_UUID)
-#define BT_UUID_DATA_SERVICE_TX   BT_UUID_DECLARE_128(TX_CHARACTERISTIC_UUID)
-
-#define MAX_TRANSMIT_SIZE 240
 
 // data arrays
 uint8_t data_rx[MAX_TRANSMIT_SIZE];
@@ -53,7 +50,6 @@ uint8_t data_service_init(void)
     return err;
 }
 
-
 /* This function is called whenever the RX Characteristic has been written to by a Client */
 static ssize_t on_receive(struct bt_conn *conn,
 			  const struct bt_gatt_attr *attr,
@@ -62,7 +58,6 @@ static ssize_t on_receive(struct bt_conn *conn,
 			  uint16_t offset,
 			  uint8_t flags)
 {
-
     const uint8_t * buffer = (uint8_t *) buf;
     
     // len = 1 -> new diameter received - or diameter reset (when 0)
@@ -75,7 +70,8 @@ static ssize_t on_receive(struct bt_conn *conn,
         {
             dia = (diameter + 0.5) * 2.54;
         }
-        else {
+        else 
+        {
             dia = diameter * 2.54;
         }
     }   
@@ -156,7 +152,8 @@ static ssize_t on_receive(struct bt_conn *conn,
     
 	printk("Received data, handle %d, conn %p, data: 0x", attr->handle, conn);
  
-    for(uint8_t i = 0; i < len; i++){
+    for(uint8_t i = 0; i < len; i++)
+    {
         printk("%02X", buffer[i]);
     }
     printk("\n");
@@ -169,13 +166,6 @@ static void on_sent(struct bt_conn *conn, void *user_data)
 	ARG_UNUSED(user_data);
 
     const bt_addr_le_t * addr = bt_conn_get_dst(conn);
-        
-	/*printk("Data sent to Address 0x %02X %02X %02X %02X %02X %02X \n", addr->a.val[0]
-                                                                    , addr->a.val[1]
-                                                                    , addr->a.val[2]
-                                                                    , addr->a.val[3]
-                                                                    , addr->a.val[4]
-                                                                    , addr->a.val[5]);*/
 }
 
 /* This function is called whenever the CCCD register has been changed by the client*/
@@ -207,8 +197,7 @@ void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value)
     }
 }
                         
-
-/* Data Service Declaration and Registration */
+// Data service declaration and registration 
 BT_GATT_SERVICE_DEFINE(data_service,
 BT_GATT_PRIMARY_SERVICE(BT_UUID_DATA_SERVICE),
 BT_GATT_CHARACTERISTIC(BT_UUID_DATA_SERVICE_RX,
@@ -260,18 +249,18 @@ void data_service_send(struct bt_conn *conn, const uint8_t *data, uint16_t len)
     }
 }
 
-// getter
-double getDiameter() {
+double getDiameter() 
+{
     return dia;
 }
 
-// getter
-uint8_t getNbrOfAddresses() {
+uint8_t getNbrOfAddresses() 
+{
     return nbrAddresses;
 }
 
-// getter
-void getAddress(char* outArray, uint8_t nbr) {
+void getAddress(char* outArray, uint8_t nbr) 
+{
     switch (nbr)
     {
     case 1:
@@ -298,6 +287,7 @@ void getAddress(char* outArray, uint8_t nbr) {
     }
 }
 
-uint8_t getSensorInfos() {
+uint8_t getSensorInfos() 
+{
     return infoSensors;
 }

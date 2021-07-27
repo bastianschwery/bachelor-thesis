@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
+
 #include <bluetooth/services/bas_client.h>
 #include <zephyr/types.h>
 #include <stddef.h>
@@ -15,7 +16,6 @@
 #include <errno.h>
 #include <zephyr.h>
 #include <sys/printk.h>
-
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/conn.h>
@@ -25,14 +25,12 @@
 #include <bluetooth/scan.h>
 #include <bluetooth/services/bas_client.h>
 #include <dk_buttons_and_leds.h>
-
 #include <settings/settings.h>
 
 /*---------------------------------------------------------------------------
  * DEFINES
  *--------------------------------------------------------------------------*/ 
 #define BAS_READ_VALUE_INTERVAL (10 * MSEC_PER_SEC)
-
 
 /**
  * @brief callback function, is called when new battery data received over ble
@@ -164,13 +162,22 @@ bool isFree();
 /**
  * @brief ask heart rate sensor for the battery level
  * 
+ * @param type which sensor ask for battery level
  */
-void askForBatteryLevelHeartRate();
+void askForBatteryLevel(uint8_t type);
 
 /**
  * @brief check if the battery level value is ready to read
  * 
+ * @param type which sensor is checking ready attribute
  * @return true when battery level value is ready to read
  * @return false when battery level value is not ready to read
  */
-bool isValueReady();
+bool isValueReady(uint8_t type);
+
+/**
+ * @brief reset the ready value
+ * 
+ * @param type which sensor wants to reset ready attribute
+ */
+void resetReadyValue(uint8_t type);

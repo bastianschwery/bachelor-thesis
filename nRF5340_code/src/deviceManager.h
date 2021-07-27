@@ -23,12 +23,7 @@ extern "C" {
 #include <bluetooth/conn.h>
 #include <bluetooth/uuid.h>
 #include <bluetooth/hci.h>
-
 #include <bluetooth/services/lbs.h>
-//#include <bluetooth/services/bas.h>
-
-//#include <../../nrf/subsys/bluetooth/services/bas_client.c>
-//#include <../../nrf/include/bluetooth/services/bas_client.h>
 #include <dk_buttons_and_leds.h>
 #include <settings/settings.h>
 #include <bluetooth/scan.h>
@@ -37,13 +32,49 @@ extern "C" {
 #include <bluetooth/att.h>
 #include <sys/byteorder.h>
 
+/*---------------------------------------------------------------------------
+ * DEFINES
+ *--------------------------------------------------------------------------*/ 
 
-//#include <bluetooth/services/bas_client.h>
-//#include "../../../nrf/include/bluetooth/services/bas_client.h"
+#define DEVICE_NAME             CONFIG_BT_DEVICE_NAME
+#define DEVICE_NAME_LEN         (sizeof(DEVICE_NAME) - 1)
 
-//using namespace std;
-#define MAX_CONNECTIONS_CENTRAL 5
-#define NBR_WANTED_CONNECTIONS 2
+
+#define CON_STATUS_LED_PERIPHERAL       DK_LED1
+#define CON_STATUS_LED_CENTRAL          DK_LED2
+
+#define USER_LED                DK_LED4
+
+#define USER_BUTTON             DK_BTN1_MSK
+
+// Thingy advertisement UUID 
+#define BT_UUID_THINGY                                                         \
+	BT_UUID_DECLARE_128(0x42, 0x00, 0x74, 0xA9, 0xFF, 0x52, 0x10, 0x9B,    \
+			    0x33, 0x49, 0x35, 0x9B, 0x00, 0x01, 0x68, 0xEF)
+
+// Thingy service UUID 
+#define BT_UUID_UI                                                         \
+	BT_UUID_DECLARE_128(0x42, 0x00, 0x74, 0xA9, 0xFF, 0x52, 0x10, 0x9B,    \
+			    0x33, 0x49, 0x35, 0x9B, 0x00, 0x03, 0x68, 0xEF)
+
+// Thingy button characteristic UUID 
+#define BT_UUID_BUTTON                                                     \
+	BT_UUID_DECLARE_128(0x42, 0x00, 0x74, 0xA9, 0xFF, 0x52, 0x10, 0x9B,    \
+			    0x33, 0x49, 0x35, 0x9B, 0x02, 0x03, 0x68, 0xEF)
+
+// Thingy led characteristic UUID 
+#define BT_UUID_LED                                                        \
+	BT_UUID_DECLARE_128(0x42, 0x00, 0x74, 0xA9, 0xFF, 0x52, 0x10, 0x9B,    \
+			    0x33, 0x49, 0x35, 0x9B, 0x01, 0x03, 0x68, 0xEF)
+
+// Type definitions
+#define TYPE_CSC_SPEED 1
+#define TYPE_CSC_CADENCE 2
+#define TYPE_HEARTRATE 3
+#define TYPE_BATTERY 4
+
+// define maximum of central connections
+#define MAX_CONNECTIONS_CENTRAL 3
 
 class deviceManager {
 public:
@@ -96,8 +127,24 @@ public:
     */
     static void disconnected(struct bt_conn *conn, uint8_t reason);
 
+    /**
+     * @brief LE connection parameter update request
+     * 
+     * @param conn the connection structure
+     * @param param proposed connection parameters
+     * @return true to accept the parameters
+     * @return false to reject the parameter
+     */
     static bool le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param);
 
+    /**
+     * @brieftThe parameters for an LE connection have been updated
+     * 
+     * @param conn the connection structure
+     * @param interval connection interval
+     * @param latency connection latency
+     * @param timeout connection supervision timeout
+     */
     static void le_param_updated(struct bt_conn *conn, uint16_t interval,
 				 uint16_t latency, uint16_t timeout);
 
@@ -136,9 +183,9 @@ public:
     /**
      * @brief initialize button service
      * 
-     * @return int error code, 0 if success
+     * @return uint8_t error code, 0 if success
      */
-    static int initButton(void);
+    static uint8_t initButton(void);
 
     /**
      * @brief send notification with new led state
@@ -171,7 +218,7 @@ public:
 
     /**
      * @brief callback function, is called when a device is found
-     *        used to find the correct thingy
+     *        used at the start befor scan with filters
      * 
      * @param addr address of the found device
      * @param rssi rssi value of the found device in db
@@ -295,8 +342,6 @@ private:
      */
     static bool isCentral;
     static bool isPeripheral;
-    static bool connectedC;
-    static bool connectedP;
     static bool app_button_state;
     static bool subscriptionDone;
     static bool batterySubscriptionDone;
@@ -306,12 +351,12 @@ private:
     static bool once_sensor3;
     static uint8_t nbrAddresses;
     static uint8_t cntBatterySubscriptions;
-
     static uint8_t nbrConnectionsCentral;
     static uint8_t sensorInfos;
-    static bool wasDisconnected;
-    static uint8_t freePlace;
-    static bool batterySubscripted[MAX_CONNECTIONS_CENTRAL];
+
+    static char sensor1[17]; 
+    static char sensor2[17];
+    static char sensor3[17];
 
     // array of central connections
     static struct bt_conn *centralConnections[MAX_CONNECTIONS_CENTRAL];
@@ -322,9 +367,8 @@ private:
     // data object, containts all the received data with the calculate functions
     static dataCSC data;
 
-    // the battery manager instance
-    //static BatteryManager battManager;
-    //static struct bt_bas_client bas;
+    // array of subscribe parameters -> for every connection one parameter
+    static struct bt_gatt_subscribe_params subscribe_params[MAX_CONNECTIONS_CENTRAL];
 
     // connection/disconnection callback structure
     struct bt_conn_cb conn_callbacks = {

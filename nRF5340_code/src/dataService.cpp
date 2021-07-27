@@ -4,6 +4,8 @@
  * Cours: Bachelor Thesis
  */
 
+#include "dataService.h"
+
 #include <zephyr/types.h>
 #include <stddef.h>
 #include <string.h>
@@ -12,15 +14,12 @@
 #include <sys/byteorder.h>
 #include <zephyr.h>
 #include <soc.h>
-
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/conn.h>
 #include <bluetooth/uuid.h>
 #include <bluetooth/addr.h>
 #include <bluetooth/gatt.h>
-
-#include "dataService.h"
 
 uint8_t cntAddresses = 0;
 uint8_t diameter;

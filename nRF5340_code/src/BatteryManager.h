@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-
+#include <bluetooth/services/bas_client.h>
 #include <zephyr/types.h>
 #include <stddef.h>
 #include <inttypes.h>
@@ -28,9 +28,9 @@
 
 #include <settings/settings.h>
 
-// defines
-#define KEY_READVAL_MASK DK_BTN1_MSK
-
+/*---------------------------------------------------------------------------
+ * DEFINES
+ *--------------------------------------------------------------------------*/ 
 #define BAS_READ_VALUE_INTERVAL (10 * MSEC_PER_SEC)
 
 
@@ -40,7 +40,7 @@
  * @param bas the battery service client 
  * @param battery_level the battery level (0-100%)
  */
-static void notify_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t battery_level);
+void notify_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t battery_level);
 
 /**
  * @brief callback function, is called when new battery data received over ble
@@ -48,7 +48,7 @@ static void notify_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t bat
  * @param bas the battery service client 
  * @param battery_level the battery level (0-100%)
  */
-static void notify_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t battery_level);
+void notify_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t battery_level);
 
 /**
  * @brief callback function, is called when new battery data received over ble
@@ -56,7 +56,7 @@ static void notify_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t b
  * @param bas the battery service client 
  * @param battery_level the battery level (0-100%)
  */
-static void notify_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t battery_level);
+void notify_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t battery_level);
 
 /**
  * @brief callback function, is called when discovery is completed
@@ -64,7 +64,7 @@ static void notify_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t
  * @param dm holds the address of the connected device, user context and discover parameter 
  * @param context context, not used in this case
  */
-static void discovery_completed_cb(struct bt_gatt_dm *dm, void *context);
+void discovery_completed_cb(struct bt_gatt_dm *dm, void *context);
 
 /**
  * @brief callback function, is called when the battery service was not found
@@ -72,7 +72,7 @@ static void discovery_completed_cb(struct bt_gatt_dm *dm, void *context);
  * @param conn connection structure which does not include the service
  * @param context context, not used in this case
  */
-static void discovery_service_not_found_cb(struct bt_conn *conn, void *context);
+void discovery_service_not_found_cb(struct bt_conn *conn, void *context);
 
 /**
  * @brief callback function, is called when an error occurs while discovering the battery service
@@ -81,7 +81,7 @@ static void discovery_service_not_found_cb(struct bt_conn *conn, void *context);
  * @param err error code, 0 if success
  * @param context context, not used in this case
  */
-static void discovery_error_found_cb(struct bt_conn *conn, int err, void *context);
+void discovery_error_found_cb(struct bt_conn *conn, int err, void *context);
 
 /**
  * @brief start discovering the battery service
@@ -97,7 +97,7 @@ uint8_t gatt_discover_battery_service(struct bt_conn *conn);
  * @param battery_level the battery level (0-100%)
  * @param err the error code, 0 if success
  */
-static void read_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t battery_level, int err);
+void read_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t battery_level, int err);
 
 /**
  * @brief callback function, is called when user requests the battery level of cadence sensor
@@ -106,7 +106,7 @@ static void read_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t batte
  * @param battery_level the battery level (0-100%)
  * @param err the error code, 0 if success
  */
-static void read_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t battery_level, int err);
+void read_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t battery_level, int err);
 
 /**
  * @brief callback function, is called when user requests the battery level of heart rate sensor
@@ -115,7 +115,7 @@ static void read_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t bat
  * @param battery_level the battery level (0-100%)
  * @param err the error code, 0 if success
  */
-static void read_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t battery_level, int err);
+void read_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t battery_level, int err);
 
 /**
  * @brief get the battery level 
@@ -137,21 +137,21 @@ void initBatteryManager(uint8_t sensorInfos);
  * 
  * @param dm holds the address of the connected device, user context and discover parameter 
  */
-static void subscribeBatterySpeed(struct bt_gatt_dm *dm);
+void subscribeBatterySpeed(struct bt_gatt_dm *dm);
 
 /**
  * @brief subscribe the battery service for cadence sensor
  * 
  * @param dm holds the address of the connected device, user context and discover parameter  
  */
-static void subscribeBatteryCadence(struct bt_gatt_dm *dm);
+void subscribeBatteryCadence(struct bt_gatt_dm *dm);
 
 /**
  * @brief subscribe the battery service for heart rate sensor
  * 
  * @param dm holds the address of the connected device, user context and discover parameter  
  */
-static void subscribeBatteryCadence(struct bt_gatt_dm *dm);
+void subscribeBatteryHeartRate(struct bt_gatt_dm *dm);
 
 /**
  * @brief check if battery service client is busy

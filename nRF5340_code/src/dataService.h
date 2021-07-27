@@ -103,3 +103,4 @@ void getAddress(char* outArray, uint8_t nbr);
  * 		   Just one heart rate sensor: 5
  */
 uint8_t getSensorInfos();
+

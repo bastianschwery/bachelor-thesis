@@ -74,7 +74,7 @@ extern "C" {
 #define TYPE_BATTERY 4
 
 // define maximum of central connections
-#define MAX_CONNECTIONS_CENTRAL 4
+#define MAX_CONNECTIONS_CENTRAL 5
 
 class deviceManager {
 public:
@@ -352,11 +352,12 @@ private:
     static bool app_button_state;
     static bool subscriptionDone;
     static bool batterySubscriptionDone;
-    static bool batteryReadCSCDone;
+    static bool batterySubscriptionCSCDone; 
     static bool diameterSet;
     static bool once_sensor1;
 	static bool once_sensor2;
     static bool once_sensor3;
+    static bool reconnectedHeartRate;
     static uint8_t nbrAddresses;
     static uint8_t cntBatterySubscriptions;
     static uint8_t nbrConnectionsCentral;

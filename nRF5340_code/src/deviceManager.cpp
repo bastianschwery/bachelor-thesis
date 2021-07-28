@@ -32,7 +32,8 @@ bool deviceManager::once_sensor1 = true;
 bool deviceManager::once_sensor2 = true;
 bool deviceManager::once_sensor3 = true;
 bool deviceManager::batterySubscriptionDone = false;
-bool deviceManager::batteryReadCSCDone = false;
+bool deviceManager::batterySubscriptionCSCDone = false;
+bool deviceManager::reconnectedHeartRate = false;
 uint8_t deviceManager::nbrAddresses = 0;
 uint8_t deviceManager::nbrConnectionsCentral = 0;
 uint8_t deviceManager::sensorInfos = 0;
@@ -67,7 +68,7 @@ static struct bt_gatt_dm_cb discovery_cb_HR =
 
 deviceManager::deviceManager()
 {
-	for (uint8_t i = 0; i < MAX_CONNECTIONS_CENTRAL-1; i++)
+	for (uint8_t i = 0; i <= MAX_CONNECTIONS_CENTRAL-1; i++)
 	{
 		centralConnections[i] = nullptr;
 	}
@@ -702,6 +703,11 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 	uint8_t err = bt_conn_get_info(conn,&info);
 	uint8_t disconnectedCode[1];
 	uint8_t typeToReconnect = 0;
+	struct bt_conn *connections[MAX_CONNECTIONS_CENTRAL];
+	for (uint8_t i = 0; i <= MAX_CONNECTIONS_CENTRAL-1; i++)
+	{
+		connections[i] = centralConnections[i];
+	}
 
 	if (err)
 	{
@@ -737,6 +743,7 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 			if (sensorInfos == 7)
 			{
+				reconnectedHeartRate = true;
 				typeToReconnect = TYPE_HEARTRATE;
 				disconnectedCode[0] = 12;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -762,6 +769,7 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			}
 			else
 			{
+				reconnectedHeartRate = true;
 				typeToReconnect = TYPE_HEARTRATE;
 				disconnectedCode[0] = 12;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -770,6 +778,7 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 
 		if (checkAddresses(addr,sensor3))
 		{
+			reconnectedHeartRate = true;
 			typeToReconnect = TYPE_HEARTRATE;
 			subscriptionDone = false;
 			once_sensor3 = true;
@@ -789,8 +798,12 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 				centralConnections[i] = nullptr;
 				nbrConnectionsCentral--;
 			}
-		}		
-		
+		}
+
+		for (uint8_t i = 0; i <= MAX_CONNECTIONS_CENTRAL-1; i++)
+		{
+			connections[i] = centralConnections[i];
+		}
 		// start scanning again
 		reScan(typeToReconnect);
 	}
@@ -1038,7 +1051,16 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 		}
 		break;
 	case 3:
-		connectedCode[0] = 20;
+		if (reconnectedHeartRate)
+		{
+			reconnectedHeartRate = false;
+			connectedCode[0] = 21;
+		}
+		else
+		{
+			connectedCode[0] = 20;
+		}
+
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Third discovery completed\n");
 		break;
@@ -1058,20 +1080,20 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 	static uint8_t cntNbrReceived1 = 0;
 	static uint8_t cntNbrReceived2 = 0;
 	static uint8_t cntForDiscover = 0;
+	uint8_t err = 0;
 	
 	// start calculating and showing data only when all characteristics are subscribed
 	if (subscriptionDone)
 	{
 		if (!batterySubscriptionDone)
-		{	
-			uint8_t err = 0;
+		{			
 			if (cntBatterySubscriptions == nbrConnectionsCentral)
 			{
 				batterySubscriptionDone = true;
 			}
 			else 
 			{
-				if (isFree() && !(nbrConnectionsCentral > 1))
+				if (isFree())
 				{
 					if (cntForDiscover == 0 || cntForDiscover == 7 || cntForDiscover == 14) 
 					{
@@ -1134,7 +1156,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 							}
 						}
 					}
-					if (cntFirstSpeed == 5 || cntNbrReceived1 == 50)
+					if (cntFirstSpeed == 1 || cntNbrReceived1 == 50)
 					{
 						cntNbrReceived1 = 0;
 						askForBatteryLevel(TYPE_CSC_SPEED);
@@ -1158,13 +1180,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 						batteryLevelToSend[0] = TYPE_BATTERY;
 						batteryLevelToSend[1] = TYPE_CSC_SPEED;
 						batteryLevelToSend[2] = deviceManager::data.battValue_speed;
-						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
-
-						printk("batt subs %d\n",cntBatterySubscriptions);
-						if (cntBatterySubscriptions == 2)
-						{
-							batteryReadCSCDone = true;
-						}						
+						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));				
 					}
 					else
 					{
@@ -1190,18 +1206,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 							printk("Cadence rpm: %d\n",rpm);
 							data_service_send(peripheralConn,dataToSend, sizeof(dataToSend));
 						}
-					}
-
-					/*if (cntFirstCadence == 5)
-					{
-						/if (batteryManagerIsFree)
-						{
-							
-						}
-						
-					}*/
-					
-
+					}			
 					if (cntFirstCadence == 5 || cntNbrReceived2 == 100)
 					{
 						askForBatteryLevel(TYPE_CSC_CADENCE);
@@ -1228,13 +1233,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 						batteryLevelToSend[0] = TYPE_BATTERY;
 						batteryLevelToSend[1] = TYPE_CSC_CADENCE;	
 						batteryLevelToSend[2] = deviceManager::data.battValue_cadence;
-						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
-
-						printk("batt subs %d\n",cntBatterySubscriptions);
-						if (cntBatterySubscriptions == 2)
-						{
-							batteryReadCSCDone = true;
-						}					
+						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));			
 					}
 					else 
 					{
@@ -1266,7 +1265,7 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 	batteryLevelToSend[0] = TYPE_BATTERY;
 	batteryLevelToSend[1] = TYPE_HEARTRATE;
 
-	if (onceHeartRate)
+	/*if (onceHeartRate)
 	{
 		if (isFree())
 		{
@@ -1287,7 +1286,22 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 				batterySubscriptionDone = true;
 			}
 		}
+	}*/
+
+	if (sensorInfos == 7)
+	{
+		if (onceHeartRate)
+		{
+			onceHeartRate = false;
+			initBatteryManager(sensorInfos);
+			err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);	
+			if (err == 0)
+			{
+				batterySubscriptionDone = true;
+			}			
+		}	
 	}
+	
 
 	if (batterySubscriptionDone)
 	{

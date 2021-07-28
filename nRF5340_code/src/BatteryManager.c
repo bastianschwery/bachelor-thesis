@@ -441,18 +441,18 @@ bool isFree()
 
 void askForBatteryLevel(uint8_t type)
 {
-	readySpeed = false;
-	readyCadence = false;
-	readyHeartRate = false;
 	switch (type)
 	{
 	case 1:
+		readySpeed = false;
 		bt_bas_read_battery_level(&bas_speed, read_battery_level_cb_speed);
 		break;
 	case 2: 
+		readyCadence = false;
 		bt_bas_read_battery_level(&bas_cadence, read_battery_level_cb_cadence);
 		break;
 	case 3:
+		readyHeartRate = false;
 		bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
 		break;
 	default:

@@ -26,6 +26,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -296,15 +297,15 @@ public class CSCActivity extends AppCompatActivity {
 				valueIsValid = true;
 			}
 			catch (NumberFormatException e) {
-				showMessageCode(19);	// entered not a number
+				showMessageCode(22);	// entered not a number
 				valueIsValid = false;
 			}
 			if (valueIsValid) {
 				if (wheelDiameter > 255) {
-					showMessageCode(20);	// entered to big value
+					showMessageCode(23);	// entered to big value
 				}
 				else if (wheelDiameter < 1) {
-					showMessageCode(21);	// entered to small value
+					showMessageCode(24);	// entered to small value
 				} else {
 					setValueButton.setEnabled(false);
 					diameterValue.setCursorVisible(false);
@@ -439,7 +440,14 @@ public class CSCActivity extends AppCompatActivity {
 	 * @param msg string to show
 	 */
 	public void setText(String msg) {
-		Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+		Toast toast = Toast.makeText(this,msg,Toast.LENGTH_SHORT);
+		LinearLayout layout = (LinearLayout) toast.getView();
+		if (layout.getChildCount() > 0) {
+			TextView tv = (TextView) layout.getChildAt(0);
+			tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+		}
+		
+		toast.show();
 	}
 
 	/**
@@ -493,15 +501,18 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Please enter diameter value to start measurement");
 				break;
 			case 21:
-				setText("Diameter value must be a number!");
+				setText("Heart rate sensor reconnected");
 				break;
 			case 22:
-				setText("Please enter value smaller than 255 Inch");
+				setText("Diameter value must be a number!");
 				break;
 			case 23:
-				setText("Please enter value bigger than 1 Inch");
+				setText("Please enter value smaller than 255 Inch");
 				break;
 			case 24:
+				setText("Please enter value bigger than 1 Inch");
+				break;
+			case 25:
 				setText("Heart rate sensor connected");
 				setText("Application ready to use");
 				break;

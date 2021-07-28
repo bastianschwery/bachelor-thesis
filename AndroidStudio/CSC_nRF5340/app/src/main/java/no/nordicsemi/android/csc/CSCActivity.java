@@ -114,7 +114,7 @@ public class CSCActivity extends AppCompatActivity {
 				}
 				else {
 					sensors.add((DiscoveredBluetoothDevice) receivedArray[i]);
-					addresses.add(devices.get(i).getAddress());
+					//addresses.add(devices.get(i).getAddress());
 				}
 			}
 		}
@@ -171,6 +171,10 @@ public class CSCActivity extends AppCompatActivity {
 				break;
 			default:
 				break;
+		}
+
+		for (int i = 0; i < sensors.size(); i++) {
+			addresses.add(sensors.get(i).getAddress());
 		}
 
 		/*
@@ -297,15 +301,15 @@ public class CSCActivity extends AppCompatActivity {
 				valueIsValid = true;
 			}
 			catch (NumberFormatException e) {
-				showMessageCode(22);	// entered not a number
+				showMessageCode(23);	// entered not a number
 				valueIsValid = false;
 			}
 			if (valueIsValid) {
 				if (wheelDiameter > 255) {
-					showMessageCode(23);	// entered to big value
+					showMessageCode(24);	// entered to big value
 				}
 				else if (wheelDiameter < 1) {
-					showMessageCode(24);	// entered to small value
+					showMessageCode(25);	// entered to small value
 				} else {
 					setValueButton.setEnabled(false);
 					diameterValue.setCursorVisible(false);
@@ -446,7 +450,7 @@ public class CSCActivity extends AppCompatActivity {
 			TextView tv = (TextView) layout.getChildAt(0);
 			tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
 		}
-		
+
 		toast.show();
 	}
 
@@ -501,20 +505,20 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Please enter diameter value to start measurement");
 				break;
 			case 21:
-				setText("Heart rate sensor reconnected");
-				break;
-			case 22:
-				setText("Diameter value must be a number!");
-				break;
-			case 23:
-				setText("Please enter value smaller than 255 Inch");
-				break;
-			case 24:
-				setText("Please enter value bigger than 1 Inch");
-				break;
-			case 25:
 				setText("Heart rate sensor connected");
 				setText("Application ready to use");
+				break;
+			case 22:
+				setText("Heart rate sensor reconnected");
+				break;
+			case 23:
+				setText("Diameter value must be a number!");
+				break;
+			case 24:
+				setText("Please enter value smaller than 255 Inch");
+				break;
+			case 25:
+				setText("Please enter value bigger than 1 Inch");
 				break;
 			default:
 				break;

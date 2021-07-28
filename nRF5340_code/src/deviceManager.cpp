@@ -512,15 +512,18 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 		{
 		case 1:
 			getAddress(sensor1,1);
+			printk("sensor1: %s\n",sensor1);
 			break;
 		case 2:
 			getAddress(sensor1,1);
 			getAddress(sensor2,2);
+			printk("sensor2: %s\n",sensor2);
 			break;
 		case 3:
 			getAddress(sensor1,1);
 			getAddress(sensor2,2);
 			getAddress(sensor3,3);
+			printk("sensor3: %s\n",sensor3);
 			break;
 		
 		default:
@@ -1033,7 +1036,7 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
-		connectedCode[0] = 24;
+		connectedCode[0] = 21;
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Discovery completed\n");
 		break;
@@ -1041,12 +1044,30 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 		printk("Second discovery completed\n");
 		if (sensorInfos == 5)
 		{
-			connectedCode[0] = 17;
+			if (reconnectedHeartRate)
+			{
+				reconnectedHeartRate = false;
+				connectedCode[0] = 21;
+			}
+			else
+			{
+				connectedCode[0] = 17;
+			}
+			
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		}
 		else if (sensorInfos == 6)
 		{
-			connectedCode[0] = 18;
+			if (reconnectedHeartRate)
+			{
+				reconnectedHeartRate = false;
+				connectedCode[0] = 21;
+			}
+			else
+			{
+				connectedCode[0] = 18;
+			}
+
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		}
 		break;
@@ -1054,7 +1075,7 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 		if (reconnectedHeartRate)
 		{
 			reconnectedHeartRate = false;
-			connectedCode[0] = 21;
+			connectedCode[0] = 22;
 		}
 		else
 		{

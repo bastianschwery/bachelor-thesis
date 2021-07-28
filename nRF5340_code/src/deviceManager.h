@@ -11,6 +11,10 @@
  * 
  */
 
+/*---------------------------------------------------------------------------
+ * INCLUDES
+ *--------------------------------------------------------------------------*/ 
+
 #include "dataCSC.h"
 #include "dataService.h"
 
@@ -352,7 +356,6 @@ private:
     static bool app_button_state;
     static bool subscriptionDone;
     static bool batterySubscriptionDone;
-    static bool batterySubscriptionCSCDone; 
     static bool diameterSet;
     static bool once_sensor1;
 	static bool once_sensor2;
@@ -363,9 +366,16 @@ private:
     static uint8_t nbrConnectionsCentral;
     static uint8_t sensorInfos;
 
+    // addresses of the three sensors
     static char sensor1[17]; 
     static char sensor2[17];
     static char sensor3[17];
+
+    // data struct advertising
+    static const struct bt_data sd[];
+
+    // data struct scanning
+    static const struct bt_data ad[];
 
     // array of central connections
     static struct bt_conn *centralConnections[MAX_CONNECTIONS_CENTRAL];
@@ -394,6 +404,5 @@ private:
     };
 
     // connection authorize callback structure
-    struct bt_conn_auth_cb conn_auth_callbacks = {
-    };
+    struct bt_conn_auth_cb conn_auth_callbacks = {};
 };

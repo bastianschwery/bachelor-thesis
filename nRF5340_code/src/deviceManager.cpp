@@ -266,10 +266,10 @@ void deviceManager::initCentral()
 				settings_load();
 				printk("Settings loaded\n");
 			}
-			
+
+			bt_conn_cb_register(&conn_callbacks);
 		}
 
-		bt_conn_cb_register(&conn_callbacks);
 		initScan();
 		startScan();	
 	}

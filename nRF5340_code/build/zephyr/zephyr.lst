@@ -1528,6 +1528,7 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
     90d6:	4620      	mov	r0, r4
     90d8:	494b      	ldr	r1, [pc, #300]	; (9208 <_ZN13deviceManager20discoveryCompletedHREP10bt_gatt_dmPv+0x144>)
     90da:	f003 fd01 	bl	cae0 <bt_gatt_dm_char_by_uuid>
+
 	if (!gatt_chrc) 
     90de:	4605      	mov	r5, r0
     90e0:	b928      	cbnz	r0, 90ee <_ZN13deviceManager20discoveryCompletedHREP10bt_gatt_dmPv+0x2a>
@@ -1777,10 +1778,6 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
     9290:	f88d 3000 	strb.w	r3, [sp]
 	batteryLevelToSend[1] = TYPE_HEARTRATE;
     9294:	f88d 3005 	strb.w	r3, [sp, #5]
-				batterySubscriptionDone = true;
-			}
-		}
-	}*/
 
 	if (sensorInfos == 7)
     9298:	4b39      	ldr	r3, [pc, #228]	; (9380 <_ZN13deviceManager9notify_HREP7bt_connP24bt_gatt_subscribe_paramsPKvt+0xfc>)
@@ -2975,63 +2972,63 @@ deviceManager::deviceManager()
 	if (getDevice() == 1 || getDevice() == 3)
     9af6:	f7ff fded 	bl	96d4 <_ZN13deviceManager9getDeviceEv>
     9afa:	2801      	cmp	r0, #1
-    9afc:	d00a      	beq.n	9b14 <_ZN13deviceManager11initCentralEv+0x28>
+    9afc:	d007      	beq.n	9b0e <_ZN13deviceManager11initCentralEv+0x22>
     9afe:	2803      	cmp	r0, #3
     9b00:	d132      	bne.n	9b68 <_ZN13deviceManager11initCentralEv+0x7c>
-		bt_conn_cb_register(&conn_callbacks);
-    9b02:	4620      	mov	r0, r4
-    9b04:	f007 fc54 	bl	113b0 <bt_conn_cb_register>
 		initScan();
-    9b08:	f7ff fe8a 	bl	9820 <_ZN13deviceManager8initScanEv>
+    9b02:	f7ff fe8d 	bl	9820 <_ZN13deviceManager8initScanEv>
 }
-    9b0c:	e8bd 4010 	ldmia.w	sp!, {r4, lr}
+    9b06:	e8bd 4010 	ldmia.w	sp!, {r4, lr}
 		startScan();	
-    9b10:	f7ff be72 	b.w	97f8 <_ZN13deviceManager9startScanEv>
+    9b0a:	f7ff be75 	b.w	97f8 <_ZN13deviceManager9startScanEv>
 			err = bt_enable(nullptr);
-    9b14:	2000      	movs	r0, #0
-    9b16:	f006 fded 	bl	106f4 <bt_enable>
+    9b0e:	2000      	movs	r0, #0
+    9b10:	f006 fdf0 	bl	106f4 <bt_enable>
 			if (err)
-    9b1a:	f010 01ff 	ands.w	r1, r0, #255	; 0xff
-    9b1e:	d004      	beq.n	9b2a <_ZN13deviceManager11initCentralEv+0x3e>
+    9b14:	f010 01ff 	ands.w	r1, r0, #255	; 0xff
+    9b18:	d004      	beq.n	9b24 <_ZN13deviceManager11initCentralEv+0x38>
 				printk("Bluetooth init failed (err %d)\n", err);
-    9b20:	4813      	ldr	r0, [pc, #76]	; (9b70 <_ZN13deviceManager11initCentralEv+0x84>)
+    9b1a:	4815      	ldr	r0, [pc, #84]	; (9b70 <_ZN13deviceManager11initCentralEv+0x84>)
 }
-    9b22:	e8bd 4010 	ldmia.w	sp!, {r4, lr}
+    9b1c:	e8bd 4010 	ldmia.w	sp!, {r4, lr}
 				printk("LEDs init failed (err %d)\n", err);
-    9b26:	f010 bfbb 	b.w	1aaa0 <printk>
+    9b20:	f010 bfbe 	b.w	1aaa0 <printk>
 			printk("Bluetooth ready\n");
-    9b2a:	4812      	ldr	r0, [pc, #72]	; (9b74 <_ZN13deviceManager11initCentralEv+0x88>)
-    9b2c:	f010 ffb8 	bl	1aaa0 <printk>
+    9b24:	4813      	ldr	r0, [pc, #76]	; (9b74 <_ZN13deviceManager11initCentralEv+0x88>)
+    9b26:	f010 ffbb 	bl	1aaa0 <printk>
 			err = dk_leds_init();
-    9b30:	f00c ffc8 	bl	16ac4 <dk_leds_init>
+    9b2a:	f00c ffcb 	bl	16ac4 <dk_leds_init>
 			if (err) 
-    9b34:	f010 01ff 	ands.w	r1, r0, #255	; 0xff
-    9b38:	d001      	beq.n	9b3e <_ZN13deviceManager11initCentralEv+0x52>
+    9b2e:	f010 01ff 	ands.w	r1, r0, #255	; 0xff
+    9b32:	d001      	beq.n	9b38 <_ZN13deviceManager11initCentralEv+0x4c>
 				printk("LEDs init failed (err %d)\n", err);
-    9b3a:	480f      	ldr	r0, [pc, #60]	; (9b78 <_ZN13deviceManager11initCentralEv+0x8c>)
-    9b3c:	e7f1      	b.n	9b22 <_ZN13deviceManager11initCentralEv+0x36>
+    9b34:	4810      	ldr	r0, [pc, #64]	; (9b78 <_ZN13deviceManager11initCentralEv+0x8c>)
+    9b36:	e7f1      	b.n	9b1c <_ZN13deviceManager11initCentralEv+0x30>
 			err = initButton();
-    9b3e:	f7ff fddd 	bl	96fc <_ZN13deviceManager10initButtonEv>
+    9b38:	f7ff fde0 	bl	96fc <_ZN13deviceManager10initButtonEv>
 			if (err) 
-    9b42:	4601      	mov	r1, r0
-    9b44:	b108      	cbz	r0, 9b4a <_ZN13deviceManager11initCentralEv+0x5e>
+    9b3c:	4601      	mov	r1, r0
+    9b3e:	b108      	cbz	r0, 9b44 <_ZN13deviceManager11initCentralEv+0x58>
 				printk("Button init failed (err %d)\n", err);
-    9b46:	480d      	ldr	r0, [pc, #52]	; (9b7c <_ZN13deviceManager11initCentralEv+0x90>)
-    9b48:	e7eb      	b.n	9b22 <_ZN13deviceManager11initCentralEv+0x36>
+    9b40:	480e      	ldr	r0, [pc, #56]	; (9b7c <_ZN13deviceManager11initCentralEv+0x90>)
+    9b42:	e7eb      	b.n	9b1c <_ZN13deviceManager11initCentralEv+0x30>
 			err = bt_lbs_init(&lbs_callbacs);
-    9b4a:	f104 0014 	add.w	r0, r4, #20
-    9b4e:	f003 fdff 	bl	d750 <bt_lbs_init>
+    9b44:	f104 0014 	add.w	r0, r4, #20
+    9b48:	f003 fe02 	bl	d750 <bt_lbs_init>
 			if (err) 
-    9b52:	f010 01ff 	ands.w	r1, r0, #255	; 0xff
-    9b56:	d001      	beq.n	9b5c <_ZN13deviceManager11initCentralEv+0x70>
+    9b4c:	f010 01ff 	ands.w	r1, r0, #255	; 0xff
+    9b50:	d001      	beq.n	9b56 <_ZN13deviceManager11initCentralEv+0x6a>
 				printk("Failed to init LBS (err:%d)\n", err);
-    9b58:	4809      	ldr	r0, [pc, #36]	; (9b80 <_ZN13deviceManager11initCentralEv+0x94>)
-    9b5a:	e7e2      	b.n	9b22 <_ZN13deviceManager11initCentralEv+0x36>
+    9b52:	480b      	ldr	r0, [pc, #44]	; (9b80 <_ZN13deviceManager11initCentralEv+0x94>)
+    9b54:	e7e2      	b.n	9b1c <_ZN13deviceManager11initCentralEv+0x30>
 				settings_load();
-    9b5c:	f011 fa95 	bl	1b08a <settings_load>
+    9b56:	f011 fa98 	bl	1b08a <settings_load>
 				printk("Settings loaded\n");
-    9b60:	4808      	ldr	r0, [pc, #32]	; (9b84 <_ZN13deviceManager11initCentralEv+0x98>)
-    9b62:	f010 ff9d 	bl	1aaa0 <printk>
+    9b5a:	480a      	ldr	r0, [pc, #40]	; (9b84 <_ZN13deviceManager11initCentralEv+0x98>)
+    9b5c:	f010 ffa0 	bl	1aaa0 <printk>
+			bt_conn_cb_register(&conn_callbacks);
+    9b60:	4620      	mov	r0, r4
+    9b62:	f007 fc25 	bl	113b0 <bt_conn_cb_register>
     9b66:	e7cc      	b.n	9b02 <_ZN13deviceManager11initCentralEv+0x16>
 }
     9b68:	bd10      	pop	{r4, pc}

@@ -4,19 +4,13 @@
 /*---------------------------------------------------------------------------
  * GLOBAL VARIABLES
  *--------------------------------------------------------------------------*/ 
-static struct bt_bas_client bas_speed;
-static struct bt_bas_client bas_cadence;
-static struct bt_bas_client bas_heartRate;
+static struct bt_bas_client clients[3];
+static uint8_t batteryLevels[4];
 
-static uint8_t batteryLevel_speed;
-static uint8_t batteryLevel_cadence;
-static uint8_t batteryLevel_heartRate;
 static uint8_t cntDevices = 0;
 static uint8_t infoSensors = 0;
 static bool free = true;
-static bool readySpeed = false;
-static bool readyCadence = false;
-static bool readyHeartRate = false;
+static bool readyValues[3];
 
 void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 {
@@ -120,68 +114,11 @@ uint8_t gatt_discover_battery_service(struct bt_conn *conn)
 	return err;
 }
 
-void notify_battery_level_cb_speed(struct bt_bas_client *bas,
-				    uint8_t battery_level)
-{
-	char addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
-			  addr, sizeof(addr));
-	if (battery_level == BT_BAS_VAL_INVALID) 
-	{
-		printk("[%s] Battery notification aborted\n", addr);
-	} 
-	else 
-	{
-		printk("[%s] Battery notification: %"PRIu8"%%\n",
-		       addr, battery_level);
-	}
-	batteryLevel_speed = battery_level;
-}
-
-void notify_battery_level_cb_cadence(struct bt_bas_client *bas,
-				    uint8_t battery_level)
-{
-	char addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
-			  addr, sizeof(addr));
-	if (battery_level == BT_BAS_VAL_INVALID) 
-	{
-		printk("[%s] Battery notification aborted\n", addr);
-	}
-	else 
-	{
-		printk("[%s] Battery notification: %"PRIu8"%%\n",
-		       addr, battery_level);
-	}
-	batteryLevel_cadence = battery_level;
-}
-
-void notify_battery_level_cb_heartRate(struct bt_bas_client *bas,
-				    uint8_t battery_level)
-{
-	char addr[BT_ADDR_LE_STR_LEN];
-
-	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
-			  addr, sizeof(addr));
-	if (battery_level == BT_BAS_VAL_INVALID) 
-	{
-		printk("[%s] Battery notification aborted\n", addr);
-	} 
-	else 
-	{
-		printk("[%s] Battery notification: %"PRIu8"%%\n",
-		       addr, battery_level);
-	}
-	batteryLevel_heartRate = battery_level;
-}
-
 void read_battery_level_cb_speed(struct bt_bas_client *bas,
 				  uint8_t battery_level,
 				  int err)
 {
-	readySpeed = true;
+	readyValues[SPEED] = true;
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
@@ -193,14 +130,14 @@ void read_battery_level_cb_speed(struct bt_bas_client *bas,
 	}
 
 	printk("[%s] Battery read: %"PRIu8"%%\n", addr, battery_level);
-    batteryLevel_speed = battery_level;
+	batteryLevels[SPEED] = battery_level;
 }
 
 void read_battery_level_cb_cadence(struct bt_bas_client *bas,
 				  uint8_t battery_level,
 				  int err)
 {
-	readyCadence = true;
+	readyValues[CADENCE] = true;
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
@@ -212,14 +149,14 @@ void read_battery_level_cb_cadence(struct bt_bas_client *bas,
 	}
 
 	printk("[%s] Battery read: %"PRIu8"%%\n", addr, battery_level);
-    batteryLevel_cadence = battery_level;
+	batteryLevels[CADENCE] = battery_level;
 }
 
 void read_battery_level_cb_heartRate(struct bt_bas_client *bas,
 				  uint8_t battery_level,
 				  int err)
 {
-	readyHeartRate = true;
+	readyValues[HEARTRATE] = true;
 	char addr[BT_ADDR_LE_STR_LEN];
 
 	bt_addr_le_to_str(bt_conn_get_dst(bt_bas_conn(bas)),
@@ -231,11 +168,17 @@ void read_battery_level_cb_heartRate(struct bt_bas_client *bas,
 	}
 
 	printk("[%s] Battery read: %"PRIu8"%%\n", addr, battery_level);
-    batteryLevel_heartRate = battery_level;
+	batteryLevels[HEARTRATE] = battery_level;
 }
 
 void initBatteryManager(uint8_t sensorInfos)
 {
+	for (uint8_t i = 0; i <= 2; i++)
+	{
+		readyValues[i] = false;
+		batteryLevels[i] = 0;
+	}
+	
 	free = false;
 	infoSensors = sensorInfos;
 	cntDevices++;
@@ -244,63 +187,61 @@ void initBatteryManager(uint8_t sensorInfos)
 	switch (sensorInfos)
 	{
 	case 1:
-		bt_bas_client_init(&bas_speed);
+		bt_bas_client_init(&clients[SPEED]);
 		break;
 	case 2:
-		bt_bas_client_init(&bas_cadence);
+		bt_bas_client_init(&clients[CADENCE]);
 		break;
 	case 3:
 		if (cntDevices == 1)
 		{
-			bt_bas_client_init(&bas_speed);
+			bt_bas_client_init(&clients[SPEED]);
 		}
 		else
 		{
-			bt_bas_client_init(&bas_cadence);
+			bt_bas_client_init(&clients[CADENCE]);
 		}
 		break;
 	case 4:
 		if (cntDevices == 1)
 		{
-			bt_bas_client_init(&bas_speed);
+			bt_bas_client_init(&clients[SPEED]);
 		}
 		else if (cntDevices == 2)
 		{
-			bt_bas_client_init(&bas_cadence);
+			bt_bas_client_init(&clients[CADENCE]);
 		}	
 		else
 		{
-			bt_bas_client_init(&bas_heartRate);
+			bt_bas_client_init(&clients[HEARTRATE]);
 		}
 		break;
 	case 5:
 		if (cntDevices == 1)
 		{
-			bt_bas_client_init(&bas_speed);
+			bt_bas_client_init(&clients[SPEED]);
 		}
 		else
 		{
-			bt_bas_client_init(&bas_heartRate);
+			bt_bas_client_init(&clients[HEARTRATE]);
 		}
 		break;
 	case 6:
 		if (cntDevices == 1)
 		{
-			bt_bas_client_init(&bas_cadence);
+			bt_bas_client_init(&clients[CADENCE]);
 		}
 		else
 		{
-			bt_bas_client_init(&bas_heartRate);
+			bt_bas_client_init(&clients[HEARTRATE]);
 		}	
 		break;
 	case 7:
-		bt_bas_client_init(&bas_heartRate);
+		bt_bas_client_init(&clients[HEARTRATE]);
 		break;				
 	default:
 		break;
 	}
-
-	//free = true;
 }
 
 uint8_t getBatteryLevel(uint8_t nbrSensor) 
@@ -308,17 +249,18 @@ uint8_t getBatteryLevel(uint8_t nbrSensor)
     uint8_t defaultValue = 0;
 	switch (nbrSensor)
 	{
-	case 1:		
-		return batteryLevel_speed;
+	case 1:
+		return batteryLevels[SPEED];	
 		break;
 	case 2:
-		return batteryLevel_cadence;
+		return batteryLevels[CADENCE];
 		break;
 	case 3:
-		return batteryLevel_heartRate;
+		return batteryLevels[HEARTRATE];
 		break;
 	default:
-		return defaultValue;
+		batteryLevels[DEFAULT] = 0;
+		return batteryLevels[DEFAULT];
 		break;
 	}
 
@@ -329,27 +271,10 @@ void subscribeBatterySpeed(struct bt_gatt_dm *dm)
 {
 	uint8_t err = 0;
 
-	err = bt_bas_handles_assign(dm, &bas_speed);
+	err = bt_bas_handles_assign(dm, &clients[SPEED]);
 	if (err) 
 	{
 		printk("Could not init BAS client object from speed sensor, error: %d\n", err);
-	}
-
-	if (bt_bas_notify_supported(&bas_speed))
-	{
-		err = bt_bas_subscribe_battery_level(&bas_speed, notify_battery_level_cb_speed);
-		if (err) 
-		{
-			printk("Cannot subscribe to BAS value notification from speed sensor, (err: %d)\n", err);
-		}
-	} 
-	else 
-	{
-		err = bt_bas_start_per_read_battery_level(&bas_speed, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_speed);
-		if (err) 
-		{
-			printk("Could not start periodic read of BAS value for speed sensor\n");
-		}
 	}
 
 	err = bt_gatt_dm_data_release(dm);
@@ -365,28 +290,11 @@ void subscribeBatteryCadence(struct bt_gatt_dm *dm)
 {
 	uint8_t err = 0;
 
-	err = bt_bas_handles_assign(dm, &bas_cadence);
+	err = bt_bas_handles_assign(dm, &clients[CADENCE]);
 	if (err) 
 	{
 		printk("Could not init BAS client object from cadence sensor, error: %d\n", err);
 	}
-
-	if (bt_bas_notify_supported(&bas_cadence))
-	{
-		err = bt_bas_subscribe_battery_level(&bas_cadence, notify_battery_level_cb_cadence);
-		if (err) 
-		{
-			printk("Cannot subscribe to BAS value notification from cadence sensor, (err: %d)\n", err);
-		}
-	} 
-	else 
-	{
-		err = bt_bas_start_per_read_battery_level(&bas_cadence, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_cadence);
-		if (err) 
-		{
-			printk("Could not start periodic read of BAS value for cadence sensor\n");
-		}
-	}	
 
 	err = bt_gatt_dm_data_release(dm);
 	if (err) 
@@ -402,26 +310,10 @@ void subscribeBatteryHeartRate(struct bt_gatt_dm *dm)
 {
 	uint8_t err = 0;
 
-	err = bt_bas_handles_assign(dm, &bas_heartRate);
+	err = bt_bas_handles_assign(dm, &clients[HEARTRATE]);
 	if (err) 
 	{
 		printk("Could not init BAS client object from heart rate sensor, error: %d\n", err);
-	}
-
-	if (bt_bas_notify_supported(&bas_heartRate))
-	{
-		err = bt_bas_subscribe_battery_level(&bas_heartRate, notify_battery_level_cb_heartRate);
-		if (err) 
-		{
-			printk("Cannot subscribe to BAS value notification from heart rate sensor, (err: %d)\n", err);
-		}
-	} else 
-	{
-		err = bt_bas_start_per_read_battery_level(&bas_heartRate, BAS_READ_VALUE_INTERVAL, notify_battery_level_cb_heartRate);
-		if (err) 
-		{
-			printk("Could not start periodic read of BAS value for heart rate sensor\n");
-		}
 	}
 
 	err = bt_gatt_dm_data_release(dm);
@@ -444,16 +336,16 @@ void askForBatteryLevel(uint8_t type)
 	switch (type)
 	{
 	case 1:
-		readySpeed = false;
-		bt_bas_read_battery_level(&bas_speed, read_battery_level_cb_speed);
+		readyValues[SPEED] = false;
+		bt_bas_read_battery_level(&clients[SPEED], read_battery_level_cb_speed);
 		break;
 	case 2: 
-		readyCadence = false;
-		bt_bas_read_battery_level(&bas_cadence, read_battery_level_cb_cadence);
+		readyValues[CADENCE] = false;
+		bt_bas_read_battery_level(&clients[CADENCE], read_battery_level_cb_cadence);
 		break;
 	case 3:
-		readyHeartRate = false;
-		bt_bas_read_battery_level(&bas_heartRate, read_battery_level_cb_heartRate);
+		readyValues[HEARTRATE] = false;
+		bt_bas_read_battery_level(&clients[HEARTRATE], read_battery_level_cb_heartRate);
 		break;
 	default:
 		break;
@@ -465,13 +357,13 @@ bool isValueReady(uint8_t type)
 	switch (type)
 	{
 	case 1:
-		return readySpeed;
+		return readyValues[SPEED];
 		break;
 	case 2:
-		return readyCadence;
+		return readyValues[CADENCE];
 		break;
 	case 3:
-		return readyHeartRate;
+		return readyValues[HEARTRATE];
 		break;			
 	default:
 		return false;
@@ -484,13 +376,13 @@ void resetReadyValue(uint8_t type)
 	switch (type)
 	{
 	case 1:
-		readySpeed = false;
+		readyValues[SPEED] = false;
 		break;
 	case 2:
-		readyCadence = false;
+		readyValues[CADENCE] = false;
 		break;
 	case 3:
-		readyHeartRate = false;
+		readyValues[HEARTRATE] = false;
 		break;			
 	default:
 		break;

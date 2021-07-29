@@ -1,5 +1,5 @@
 /**
- * @file 	dataService.h
+ * @file 	DataService.h
  * @author 	Schwery Bastian (bastian98@gmx.ch)
  * @brief 	This class implements a rx/tx service
  * @version 0.1
@@ -10,18 +10,6 @@
  */
 
 #include <zephyr/types.h>
-#include <stddef.h>
-#include <string.h>
-#include <errno.h>
-#include <zephyr.h>
-#include <soc.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/conn.h>
-#include <bluetooth/uuid.h>
-#include <bluetooth/gatt.h>
 
 /*---------------------------------------------------------------------------
  * DEFINES

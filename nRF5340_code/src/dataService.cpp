@@ -4,7 +4,7 @@
  * Cours: Bachelor Thesis
  */
 
-#include "dataService.h"
+#include "DataService.h"
 
 #include <zephyr/types.h>
 #include <stddef.h>

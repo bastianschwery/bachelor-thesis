@@ -1,6 +1,6 @@
-#include "dataCSC.h"
+#include "Data.h"
 
-dataCSC::dataCSC() 
+Data::Data() 
 {
     sumRevSpeed = 0;
     oldSumRevSpeed = 0;
@@ -20,7 +20,7 @@ dataCSC::dataCSC()
     rpm = 0;
 }
 
-void dataCSC::saveData(const void *data) 
+void Data::saveData(const void *data) 
 {
     type = ((uint8_t*)data)[0];
     switch (type)
@@ -48,7 +48,7 @@ void dataCSC::saveData(const void *data)
     }
 }
 
-uint16_t dataCSC::calcRPM() 
+uint16_t Data::calcRPM() 
 {
     uint16_t retVal = 0;
     uint16_t maxVal = 0xffff;
@@ -75,7 +75,7 @@ uint16_t dataCSC::calcRPM()
     return retVal;
 }
 
-uint16_t dataCSC::calcSpeed() 
+uint16_t Data::calcSpeed() 
 {
     uint16_t retVal = 0;
     uint16_t nbrRevSpeed = sumRevSpeed - oldSumRevSpeed;

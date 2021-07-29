@@ -10,51 +10,14 @@
  */
 
 #include <bluetooth/services/bas_client.h>
-#include <zephyr/types.h>
-#include <stddef.h>
-#include <inttypes.h>
-#include <errno.h>
-#include <zephyr.h>
-#include <sys/printk.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/conn.h>
-#include <bluetooth/uuid.h>
-#include <bluetooth/gatt.h>
-#include <bluetooth/gatt_dm.h>
-#include <bluetooth/scan.h>
-#include <bluetooth/services/bas_client.h>
-#include <dk_buttons_and_leds.h>
-#include <settings/settings.h>
 
 /*---------------------------------------------------------------------------
  * DEFINES
  *--------------------------------------------------------------------------*/ 
-#define BAS_READ_VALUE_INTERVAL (10 * MSEC_PER_SEC)
-
-/**
- * @brief callback function, is called when new battery data received over ble
- * 
- * @param bas the battery service client 
- * @param battery_level the battery level (0-100%)
- */
-void notify_battery_level_cb_speed(struct bt_bas_client *bas, uint8_t battery_level);
-
-/**
- * @brief callback function, is called when new battery data received over ble
- * 
- * @param bas the battery service client 
- * @param battery_level the battery level (0-100%)
- */
-void notify_battery_level_cb_cadence(struct bt_bas_client *bas, uint8_t battery_level);
-
-/**
- * @brief callback function, is called when new battery data received over ble
- * 
- * @param bas the battery service client 
- * @param battery_level the battery level (0-100%)
- */
-void notify_battery_level_cb_heartRate(struct bt_bas_client *bas, uint8_t battery_level);
+#define SPEED 0
+#define CADENCE 1
+#define HEARTRATE 2
+#define DEFAULT 3
 
 /**
  * @brief callback function, is called when discovery is completed

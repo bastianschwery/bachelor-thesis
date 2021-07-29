@@ -1,5 +1,5 @@
 /**
- * @file    deviceManager.h
+ * @file    DeviceManager.h
  * @author  Schwery Bastian (bastian98@gmx.ch)
  * @brief   handle peripheral and central connections and 
  *          the data flow between the sensors and the android
@@ -15,26 +15,18 @@
  * INCLUDES
  *--------------------------------------------------------------------------*/ 
 
-#include "dataCSC.h"
-#include "dataService.h"
+#include "Data.h"
+#include "DataService.h"
 
-extern "C" {
+extern "C"
+{
     #include "BatteryManager.h"
 }
 
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/addr.h>
-#include <bluetooth/conn.h>
-#include <bluetooth/uuid.h>
-#include <bluetooth/hci.h>
 #include <bluetooth/services/lbs.h>
 #include <dk_buttons_and_leds.h>
 #include <settings/settings.h>
 #include <bluetooth/scan.h>
-
-#include <bluetooth/gatt_dm.h>
-#include <bluetooth/att.h>
-#include <sys/byteorder.h>
 
 /*---------------------------------------------------------------------------
  * DEFINES
@@ -80,14 +72,15 @@ extern "C" {
 // define maximum of central connections
 #define MAX_CONNECTIONS_CENTRAL 5
 
-class deviceManager {
+class DeviceManager {
 public:
 /*---------------------------------------------------------------------------
  * general methods
  *--------------------------------------------------------------------------*/ 
-
-    // constructor
-    deviceManager();
+    /**
+     * @brief constructor
+     */
+    DeviceManager();
 
    /**
     * @brief Get the Device object
@@ -111,6 +104,43 @@ public:
     */
     void setDevice(bool c, bool p);
 
+/*---------------------------------------------------------------------------
+ * public callback functions
+ *--------------------------------------------------------------------------*/ 
+    /**
+     * @brief callback function, is called when discovery of the service is completed
+     * 
+     * @param dm holds the address of the connected device, user context and discover parameter        
+     * @param ctx context, not used in this case
+    */
+    static void discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx);
+
+    /**
+     * @brief callback function, is called when service was not found
+     * 
+     * @param conn connection structure which does not include the service
+     * @param ctx context, not used in this case
+    */
+    static void discovery_service_not_found(struct bt_conn *conn, void *ctx);
+
+    /**
+     * @brief callback function, is called when an error occurs while discovering the service
+     * 
+     * @param conn connection structure which the error occurs
+     * @param err error code, 0 if success
+     * @param ctx context, not used in this case
+    */
+    static void discovery_error_found(struct bt_conn *conn, int err, void *ctx);
+
+    /**
+     * @brief callback function, is called when discovery of the service is completed
+     * 
+     * @param dm holds the address of the connected device, user context and discover parameter
+     * @param ctx context, not used in this case
+     */
+    static void discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx);   
+
+private:
 /*---------------------------------------------------------------------------
  * methods for peripheral and central role
  *--------------------------------------------------------------------------*/    
@@ -239,40 +269,6 @@ public:
     static void deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
                             struct net_buf_simple *ad);
     
-    // add service callbacks
-    /**
-     * @brief callback function, is called when discovery of the service is completed
-     * 
-     * @param dm holds the address of the connected device, user context and discover parameter        
-     * @param ctx context, not used in this case
-    */
-    static void discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx);
-
-    /**
-     * @brief callback function, is called when service was not found
-     * 
-     * @param conn connection structure which does not include the service
-     * @param ctx context, not used in this case
-    */
-    static void discovery_service_not_found(struct bt_conn *conn, void *ctx);
-
-    /**
-     * @brief callback function, is called when an error occurs while discovering the service
-     * 
-     * @param conn connection structure which the error occurs
-     * @param err error code, 0 if success
-     * @param ctx context, not used in this case
-    */
-    static void discovery_error_found(struct bt_conn *conn, int err, void *ctx);
-
-    /**
-     * @brief callback function, is called when discovery of the service is completed
-     * 
-     * @param dm holds the address of the connected device, user context and discover parameter
-     * @param ctx context, not used in this case
-     */
-    static void discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx);
-
     /**
      * @brief start discovery process for the heart rate sensor
      * 
@@ -384,7 +380,7 @@ private:
     static struct bt_conn *peripheralConn;
 
     // data object, containts all the received data with the calculate functions
-    static dataCSC data;
+    static Data data;
 
     // array of subscribe parameters -> for every connection one parameter
     static struct bt_gatt_subscribe_params subscribe_params[MAX_CONNECTIONS_CENTRAL];

@@ -1,5 +1,5 @@
 /**
- * @file dataCSC.h
+ * @file Data.h
  * @author Schwery Bastian (bastian98@gmx.ch)
  * @brief This class saves all the received 
  *        data from the nRF5340 and calculates
@@ -19,15 +19,15 @@
  *--------------------------------------------------------------------------*/ 
 #define CSC_SPEED 1
 #define CSC_CADENCE 2
-#define PI 3.1515926
+#define PI 3.1415926
 
-class dataCSC {
+class Data {
 public:
     /**
      * @brief constructor
      * 
      */
-    dataCSC();
+    Data();
 
     /** @brief save the new received data
      * 

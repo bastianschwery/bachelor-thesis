@@ -59,7 +59,7 @@ public class CSCActivity extends AppCompatActivity {
 	private boolean firstEntry = false;
 	private CSCViewModel viewModel;
 	private TextView diameterValue;
-	private Button setValueButton, resetButton, resetDistanceButton, reconnectButton;
+	private Button setValueButton, resetButton, resetDistanceButton;
 	private ImageView batteryIconSpeed, batteryIconCadence, batteryIconHeartRate;
 	private double wheelDiameter = 0.0;
 	private double distance = 0;
@@ -73,7 +73,6 @@ public class CSCActivity extends AppCompatActivity {
 	byte[] address1;
 	byte[] address2;
 	byte[] address3;
-	byte[] addressesToSend;
 	int nbrAddresses = 0;
 	int infoDevices = 0;
 

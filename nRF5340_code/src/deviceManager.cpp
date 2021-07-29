@@ -1,4 +1,4 @@
-#include "deviceManager.h"
+#include "DeviceManager.h"
 
 // data service definition
 BT_GATT_SERVICE_DEFINE(csc_srv,
@@ -8,56 +8,56 @@ BT_GATT_SERVICE_DEFINE(csc_srv,
 );
 
 // initalize static attributes
-bool deviceManager::isCentral = false;
-bool deviceManager::isPeripheral = false;
-bool deviceManager::app_button_state = false;
-bool deviceManager::subscriptionDone = false;
-bool deviceManager::diameterSet = false;
-bool deviceManager::once_sensor1 = true;
-bool deviceManager::once_sensor2 = true;
-bool deviceManager::once_sensor3 = true;
-bool deviceManager::batterySubscriptionDone = false;
-bool deviceManager::reconnectedHeartRate = false;
-uint8_t deviceManager::nbrAddresses = 0;
-uint8_t deviceManager::nbrConnectionsCentral = 0;
-uint8_t deviceManager::sensorInfos = 0;
-uint8_t deviceManager::cntBatterySubscriptions = 0;
-char deviceManager::sensor1[];
-char deviceManager::sensor2[];
-char deviceManager::sensor3[];
+bool DeviceManager::isCentral = false;
+bool DeviceManager::isPeripheral = false;
+bool DeviceManager::app_button_state = false;
+bool DeviceManager::subscriptionDone = false;
+bool DeviceManager::diameterSet = false;
+bool DeviceManager::once_sensor1 = true;
+bool DeviceManager::once_sensor2 = true;
+bool DeviceManager::once_sensor3 = true;
+bool DeviceManager::batterySubscriptionDone = false;
+bool DeviceManager::reconnectedHeartRate = false;
+uint8_t DeviceManager::nbrAddresses = 0;
+uint8_t DeviceManager::nbrConnectionsCentral = 0;
+uint8_t DeviceManager::sensorInfos = 0;
+uint8_t DeviceManager::cntBatterySubscriptions = 0;
+char DeviceManager::sensor1[];
+char DeviceManager::sensor2[];
+char DeviceManager::sensor3[];
 
-const bt_data deviceManager::sd[] = {BT_DATA_BYTES(BT_DATA_UUID128_ALL, BT_UUID_LBS_VAL),};
-const bt_data deviceManager::ad[] = {
+const bt_data DeviceManager::sd[] = {BT_DATA_BYTES(BT_DATA_UUID128_ALL, BT_UUID_LBS_VAL),};
+const bt_data DeviceManager::ad[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
 };
 
-bt_conn* deviceManager::peripheralConn;
-bt_conn* deviceManager::centralConnections[];
-bt_gatt_subscribe_params deviceManager::subscribe_params[];
-dataCSC deviceManager::data;
+bt_conn* DeviceManager::peripheralConn;
+bt_conn* DeviceManager::centralConnections[];
+bt_gatt_subscribe_params DeviceManager::subscribe_params[];
+Data DeviceManager::data;
 
 // define discovery callback for the CSC sensors
 static struct bt_gatt_dm_cb discovery_cb_CSC = 
 {
-	.completed = deviceManager::discoveryCompletedCSC,
-	.service_not_found = deviceManager::discovery_service_not_found,
-	.error_found = deviceManager::discovery_error_found,
+	.completed = DeviceManager::discoveryCompletedCSC,
+	.service_not_found = DeviceManager::discovery_service_not_found,
+	.error_found = DeviceManager::discovery_error_found,
 };
 
 // define discovery callback for the heart rate sensor
 static struct bt_gatt_dm_cb discovery_cb_HR = 
 {
-	.completed = deviceManager::discoveryCompletedHR,
-	.service_not_found = deviceManager::discovery_service_not_found,
-	.error_found = deviceManager::discovery_error_found,
+	.completed = DeviceManager::discoveryCompletedHR,
+	.service_not_found = DeviceManager::discovery_service_not_found,
+	.error_found = DeviceManager::discovery_error_found,
 };
 
 /*-----------------------------------------------------------------------------------------------------
  * GENERAL METHODS
  *---------------------------------------------------------------------------------------------------*/
 
-deviceManager::deviceManager()
+DeviceManager::DeviceManager()
 {
 	for (uint8_t i = 0; i <= MAX_CONNECTIONS_CENTRAL-1; i++)
 	{
@@ -65,7 +65,7 @@ deviceManager::deviceManager()
 	}
 }
 
-uint8_t deviceManager::getDevice()
+uint8_t DeviceManager::getDevice()
 {
     if (isCentral && isPeripheral)
 	{
@@ -85,7 +85,7 @@ uint8_t deviceManager::getDevice()
     }
 }
 
-void deviceManager::setDevice(bool c, bool p)
+void DeviceManager::setDevice(bool c, bool p)
 {
     isPeripheral = p;
     isCentral = c;  
@@ -104,18 +104,18 @@ void deviceManager::setDevice(bool c, bool p)
 	}
 }
 
-void deviceManager::app_led_cb(bool led_state)
+void DeviceManager::app_led_cb(bool led_state)
 {
 	// set led to led_state
     dk_set_led(USER_LED,led_state);
 }
 
-bool deviceManager::app_button_cb(void)
+bool DeviceManager::app_button_cb(void)
 {
     return app_button_state;
 }
 
-void deviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed)
+void DeviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed)
 {
    	if (has_changed & USER_BUTTON) {
 		bt_lbs_send_button_state(button_state);
@@ -123,7 +123,7 @@ void deviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed)
 	} 
 }
 
-uint8_t deviceManager::initButton()
+uint8_t DeviceManager::initButton()
 {
     uint8_t err;
 	// initialize function buttonChanged as callback when state of button changes
@@ -139,7 +139,7 @@ uint8_t deviceManager::initButton()
  * PERIPHERAL ROLE
  *---------------------------------------------------------------------------------------------------*/
 
-void deviceManager::initPeripheral()
+void DeviceManager::initPeripheral()
 {
     uint8_t err;
     if(getDevice() == 3 || getDevice() == 2)
@@ -199,7 +199,7 @@ void deviceManager::initPeripheral()
     }
 }
 
-void deviceManager::startAdvertising() 
+void DeviceManager::startAdvertising() 
 {
 	uint8_t err;
 	err = bt_le_adv_start(BT_LE_ADV_CONN, ad, ARRAY_SIZE(ad),
@@ -218,7 +218,7 @@ void deviceManager::startAdvertising()
  * CENTRAL ROLE
  *---------------------------------------------------------------------------------------------------*/
  
-void deviceManager::initCentral()
+void DeviceManager::initCentral()
 {
 	printk("Init Central\n");
 	if (getDevice() == 1 || getDevice() == 3)
@@ -275,7 +275,7 @@ void deviceManager::initCentral()
 	}
 }
 
-void deviceManager::initScan() 
+void DeviceManager::initScan() 
 {
 	uint8_t err;
 	static bool once = true;
@@ -432,7 +432,7 @@ void deviceManager::initScan()
 	}
 }
 
-void deviceManager::startScan()
+void DeviceManager::startScan()
 {
     uint8_t err;
 	err = bt_scan_start(BT_SCAN_TYPE_SCAN_ACTIVE);
@@ -443,7 +443,7 @@ void deviceManager::startScan()
 	printk("Scanning...\n");
 }
 
-void deviceManager::reScan(uint8_t type)
+void DeviceManager::reScan(uint8_t type)
 {
 	uint8_t err = 0;
 
@@ -484,7 +484,7 @@ void deviceManager::reScan(uint8_t type)
 	startScan();
 }
 
-void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
+void DeviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 			      struct bt_scan_filter_match *filter_match,
 			      bool connectable) {
 
@@ -560,24 +560,24 @@ void deviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	}
 }
 
-void deviceManager::scanConnectionError(struct bt_scan_device_info *device_info) 
+void DeviceManager::scanConnectionError(struct bt_scan_device_info *device_info) 
 {
     printk("Connecting failed\n");
 	startScan();
 }
 
-void deviceManager::scanFilterNoMatch(struct bt_scan_device_info *device_info, bool connectable)
+void DeviceManager::scanFilterNoMatch(struct bt_scan_device_info *device_info, bool connectable)
 {
 	bt_scan_stop();
 	initScan();
 }
 
-void deviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t type, struct net_buf_simple *ad)
+void DeviceManager::deviceFound(const bt_addr_le_t *addr, int8_t rssi, uint8_t type, struct net_buf_simple *ad)
 {
 	initScan();
 }
 
-void deviceManager::connected(struct bt_conn *conn, uint8_t err) 
+void DeviceManager::connected(struct bt_conn *conn, uint8_t err) 
 {
 	bt_conn_info info;
 	uint8_t error = bt_conn_get_info(conn,&info);
@@ -683,7 +683,7 @@ void deviceManager::connected(struct bt_conn *conn, uint8_t err)
 	}	
 }
 
-void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason) 
+void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason) 
 {
 	bt_conn_info info;
 	uint8_t err = bt_conn_get_info(conn,&info);
@@ -797,16 +797,16 @@ void deviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 	}
 }
 
-bool deviceManager::le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param)
+bool DeviceManager::le_param_req(struct bt_conn *conn, struct bt_le_conn_param *param)
 {
 	return true;
 }
 
-void deviceManager::le_param_updated(struct bt_conn *conn, uint16_t interval,
+void DeviceManager::le_param_updated(struct bt_conn *conn, uint16_t interval,
 				 uint16_t latency, uint16_t timeout)
 {}
 
-void deviceManager::discoverCSC()
+void DeviceManager::discoverCSC()
 {
 	printk("nbr conn: %d\n", nbrConnectionsCentral);
 	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_CSC, &discovery_cb_CSC, NULL);
@@ -816,7 +816,7 @@ void deviceManager::discoverCSC()
 	}
 }
 
-void deviceManager::discoverHR()
+void DeviceManager::discoverHR()
 {
 	uint8_t err = bt_gatt_dm_start(centralConnections[nbrConnectionsCentral-1], BT_UUID_HRS, &discovery_cb_HR, NULL);
 	if (err) 
@@ -825,7 +825,7 @@ void deviceManager::discoverHR()
 	}
 }
 
-void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) 
+void DeviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx) 
 {
 	uint8_t err;
 	uint8_t connectedCode[1];
@@ -945,7 +945,7 @@ void deviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx)
 	}
 }
 
-void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx) 
+void DeviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx) 
 {
 	printk("Service not found!\n");
 	uint8_t error[1];
@@ -954,13 +954,13 @@ void deviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	bt_conn_disconnect(conn,-5);
 }
 
-void deviceManager::discovery_error_found(struct bt_conn *conn, int err, void *ctx)
+void DeviceManager::discovery_error_found(struct bt_conn *conn, int err, void *ctx)
 {
 	printk("The discovery procedure failed, err %d\n", err);
 }
 
 
-void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx) 
+void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx) 
 {
 	uint8_t connectedCode[1];
 	uint8_t err;
@@ -1084,7 +1084,7 @@ void deviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 	dk_set_led_on(CON_STATUS_LED_CENTRAL);
 }
 
-uint8_t deviceManager::onReceived(struct bt_conn *conn,
+uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 			struct bt_gatt_subscribe_params *params,
 			const void *data, uint16_t length) 
 {
@@ -1131,7 +1131,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 			if (length > 0)
 			{
 				// save the new received data
-				deviceManager::data.saveData(data);
+				DeviceManager::data.saveData(data);
 
 				uint8_t val_after_comma;
 				uint8_t dataToSend[3];
@@ -1139,7 +1139,7 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 				if (getDiameter() != 0 && diameterSet == false)
 				{
 					diameterSet = true;
-					deviceManager::data.wheelDiameter = getDiameter();
+					DeviceManager::data.wheelDiameter = getDiameter();
 				}
 				else if (getDiameter() == 0 && diameterSet == true)
 				{
@@ -1147,12 +1147,12 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					diameterSet = false;
 				}
 				
-				if (deviceManager::data.type == TYPE_CSC_SPEED)
+				if (DeviceManager::data.type == TYPE_CSC_SPEED)
 				{
 					// calculate speed
 					if (diameterSet)
 					{
-						uint16_t speed = deviceManager::data.calcSpeed();
+						uint16_t speed = DeviceManager::data.calcSpeed();
 
 						if (speed > 0)
 						{
@@ -1180,10 +1180,10 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					else if (isValueReady(TYPE_CSC_SPEED))
 					{
 						resetReadyValue(TYPE_CSC_SPEED);
-						deviceManager::data.battValue_speed = getBatteryLevel(TYPE_CSC_SPEED);
+						DeviceManager::data.battValue_speed = getBatteryLevel(TYPE_CSC_SPEED);
 						batteryLevelToSend[0] = TYPE_BATTERY;
 						batteryLevelToSend[1] = TYPE_CSC_SPEED;
-						batteryLevelToSend[2] = deviceManager::data.battValue_speed;
+						batteryLevelToSend[2] = DeviceManager::data.battValue_speed;
 						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));				
 					}
 					else
@@ -1192,10 +1192,10 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 						cntFirstSpeed++;
 					}		
 				}
-				else if (deviceManager::data.type == TYPE_CSC_CADENCE)
+				else if (DeviceManager::data.type == TYPE_CSC_CADENCE)
 				{
 					// calculate rpm (rounds per minute)
-					uint16_t rpm = deviceManager::data.calcRPM();
+					uint16_t rpm = DeviceManager::data.calcRPM();
 					
 					if (rpm > 0 && rpm < 500)
 					{			
@@ -1220,10 +1220,10 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 					else if (isValueReady(TYPE_CSC_CADENCE))
 					{
 						resetReadyValue(TYPE_CSC_CADENCE);
-						deviceManager::data.battValue_cadence = getBatteryLevel(TYPE_CSC_CADENCE);
+						DeviceManager::data.battValue_cadence = getBatteryLevel(TYPE_CSC_CADENCE);
 						batteryLevelToSend[0] = TYPE_BATTERY;
 						batteryLevelToSend[1] = TYPE_CSC_CADENCE;	
-						batteryLevelToSend[2] = deviceManager::data.battValue_cadence;
+						batteryLevelToSend[2] = DeviceManager::data.battValue_cadence;
 						data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));			
 					}
 					else 
@@ -1237,13 +1237,15 @@ uint8_t deviceManager::onReceived(struct bt_conn *conn,
 	}
 	else
 	{
-		cntForDiscover = 0;
+		//cntForDiscover = 0;
+		cntFirstSpeed = 0;
+		cntFirstCadence = 0;
 	}
 
 	return BT_GATT_ITER_CONTINUE;
 }
 
-uint8_t deviceManager::notify_HR(struct bt_conn *conn,
+uint8_t DeviceManager::notify_HR(struct bt_conn *conn,
 		struct bt_gatt_subscribe_params *params,
 		const void *data, uint16_t length) 
 {
@@ -1287,8 +1289,8 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 			resetReadyValue(TYPE_HEARTRATE);
 			cntNbrReceived = 0;
 			cntFirst++;
-			deviceManager::data.battValue_heartRate = getBatteryLevel(TYPE_HEARTRATE);
-			batteryLevelToSend[2] = deviceManager::data.battValue_heartRate;
+			DeviceManager::data.battValue_heartRate = getBatteryLevel(TYPE_HEARTRATE);
+			batteryLevelToSend[2] = DeviceManager::data.battValue_heartRate;
 			data_service_send(peripheralConn,batteryLevelToSend,sizeof(batteryLevelToSend));
 		}
 		else
@@ -1306,7 +1308,7 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 		if (length == 2)
 		{
 				uint8_t hr_bpm = ((uint8_t *)data)[1];
-				deviceManager::data.heartRate = hr_bpm;
+				DeviceManager::data.heartRate = hr_bpm;
 				dataToSend[1] = hr_bpm;
 				printk("[NOTIFICATION] Heart Rate %u bpm\n", hr_bpm);
 				data_service_send(peripheralConn,dataToSend,sizeof(dataToSend));
@@ -1316,11 +1318,15 @@ uint8_t deviceManager::notify_HR(struct bt_conn *conn,
 			printk("[NOTIFICATION] data %p length %u\n", data, length);
 		}
 	}
+	else
+	{
+		cntFirst = 0;
+	}
 
 	return BT_GATT_ITER_CONTINUE;
 }
 
-bool deviceManager::checkAddresses(char addr1[],char addr2[])
+bool DeviceManager::checkAddresses(char addr1[],char addr2[])
 {
 	uint8_t cnt = 0;
 	bool retVal = false;

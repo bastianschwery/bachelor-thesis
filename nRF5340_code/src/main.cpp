@@ -10,7 +10,7 @@
  * 
  */
 
-#include "deviceManager.h"
+#include "DeviceManager.h"
 
 void main(void)
 {
@@ -18,7 +18,7 @@ void main(void)
 	printk("Application start\n");
 
 	// create a new device manager
-	deviceManager dManager;
+	DeviceManager dManager;
 	// start application as peripheral and central
 	dManager.setDevice(true,true);
 } 	

@@ -114,7 +114,6 @@ public class CSCActivity extends AppCompatActivity {
 				}
 				else {
 					sensors.add((DiscoveredBluetoothDevice) receivedArray[i]);
-					//addresses.add(devices.get(i).getAddress());
 				}
 			}
 		}

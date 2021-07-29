@@ -67,7 +67,9 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     private ArrayList<DiscoveredBluetoothDevice> devices_list = new ArrayList<>();
     private DiscoveredBluetoothDevice[] devices;
     private boolean boardSelected = false;
+    private boolean wrongSensors = false;
     private boolean nbrDevicesOK = false;
+    private boolean nbrSensorsOK = false;
     private Button connect_btn;
 
     @BindView(R.id.state_scanning) View scanningView;
@@ -136,21 +138,38 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         }
 
         for (int i=0;i<devices_list.size();i++) {
+            if (devices_list.get(i).getName() == null) {
+                setText("Wrong sensors were selected -> try again");
+                wrongSensors = true;
+                break;
+            }
+
             if (devices_list.get(i).getName().contains("Nordic")) {
                 boardSelected = true;
-                break;
             }
         }
 
-        if (boardSelected && nbrDevicesOK) {
+        if (boardSelected && devices_list.size() == 1) {
+            setText("Please select minimum one sensor");
+            nbrSensorsOK = false;
+        }
+        else
+        {
+            nbrSensorsOK = true;
+        }
+
+        if (boardSelected && nbrDevicesOK && nbrSensorsOK && !wrongSensors) {
             devices = new DiscoveredBluetoothDevice[devices_list.size()];
             devices = devices_list.toArray(devices);
             final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
             controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
             startActivity(controlBlinkIntent);
         }
-        else if (!boardSelected){
+        else if (!boardSelected && !wrongSensors) {
             setText("Please select a Nordic Board to continue");
+        }
+        else {
+            wrongSensors = false;
         }
     }
 

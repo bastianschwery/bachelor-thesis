@@ -99,6 +99,7 @@ uint16_t dataCSC::calcSpeed()
         {
             time = (0xffff - oldLastEventSpeed + lastEventSpeed)/1024;
         }
+        
         if (sumRevSpeed == oldSumRevSpeed)
         {
             return (uint16_t) oldSpeed;

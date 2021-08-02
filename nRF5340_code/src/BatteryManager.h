@@ -144,3 +144,11 @@ bool isValueReady(uint8_t type);
  * @param type which sensor wants to reset ready attribute
  */
 void resetReadyValue(uint8_t type);
+
+/**
+ * @brief get information if service was not found
+ * 
+ * @return true when service found
+ * @return false when service not found
+ */
+bool serviceFound();

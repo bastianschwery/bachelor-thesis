@@ -98,3 +98,11 @@ void getAddress(char* outArray, uint8_t nbr);
  * 		   just one heart rate sensor: 7
  */
 uint8_t getSensorInfos();
+
+/**
+ * @brief get information if notifications are enabled in application
+ * 
+ * @return true if enabled
+ * @return false if is not enabled
+ */
+bool areNotificationsOn();

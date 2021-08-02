@@ -11,11 +11,12 @@ static uint8_t cntDevices = 0;
 static uint8_t infoSensors = 0;
 static bool free = true;
 static bool readyValues[3];
+static bool service_found = true;
 
 void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 {
 	printk("The discovery procedure succeeded\n");
-
+	service_found = true;
 	bt_gatt_dm_data_print(dm);
 
 	switch (infoSensors)
@@ -81,6 +82,9 @@ void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 void discovery_service_not_found_cb(struct bt_conn *conn, void *context)
 {
 	printk("The service could not be found during the discovery\n");
+	service_found = false;
+	cntDevices--;
+	free = true;
 }
 
 void discovery_error_found_cb(struct bt_conn *conn,
@@ -88,6 +92,8 @@ void discovery_error_found_cb(struct bt_conn *conn,
 				     void *context)
 {
 	printk("The discovery procedure failed with %d\n", err);
+	cntDevices--;
+	free = true;
 }
 
 uint8_t gatt_discover_battery_service(struct bt_conn *conn)
@@ -387,4 +393,9 @@ void resetReadyValue(uint8_t type)
 	default:
 		break;
 	}		
+}
+
+bool serviceFound()
+{
+	return service_found;
 }

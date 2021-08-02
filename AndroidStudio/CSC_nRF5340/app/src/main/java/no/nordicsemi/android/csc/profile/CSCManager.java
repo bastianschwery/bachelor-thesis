@@ -81,6 +81,7 @@ public class CSCManager extends ObservableBleManager {
 	private final int TYPE_CADENCE= 2;
 	private final int TYPE_HEARTRATE = 3;
 	private final int TYPE_BATTERY = 4;
+	private final int TYPE_NOTIFICATIONS_NOT_ON = 5;
 
 	/**
 	 * constructor
@@ -180,6 +181,10 @@ public class CSCManager extends ObservableBleManager {
 				messageCode.setValue(data[0]);
 			}
 
+			if (data.length == 5) {
+				setNotificationsOn();
+			}
+
 			switch (data[0]) {
 				case TYPE_SPEED:
 					double val = data[2].doubleValue();
@@ -205,6 +210,9 @@ public class CSCManager extends ObservableBleManager {
 						default:
 							break;
 					}
+				//case TYPE_NOTIFICATIONS_NOT_ON:
+				//	setNotificationsOn();
+				//	break;
 				default:
 					log(Log.INFO, "Unknown type");
 					break;

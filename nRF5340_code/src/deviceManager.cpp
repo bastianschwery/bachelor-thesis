@@ -536,7 +536,7 @@ void DeviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 									BT_CONN_LE_CREATE_CONN,
 									device_info->conn_param, &centralConnections[nbrConnectionsCentral]);
 		}
-		else if (checkAddresses(addrShort,sensor2) && once_sensor2)
+		else if (checkAddresses(addrShort,sensor2) && once_sensor2 && !once_sensor1)
 		{
 			printk("Correct sensor found\n");
 			once_sensor2 = false;
@@ -610,9 +610,11 @@ void DeviceManager::connected(struct bt_conn *conn, uint8_t err)
 				break;
 			}		 
 		}
-		//centralConnections[nbrConnectionsCentral] = bt_conn_ref(conn);
+
 		bt_conn_unref(conn);
 		nbrConnectionsCentral++;
+
+		bt_get_name();
 
 		switch (sensorInfos)
 		{
@@ -689,12 +691,6 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 	uint8_t err = bt_conn_get_info(conn,&info);
 	uint8_t disconnectedCode[1];
 	uint8_t typeToReconnect = 0;
-	struct bt_conn *connections[MAX_CONNECTIONS_CENTRAL];
-
-	for (uint8_t i = 0; i <= MAX_CONNECTIONS_CENTRAL-1; i++)
-	{
-		connections[i] = centralConnections[i];
-	}
 
 	if (err)
 	{
@@ -788,10 +784,6 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			}
 		}
 
-		for (uint8_t i = 0; i <= MAX_CONNECTIONS_CENTRAL-1; i++)
-		{
-			connections[i] = centralConnections[i];
-		}
 		// start scanning again -> search first the same sensor type which has disconnected
 		reScan(typeToReconnect);
 	}
@@ -1090,11 +1082,13 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 {
 	// local variables 
 	uint8_t batteryLevelToSend[4];
+	uint8_t notificationNotOn[5];
 	static uint8_t cntFirstSpeed = 0;
 	static uint8_t cntFirstCadence = 0;
 	static uint8_t cntNbrReceived1 = 0;
 	static uint8_t cntNbrReceived2 = 0;
 	static uint8_t cntForDiscover = 0;
+	static uint8_t cntZeros = 0;
 	uint8_t err = 0;
 	
 	// start calculating and showing data only when all characteristics are subscribed
@@ -1126,10 +1120,24 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 				}
 			}
 		}
-		else 
+		else if (!serviceFound())
+		{
+			cntBatterySubscriptions--;
+			batterySubscriptionDone = false;
+		}
+		else
 		{
 			if (length > 0)
 			{
+				if (!areNotificationsOn())
+				{
+					notificationNotOn[0] = 5;
+					if (peripheralConn)
+					{
+						data_service_send(peripheralConn,notificationNotOn, sizeof(notificationNotOn));
+					}
+				}
+				
 				// save the new received data
 				DeviceManager::data.saveData(data);
 
@@ -1151,10 +1159,18 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 				{
 					// calculate speed
 					if (diameterSet)
-					{
+					{						
 						uint16_t speed = DeviceManager::data.calcSpeed();
+						if (speed == 0)
+						{
+							cntZeros++;
+						}
+						else
+						{
+							cntZeros = 0;
+						}
 
-						if (speed > 0)
+						if (speed > 0 || cntZeros >= 3)
 						{
 							// 1. value: type -> speed
 							// 2. value: 8 bit on the left side of comma
@@ -1197,7 +1213,7 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 					// calculate rpm (rounds per minute)
 					uint16_t rpm = DeviceManager::data.calcRPM();
 					
-					if (rpm > 0 && rpm < 500)
+					if (rpm < 500)
 					{			
 						// 1. value: type -> cadence
 						// 2. value: 8 lsb of cadence value
@@ -1237,7 +1253,7 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 	}
 	else
 	{
-		//cntForDiscover = 0;
+		cntForDiscover = 0;
 		cntFirstSpeed = 0;
 		cntFirstCadence = 0;
 	}

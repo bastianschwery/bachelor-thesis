@@ -31,7 +31,6 @@ import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
 import no.nordicsemi.android.ble.data.Data;
 
 public abstract class TXDataCallback implements ProfileDataCallback, TXCallback {
-
     /**
      * called when new data received
      * @param device the target device
@@ -96,6 +95,13 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
             dataArray[2] = batteryLevel;
 
             onCSCDataChanged(device,dataArray);
+        }
+
+        if (data.size() == 5) {
+            Integer[] notificationsNotOnArray = new Integer[5];
+            notificationsNotOnArray[4] = data.getIntValue(Data.FORMAT_UINT8,0);
+
+            onCSCDataChanged(device,notificationsNotOnArray);
         }
     }
 

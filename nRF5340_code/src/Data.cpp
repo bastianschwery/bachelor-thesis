@@ -82,6 +82,8 @@ uint16_t Data::calcSpeed()
     uint32_t maxVal = 0xffffffff;   // 32 bit
     double wheelCircumference = 0;
     double rpm_speed = 0;
+    static uint16_t totalTime = 0;
+    static uint8_t cntNbr = 0;
     
     if (nbrRevSpeed < 0)
     {
@@ -93,6 +95,15 @@ uint16_t Data::calcSpeed()
         wheelCircumference = wheelDiameter;
         wheelCircumference = (wheelDiameter) * PI;
         double time = (lastEventSpeed - oldLastEventSpeed)/1024.0;
+        cntNbr++;
+        totalTime += time;
+        if (cntNbr == 30)
+        {
+            cntNbr = 0;
+            printk("Total time is: %d\n",totalTime);
+            totalTime = 0;
+        }
+        
         double oldSpeed = speed;
 
         if (time < 0)
@@ -102,7 +113,8 @@ uint16_t Data::calcSpeed()
         
         if (sumRevSpeed == oldSumRevSpeed)
         {
-            return (uint16_t) oldSpeed;
+            //return (uint16_t) oldSpeed;
+            return 0;
         }
         else   
         {

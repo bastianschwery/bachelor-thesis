@@ -34,6 +34,7 @@ char address2[17];
 char address3[17];
 const uint8_t* addresses;
 uint8_t infoSensors = 0;
+bool notificationsOn = false;
 
 // data arrays
 uint8_t data_rx[MAX_TRANSMIT_SIZE];
@@ -180,16 +181,19 @@ void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value)
         case BT_GATT_CCC_NOTIFY: 
             // Start sending stuff!
             printk("Notifications ON\n");
+            notificationsOn = true;
             break;
 
         case BT_GATT_CCC_INDICATE: 
             // Start sending stuff via indications
             printk("Notifications ON with Indications\n");
+            notificationsOn = true;
             break;
 
         case 0: 
             // Stop sending stuff
             printk("Notifications OFF\n");
+            notificationsOn = false;
             break;
         
         default: 
@@ -290,4 +294,9 @@ void getAddress(char* outArray, uint8_t nbr)
 uint8_t getSensorInfos() 
 {
     return infoSensors;
+}
+
+bool areNotificationsOn()
+{
+    return notificationsOn;
 }

@@ -167,25 +167,6 @@ public class CSCActivity extends AppCompatActivity {
 						Collections.swap(sensors,0,1);
 					}
 				}
-
-				/*if (sensors.get(0).getName().contains("SPD") || sensors.get(0).getName().contains("CAD")) {
-					if (sensors.get(1).getName().contains("SPD") || sensors.get(1).getName().contains("CAD")) {
-						infoDevices = 3;
-					} else if (sensors.get(1).getName().contains("Polar") && sensors.get(0).getName().contains("SPD")) {
-						infoDevices = 5;
-					}
-					else if (sensors.get(1).getName().contains("Polar") && sensors.get(0).getName().contains("CAD")) {
-						infoDevices = 6;
-					}
-				} else if (sensors.get(0).getName().contains("Polar")) {
-					if (sensors.get(1).getName().contains("SPD")) {
-						infoDevices = 5;
-						Collections.swap(sensors,0,1);
-					} else if (sensors.get(1).getName().contains("CAD")) {
-						infoDevices = 6;
-						Collections.swap(sensors,0,1);
-					}
-				}*/
 				break;
 			case 3:
 				infoDevices = 4;
@@ -546,6 +527,9 @@ public class CSCActivity extends AppCompatActivity {
 			case 25:
 				setText("Please enter value bigger than 1 Inch");
 				break;
+			case 26:
+				setText("Notifications are off!");
+				setText("Please go 1 step back and reconnect to Board");
 			default:
 				break;
 		}

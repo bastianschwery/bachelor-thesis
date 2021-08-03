@@ -96,13 +96,6 @@ public abstract class TXDataCallback implements ProfileDataCallback, TXCallback 
 
             onCSCDataChanged(device,dataArray);
         }
-
-        if (data.size() == 5) {
-            Integer[] notificationsNotOnArray = new Integer[5];
-            notificationsNotOnArray[4] = data.getIntValue(Data.FORMAT_UINT8,0);
-
-            onCSCDataChanged(device,notificationsNotOnArray);
-        }
     }
 
     /**

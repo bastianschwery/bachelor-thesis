@@ -1082,13 +1082,14 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 {
 	// local variables 
 	uint8_t batteryLevelToSend[4];
-	uint8_t notificationNotOn[5];
+	uint8_t notificationNotOn[1];
 	static uint8_t cntFirstSpeed = 0;
 	static uint8_t cntFirstCadence = 0;
 	static uint8_t cntNbrReceived1 = 0;
 	static uint8_t cntNbrReceived2 = 0;
 	static uint8_t cntForDiscover = 0;
-	static uint8_t cntZeros = 0;
+	static uint8_t cntZerosSpeed = 0;
+	static uint8_t cntZerosCadence = 0;
 	uint8_t err = 0;
 	
 	// start calculating and showing data only when all characteristics are subscribed
@@ -1129,15 +1130,12 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 		{
 			if (length > 0)
 			{
+				// check if notifications are on, when disconnect from application -> so the user can reconnect
 				if (!areNotificationsOn())
 				{
-					notificationNotOn[0] = 5;
-					if (peripheralConn)
-					{
-						data_service_send(peripheralConn,notificationNotOn, sizeof(notificationNotOn));
-					}
+					bt_conn_disconnect(peripheralConn,1);
 				}
-				
+
 				// save the new received data
 				DeviceManager::data.saveData(data);
 
@@ -1163,14 +1161,14 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 						uint16_t speed = DeviceManager::data.calcSpeed();
 						if (speed == 0)
 						{
-							cntZeros++;
+							cntZerosSpeed++;
 						}
 						else
 						{
-							cntZeros = 0;
+							cntZerosSpeed = 0;
 						}
 
-						if (speed > 0 || cntZeros >= 3)
+						if (speed > 0 || cntZerosSpeed >= 3)
 						{
 							// 1. value: type -> speed
 							// 2. value: 8 bit on the left side of comma
@@ -1212,21 +1210,33 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 				{
 					// calculate rpm (rounds per minute)
 					uint16_t rpm = DeviceManager::data.calcRPM();
+					if (rpm == 0)
+					{	
+						cntZerosCadence++;
+					}
+					else
+					{
+						cntZerosCadence = 0;
+					}
 					
-					if (rpm < 500)
+					if (rpm > 0 || cntZerosCadence >= 3)
 					{			
-						// 1. value: type -> cadence
-						// 2. value: 8 lsb of cadence value
-						// 3. value: 8 msb of cadence value					
-						dataToSend[0] = TYPE_CSC_CADENCE;	
-						dataToSend[1] = (uint8_t) rpm;
-						dataToSend[2] = (uint8_t) (rpm >> 8);	
-						if (peripheralConn != nullptr)
+						if (rpm < 500)
 						{
-							printk("Cadence rpm: %d\n",rpm);
-							data_service_send(peripheralConn,dataToSend, sizeof(dataToSend));
+							// 1. value: type -> cadence
+							// 2. value: 8 lsb of cadence value
+							// 3. value: 8 msb of cadence value					
+							dataToSend[0] = TYPE_CSC_CADENCE;	
+							dataToSend[1] = (uint8_t) rpm;
+							dataToSend[2] = (uint8_t) (rpm >> 8);	
+							if (peripheralConn != nullptr)
+							{
+								printk("Cadence rpm: %d\n",rpm);
+								data_service_send(peripheralConn,dataToSend, sizeof(dataToSend));
+							}
 						}
-					}			
+					}	
+
 					if (cntFirstCadence == 5 || cntNbrReceived2 == 100)
 					{
 						askForBatteryLevel(TYPE_CSC_CADENCE);

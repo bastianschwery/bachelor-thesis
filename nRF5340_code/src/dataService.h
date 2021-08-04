@@ -69,6 +69,13 @@ void data_service_send(struct bt_conn *conn, const uint8_t *data, uint16_t len);
 */
 double getDiameter();
 
+/**
+ * @brief Set the diameter value
+ * 
+ * @param diameter value 
+ */
+void setDiameter(uint8_t diameter);
+
 /** 
  *  @brief get number of addresses the user selected
  * 

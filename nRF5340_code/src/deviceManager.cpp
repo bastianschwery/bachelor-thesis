@@ -18,6 +18,10 @@ bool DeviceManager::once_sensor2 = true;
 bool DeviceManager::once_sensor3 = true;
 bool DeviceManager::batterySubscriptionDone = false;
 bool DeviceManager::reconnectedHeartRate = false;
+bool DeviceManager::peripheralDisconnected = false;
+bool DeviceManager::connectedPeripheral = false;
+bool DeviceManager::cscDisconnected = false;
+bool DeviceManager::hrDisconnected = false;
 uint8_t DeviceManager::nbrAddresses = 0;
 uint8_t DeviceManager::nbrConnectionsCentral = 0;
 uint8_t DeviceManager::sensorInfos = 0;
@@ -527,7 +531,7 @@ void DeviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	if (ready)
 	{
 		bt_scan_stop();
-
+		// search first for the sensor 1 and then the sensor 2 and at the end sensor 3
 		if (checkAddresses(addrShort,sensor1) && once_sensor1)
 		{
 			printk("Correct sensor found\n");
@@ -671,7 +675,7 @@ void DeviceManager::connected(struct bt_conn *conn, uint8_t err)
 			printk("Connection failed (err %u)\n", err);
 			return;
 		}
-
+		connectedPeripheral = true;
 		printk("Connected with application\n");
 		peripheralConn = bt_conn_ref(conn);
 		bt_conn_unref(conn);
@@ -700,6 +704,9 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 
 	if (info.role == BT_CONN_ROLE_SLAVE)	// slave -> peripheral role
 	{
+		peripheralDisconnected = true;
+		connectedPeripheral = false;
+		setDiameter(0);
 		printk("Disconnected from Application (reason %u)\n", reason);		
 		dk_set_led_off(CON_STATUS_LED_PERIPHERAL);
 		startAdvertising();
@@ -727,6 +734,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 			if (sensorInfos == 7)
 			{
+				hrDisconnected = true;
 				reconnectedHeartRate = true;
 				typeToReconnect = TYPE_HEARTRATE;
 				disconnectedCode[0] = 12;
@@ -734,6 +742,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			}
 			else 
 			{
+				cscDisconnected = true;
 				typeToReconnect = TYPE_CSC_SPEED;
 				disconnectedCode[0] = 11;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -747,12 +756,14 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			dk_set_led_off(CON_STATUS_LED_CENTRAL);
 			if (sensorInfos == 3 || sensorInfos == 4)
 			{
+				cscDisconnected = true;
 				typeToReconnect = TYPE_CSC_SPEED;
 				disconnectedCode[0] = 11;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
 			}
 			else
 			{
+				hrDisconnected = true;
 				reconnectedHeartRate = true;
 				typeToReconnect = TYPE_HEARTRATE;
 				disconnectedCode[0] = 12;
@@ -762,6 +773,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 
 		if (checkAddresses(addr,sensor3))
 		{
+			hrDisconnected = true;
 			reconnectedHeartRate = true;
 			typeToReconnect = TYPE_HEARTRATE;
 			subscriptionDone = false;
@@ -1130,6 +1142,22 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 		{
 			if (length > 0)
 			{
+				// when a sensor disconnects, ask for battery level
+				if (cscDisconnected)
+				{
+					cscDisconnected = false;
+					cntFirstSpeed = 0;
+					cntFirstCadence = 0;
+				}
+
+				// when application disconnects and reconnects, ask for battery level
+				if (peripheralDisconnected && connectedPeripheral)
+				{
+					peripheralDisconnected = false;
+					cntFirstSpeed = 0;
+					cntFirstCadence = 0;
+				}
+				
 				// check if notifications are on, when disconnect from application -> so the user can reconnect
 				if (!areNotificationsOn())
 				{
@@ -1263,7 +1291,6 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 	}
 	else
 	{
-		cntForDiscover = 0;
 		cntFirstSpeed = 0;
 		cntFirstCadence = 0;
 	}
@@ -1288,8 +1315,10 @@ uint8_t DeviceManager::notify_HR(struct bt_conn *conn,
 
 	if (sensorInfos == 7)
 	{
-		if (onceHeartRate)
+		if (onceHeartRate || (peripheralDisconnected && connectedPeripheral))
 		{
+			cntFirst = 0;
+			peripheralDisconnected = false;
 			onceHeartRate = false;
 			initBatteryManager(sensorInfos);
 			err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);	
@@ -1299,8 +1328,13 @@ uint8_t DeviceManager::notify_HR(struct bt_conn *conn,
 			}			
 		}	
 	}
-	
 
+	if (hrDisconnected)
+	{
+		hrDisconnected = false;
+		cntFirst = 0;
+	}
+	
 	if (batterySubscriptionDone)
 	{
 		// get battery level every few minutes

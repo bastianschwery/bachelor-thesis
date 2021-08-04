@@ -126,7 +126,8 @@ public class CSCActivity extends AppCompatActivity {
 		if there are a cadence and a heart rate sensor -> info devices: 6
 		if there is just a heart rate sensor -> info devices: 7
 
-		make sure that the sequence is like: first speed/cadence sensors and at the end heart rate sensor
+		make sure that the sequence is like: first speed sensor, second cadence sensor
+		and at the end heart rate sensor
 		 */
 		infoDevices = 0;
 		switch (sensors.size()) {
@@ -172,8 +173,18 @@ public class CSCActivity extends AppCompatActivity {
 				infoDevices = 4;
 				if (sensors.get(0).getName().contains("Polar")) {
 					Collections.swap(sensors,0,2);
-				} else if (sensors.get(1).getName().contains("Polar")) {
+					if (sensors.get(0).getName().contains("CAD")) {
+						Collections.swap(sensors,0,1);
+					}
+				}
+				else if (sensors.get(1).getName().contains("Polar")) {
 					Collections.swap(sensors,1,2);
+					if (sensors.get(0).getName().contains("CAD")) {
+						Collections.swap(sensors,0,1);
+					}
+				}
+				else if(sensors.get(0).getName().contains("CAD")) {
+					Collections.swap(sensors,0,1);
 				}
 				break;
 			default:

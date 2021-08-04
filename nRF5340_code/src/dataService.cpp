@@ -258,6 +258,11 @@ double getDiameter()
     return dia;
 }
 
+void setDiameter(uint8_t diameter) 
+{
+    dia = diameter;
+}
+
 uint8_t getNbrOfAddresses() 
 {
     return nbrAddresses;
@@ -285,7 +290,6 @@ void getAddress(char* outArray, uint8_t nbr)
             outArray[i] = address3[i];
         }    
         break;
-    
     default:
         break;
     }

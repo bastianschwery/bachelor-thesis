@@ -99,9 +99,10 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
             @Override
             public void onClick(View v) {
                 if (devices_list.isEmpty()) {
-                    setText("No devices selected !");
+                    setText("Please select minimum one device");
                 }
-                else {
+                else
+                {
                     connect();
                 }
             }
@@ -129,9 +130,6 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         if (devices_list.size() > 4) {
             nbrDevicesOK = false;
             setText("Please select not more than 4 devices");
-        }
-        else if (devices_list.size() == 0){
-            setText("Please select minimum one device");
         }
         else {
             nbrDevicesOK = true;

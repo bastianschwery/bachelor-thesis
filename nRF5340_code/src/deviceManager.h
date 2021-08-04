@@ -357,6 +357,10 @@ private:
 	static bool once_sensor2;
     static bool once_sensor3;
     static bool reconnectedHeartRate;
+    static bool peripheralDisconnected;
+    static bool connectedPeripheral;
+    static bool cscDisconnected;
+    static bool hrDisconnected;
     static uint8_t nbrAddresses;
     static uint8_t cntBatterySubscriptions;
     static uint8_t nbrConnectionsCentral;

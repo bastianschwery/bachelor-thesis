@@ -22,6 +22,7 @@ bool DeviceManager::peripheralDisconnected = false;
 bool DeviceManager::connectedPeripheral = false;
 bool DeviceManager::cscDisconnected = false;
 bool DeviceManager::hrDisconnected = false;
+bool DeviceManager::disconnectOnce = true;
 uint8_t DeviceManager::nbrAddresses = 0;
 uint8_t DeviceManager::nbrConnectionsCentral = 0;
 uint8_t DeviceManager::sensorInfos = 0;
@@ -121,6 +122,7 @@ bool DeviceManager::app_button_cb(void)
 
 void DeviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed)
 {
+	// button not used in this project -> can be used for other projects
    	if (has_changed & USER_BUTTON) {
 		bt_lbs_send_button_state(button_state);
 		app_button_state = button_state ? true : false;
@@ -130,6 +132,7 @@ void DeviceManager::buttonChanged(uint32_t button_state, uint32_t has_changed)
 uint8_t DeviceManager::initButton()
 {
     uint8_t err;
+	
 	// initialize function buttonChanged as callback when state of button changes
     err = dk_buttons_init(buttonChanged);
 	if (err) {
@@ -676,6 +679,7 @@ void DeviceManager::connected(struct bt_conn *conn, uint8_t err)
 			return;
 		}
 		connectedPeripheral = true;
+		disconnectOnce = true;
 		printk("Connected with application\n");
 		peripheralConn = bt_conn_ref(conn);
 		bt_conn_unref(conn);
@@ -1159,8 +1163,9 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 				}
 				
 				// check if notifications are on, when disconnect from application -> so the user can reconnect
-				if (!areNotificationsOn())
+				if (!areNotificationsOn() && disconnectOnce)
 				{
+					disconnectOnce = false;
 					bt_conn_disconnect(peripheralConn,1);
 				}
 

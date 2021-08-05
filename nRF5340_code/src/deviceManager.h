@@ -361,6 +361,7 @@ private:
     static bool connectedPeripheral;
     static bool cscDisconnected;
     static bool hrDisconnected;
+    static bool disconnectOnce;
     static uint8_t nbrAddresses;
     static uint8_t cntBatterySubscriptions;
     static uint8_t nbrConnectionsCentral;

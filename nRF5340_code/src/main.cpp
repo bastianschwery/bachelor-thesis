@@ -1,7 +1,7 @@
 /**
  * @file 	main.cpp
  * @author 	Schwery Bastian (bastian98@gmx.ch)
- * @brief 	This class creates a deviceManager instance a
+ * @brief 	This class creates a DeviceManager instance a
  * 			starts the application
  * @version 0.1
  * @date 	2021-05

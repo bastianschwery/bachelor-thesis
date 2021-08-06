@@ -534,6 +534,7 @@ void DeviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	if (ready)
 	{
 		bt_scan_stop();
+		printk("once sensor 1 %d\n", once_sensor1);
 		// search first for the sensor 1 and then the sensor 2 and at the end sensor 3
 		if (checkAddresses(addrShort,sensor1) && once_sensor1)
 		{
@@ -678,8 +679,8 @@ void DeviceManager::connected(struct bt_conn *conn, uint8_t err)
 			printk("Connection failed (err %u)\n", err);
 			return;
 		}
-		connectedPeripheral = true;
 		disconnectOnce = true;
+		connectedPeripheral = true;
 		printk("Connected with application\n");
 		peripheralConn = bt_conn_ref(conn);
 		bt_conn_unref(conn);
@@ -689,7 +690,7 @@ void DeviceManager::connected(struct bt_conn *conn, uint8_t err)
 		if (getDevice() == 3 && nbrConnectionsCentral == 0) 
 		{
 			initScan();
-		}
+		}	
 	}	
 }
 
@@ -916,34 +917,41 @@ void DeviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx)
 			connectedCode[0] = 15;
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		}
-		else if (nbrAddresses == 2)	
+		else if (nbrAddresses == 2 && (sensorInfos == 3 || sensorInfos == 5))	
 		{
 			printk("First discovery completed\n");
-			connectedCode[0] = 16;
+			connectedCode[0] = 17;	// speed connected
+			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
+			initScan();				
+		}
+		else if (nbrAddresses == 2 && sensorInfos == 6)
+		{
+			printk("First discovery completed\n");
+			connectedCode[0] = 18;	// cadence connected
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			initScan();				
 		}
 		else if (nbrAddresses == 3)
 		{
 			printk("First discovery completed\n");	
-			connectedCode[0] = 16;
+			connectedCode[0] = 17; // speed sensor connected
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			initScan();
 		}
 		break;
 	case 2:
-		if (nbrAddresses == 2)
+		if (nbrAddresses == 2 && sensorInfos == 3)
 		{
 			printk("Second discovery completed\n");
-			connectedCode[0] = 17;
+			connectedCode[0] = 19;	// cadence sensor connected
 			data_service_send(peripheralConn, connectedCode, sizeof(connectedCode));
 			dk_set_led_on(CON_STATUS_LED_CENTRAL);
 			subscriptionDone = true;
-		}
+		}	
 		else if (nbrAddresses == 3) 
 		{
 			printk("Second discovery completed\n");	
-			connectedCode[0] = 19;
+			connectedCode[0] = 21;	// cadence sensor connected
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 			initScan();
 		}
@@ -1037,7 +1045,7 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
-		connectedCode[0] = 21;
+		connectedCode[0] = 16;
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
 		printk("Discovery completed\n");
 		break;
@@ -1048,11 +1056,11 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 			if (reconnectedHeartRate)
 			{
 				reconnectedHeartRate = false;
-				connectedCode[0] = 21;
+				connectedCode[0] = 24;
 			}
 			else
 			{
-				connectedCode[0] = 17;
+				connectedCode[0] = 22;	
 			}
 			
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
@@ -1062,11 +1070,11 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 			if (reconnectedHeartRate)
 			{
 				reconnectedHeartRate = false;
-				connectedCode[0] = 21;
+				connectedCode[0] = 24;
 			}
 			else
 			{
-				connectedCode[0] = 18;
+				connectedCode[0] = 20;
 			}
 
 			data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));
@@ -1076,11 +1084,11 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 		if (reconnectedHeartRate)
 		{
 			reconnectedHeartRate = false;
-			connectedCode[0] = 22;
+			connectedCode[0] = 24;
 		}
 		else
 		{
-			connectedCode[0] = 20;
+			connectedCode[0] = 23;
 		}
 
 		data_service_send(peripheralConn,connectedCode, sizeof(connectedCode));

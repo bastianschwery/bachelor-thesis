@@ -156,7 +156,6 @@ public class CSCActivity extends AppCompatActivity {
 					}
 					else if (sensors.get(1).getName().contains("Polar")) {
 						infoDevices = 5;
-						Collections.swap(sensors,0,1);
 					}
 				}
 				else if (sensors.get(0).getName().contains("Polar")) {
@@ -319,15 +318,15 @@ public class CSCActivity extends AppCompatActivity {
 				valueIsValid = true;
 			}
 			catch (NumberFormatException e) {
-				showMessageCode(23);	// entered not a number
+				showMessageCode(25);	// entered not a number
 				valueIsValid = false;
 			}
 			if (valueIsValid) {
 				if (wheelDiameter > 255) {
-					showMessageCode(24);	// entered to big value
+					showMessageCode(26);	// entered to big value
 				}
 				else if (wheelDiameter < 1) {
-					showMessageCode(25);	// entered to small value
+					showMessageCode(27);	// entered to small value
 				} else {
 					setValueButton.setEnabled(false);
 					diameterValue.setCursorVisible(false);
@@ -434,7 +433,6 @@ public class CSCActivity extends AppCompatActivity {
 			setText("Connected with Board");
 			firstEntry = true;
 		}
-
 	}
 
 	/**
@@ -501,46 +499,52 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Application ready to use");
 				break;
 			case 16:
-				setText("First sensor connected");
-				setText("Waiting for next sensor...");
-				break;
-			case 17:
-				setText("Second sensor connected");
-				setText("Application ready to use");
-				setText("Please enter diameter value to start measurement");
-				break;
-			case 18:
-				setText("Second sensor connected");
-				setText("Application ready to use");
-				break;
-			case 19:
-				setText("Second sensor connected");
-				setText("Waiting for next sensor...");
-				break;
-			case 20:
-				setText("Third sensor connected");
-				setText("Application ready to use");
-				setText("Please enter diameter value to start measurement");
-				break;
-			case 21:
 				setText("Heart rate sensor connected");
 				setText("Application ready to use");
 				break;
+			case 17:
+				setText("First Sensor (Speed) connected");
+				setText("Waiting for next sensor...");
+				break;
+			case 18:
+				setText("First sensor (Cadence) connected");
+				setText("Waiting for next sensor...");
+				break;
+			case 19:
+				setText("Second sensor (Cadence) connected");
+				setText("Application ready to use");
+				setText("Please enter diameter value to start measurement");
+				break;
+			case 20:
+				setText("Second sensor (Heart Rate) connected");
+				setText("Application ready to use");
+				break;
+			case 21:
+				setText("Second sensor (Cadence) connected");
+				setText("Waiting for next sensor...");
+				break;
 			case 22:
-				setText("Heart rate sensor reconnected");
+				setText("Second sensor (Heart Rate) connected");
+				setText("Application ready to use");
+				setText("Please enter diameter value to start measurement");
 				break;
 			case 23:
-				setText("Diameter value must be a number!");
+				setText("Third sensor (Heart Rate) connected");
+				setText("Application ready to use");
+				setText("Please enter diameter value to start measurement");
 				break;
 			case 24:
-				setText("Please enter value smaller than 255 Inch");
+				setText("Heart rate sensor reconnected");
 				break;
 			case 25:
-				setText("Please enter value bigger than 1 Inch");
+				setText("Diameter value must be a number!");
 				break;
 			case 26:
-				setText("Notifications are off!");
-				setText("Please go 1 step back and reconnect to Board");
+				setText("Please enter value smaller than 255 Inch");
+				break;
+			case 27:
+				setText("Please enter value bigger than 1 Inch");
+				break;
 			default:
 				break;
 		}

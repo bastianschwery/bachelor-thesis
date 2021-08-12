@@ -31,7 +31,7 @@ char DeviceManager::sensor1[];
 char DeviceManager::sensor2[];
 char DeviceManager::sensor3[];
 
-const bt_data DeviceManager::sd[] = {BT_DATA_BYTES(BT_DATA_UUID128_ALL, BT_UUID_LBS_VAL),};
+const bt_data DeviceManager::sd[] = {BT_DATA_BYTES(BT_DATA_UUID128_ALL, DATA_SERVICE_UUID),};
 const bt_data DeviceManager::ad[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),

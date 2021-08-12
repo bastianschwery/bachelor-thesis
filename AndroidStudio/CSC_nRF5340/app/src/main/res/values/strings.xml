@@ -26,7 +26,7 @@
 	<string name="board_name">Nordic nRF5340 DK</string>
 
 	<string name="menu_filter">Filter</string>
-	<string name="menu_filter_uuid">Only devices advertising CSC Service UUID</string>
+	<string name="menu_filter_uuid">Only devices with Data service</string>
 	<string name="menu_filter_nearby">Only nearby devices</string>
 	<string name="connect_button">Connect...</string>
 
@@ -59,7 +59,7 @@
 
 	<string name="location_permission_title">LOCATION PERMISSION REQUIRED</string>
 	<string name="location_permission_info">From Android 6.0 Marshmallow onwards the application requires Location permission in order to scan for Bluetooth Low Energy devices.
-      \n\nThis is because Bluetooth LE beacons, for example iBeacons or Eddystone, may be used to determine the phone\'s and user\'s location. <b>CSC HESSO</b> will not use this information in any way.</string>
+      \n\nThis is because Bluetooth LE beacons, for example iBeacons or Eddystone, may be used to determine the phone\'s and user\'s location. <b>HES-SO BIKE</b> will not use this information in any way.</string>
 	<string name="location_permission_action">Grant permission</string>
 	<string name="location_permission_settings">Settings</string>
 
@@ -69,7 +69,7 @@
 
 	<string name="guide_title">CAN\'T SEE YOUR Board?</string>
 	<string name="guide_info">1. Make sure the DK is <b>turned on</b> and is connected to a power source using a micro USB cable or a coin cell is plugged in.
-        \n\n2. Make sure the <b>PerCel</b> firmware is flashed.</string>
+        \n\n2. Make sure the <b>PerCen</b> firmware is flashed.</string>
 	<string name="guide_location_info">3. Location is turned off. Some Android phones require it enabled in order to scan for Bluetooth LE devices.
 		If you are sure your Board is advertising and it doesn\'t show up here, click the button below to enable Location.</string>
 	<string name="csc_guide_location_action">Enable</string>

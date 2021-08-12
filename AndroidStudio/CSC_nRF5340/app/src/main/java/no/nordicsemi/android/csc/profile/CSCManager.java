@@ -50,10 +50,8 @@ import no.nordicsemi.android.log.Logger;
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY;
 
 public class CSCManager extends ObservableBleManager {
-	/** Nordic Blinky Service UUID. */
-	public final static UUID LBS_UUID_SERVICE = UUID.fromString("00001523-1212-efde-1523-785feabcd123");
 	/** CSC data characteristic Service UUID. */
-	public final static UUID CSC_SERVICE = UUID.fromString("75c276c3-8f97-20bc-a143-b354244886d4");
+	public final static UUID DATA_SERVICE_UUID = UUID.fromString("75c276c3-8f97-20bc-a143-b354244886d4");
 	/** CSC receive data characteristic UUID. */
 	public final static UUID RX_CHARACTERISTIC_UUID = UUID.fromString("6ACF4F08-CC9D-D495-6B41-AA7E60C4E8A6");
 	/** CSC transmit data characteristic UUID. */
@@ -288,7 +286,7 @@ public class CSCManager extends ObservableBleManager {
 		 */
 		@Override
 		public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
-			final BluetoothGattService CSCService = gatt.getService(CSC_SERVICE);
+			final BluetoothGattService CSCService = gatt.getService(DATA_SERVICE_UUID);
 			if (CSCService != null) {
 				mBluetoothGatt = gatt;
 				RX_characteristic = CSCService.getCharacteristic(RX_CHARACTERISTIC_UUID);
@@ -326,7 +324,7 @@ public class CSCManager extends ObservableBleManager {
 	 * set notifications manually
 	 */
 	public void setNotificationsOn() {
-		BluetoothGattService service = mBluetoothGatt.getService(CSC_SERVICE);
+		BluetoothGattService service = mBluetoothGatt.getService(DATA_SERVICE_UUID);
 		BluetoothGattCharacteristic TXcharacteristic = service.getCharacteristic(TX_CHARACTERISTIC_UUID);
 		BluetoothGattDescriptor descriptor = TXcharacteristic.getDescriptor(CCCD_ID);
 		TXcharacteristic.addDescriptor(descriptor);

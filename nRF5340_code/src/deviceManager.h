@@ -239,7 +239,7 @@ private:
     void initCentral();
 
     /**
-     * @brief initialize all for starting the scan process
+     * @brief initialize all settings for starting the scan process
      * 
     */
     static void initScan();
@@ -349,6 +349,7 @@ private:
      */
     static bool isCentral;
     static bool isPeripheral;
+    static bool scanning;
     static bool app_button_state;
     static bool subscriptionDone;
     static bool batterySubscriptionDone;
@@ -356,6 +357,7 @@ private:
     static bool once_sensor1;
 	static bool once_sensor2;
     static bool once_sensor3;
+    static bool serviceNotFound;
     static bool reconnectedHeartRate;
     static bool peripheralDisconnected;
     static bool connectedPeripheral;
@@ -366,6 +368,7 @@ private:
     static uint8_t cntBatterySubscriptions;
     static uint8_t nbrConnectionsCentral;
     static uint8_t sensorInfos;
+    static uint8_t cntFirstHR;
 
     // addresses of the three sensors
     static char sensor1[17]; 

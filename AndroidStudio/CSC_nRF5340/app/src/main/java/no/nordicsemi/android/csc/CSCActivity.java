@@ -481,13 +481,13 @@ public class CSCActivity extends AppCompatActivity {
 				setText("Retrying...");
 				break;
 			case 11:
-				setText("Disconnected from CSC sensor...");
+				setText("Disconnected from speed sensor...");
 				break;
 			case 12:
-				setText("Disconnected from heart rate sensor...");
+				setText("Disconnected from cadence sensor...");
 				break;
 			case 13:
-				setText("Disconnected from all sensors...");
+				setText("Disconnected from heart rate sensor...");
 				break;
 			case 14:
 				setText("Speed sensor connected");

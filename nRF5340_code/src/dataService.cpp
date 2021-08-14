@@ -1,26 +1,5 @@
-/*
- * Author: Schwery Bastian
- * Date: 06/2021
- * Cours: Bachelor Thesis
- */
 
 #include "DataService.h"
-
-#include <zephyr/types.h>
-#include <stddef.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/printk.h>
-#include <sys/byteorder.h>
-#include <zephyr.h>
-#include <soc.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/conn.h>
-#include <bluetooth/uuid.h>
-#include <bluetooth/addr.h>
-#include <bluetooth/gatt.h>
-
 
 /*---------------------------------------------------------------------------
  * GLOBAL VARIABLES
@@ -32,7 +11,6 @@ uint8_t nbrAddresses = 0;
 char address1[17];
 char address2[17];
 char address3[17];
-const uint8_t* addresses;
 uint8_t infoSensors = 0;
 bool notificationsOn = false;
 
@@ -51,7 +29,7 @@ uint8_t data_service_init(void)
     return err;
 }
 
-/* This function is called whenever the RX Characteristic has been written to by a Client */
+// This function is called whenever the RX Characteristic has been written to by a Client 
 static ssize_t on_receive(struct bt_conn *conn,
 			  const struct bt_gatt_attr *attr,
 			  const void *buf,
@@ -77,7 +55,7 @@ static ssize_t on_receive(struct bt_conn *conn,
         }
     }   
     
-    // len = 19 -> addresses of one or more sensors to connect received
+    // len = 19 -> addresses of one or more sensors to connect, received
     // bits 0-17 address, bit 18 nbr of total addresses, bit 19 info about which sensors to connect
     if (len == 19)
     {
@@ -161,7 +139,7 @@ static ssize_t on_receive(struct bt_conn *conn,
  	return len;
 }
 
-/* This function is called whenever a Notification has been sent by the TX Characteristic */
+// This function is called whenever a notification has been sent by the TX Characteristic 
 static void on_sent(struct bt_conn *conn, void *user_data)
 {
 	ARG_UNUSED(user_data);
@@ -169,7 +147,7 @@ static void on_sent(struct bt_conn *conn, void *user_data)
     const bt_addr_le_t * addr = bt_conn_get_dst(conn);
 }
 
-/* This function is called whenever the CCCD register has been changed by the client*/
+// This function is called whenever the CCCD register has been changed by the client
 void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value)
 {
     ARG_UNUSED(attr);

@@ -1,17 +1,25 @@
 #include "BatteryManager.h"
 
-
 /*---------------------------------------------------------------------------
- * GLOBAL VARIABLES
+ * PUBLIC VARIABLES
  *--------------------------------------------------------------------------*/ 
-static struct bt_bas_client clients[3];
-static uint8_t batteryLevels[4];
-
+static struct bt_bas_client clients[3]; // the battery clients
+static uint8_t batteryLevels[4];    // the battery levels of all sensors
 static uint8_t cntDevices = 0;
-static uint8_t infoSensors = 0;
 static bool free = true;
 static bool readyValues[3];
 static bool service_found = true;
+/*
+* sensor infos has the following information about which sensors the user wants to connect:
+* 1 -> just one speed sensor 
+* 2 -> just one cadence sensor
+* 3 -> one speed and one cadence sensor
+* 4 -> one speed, one cadence and one heart rate sensor 
+* 5 -> one speed and one heart rate sensor
+* 6 -> one cadence and one heart rate sensor
+* 7 -> just one heart rate sensor
+*/
+static uint8_t infoSensors = 0;
 
 void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 {
@@ -19,6 +27,7 @@ void discovery_completed_cb(struct bt_gatt_dm *dm, void *context)
 	service_found = true;
 	bt_gatt_dm_data_print(dm);
 
+	// subscribe battery service for the correct sensor
 	switch (infoSensors)
 	{
 	case 1:

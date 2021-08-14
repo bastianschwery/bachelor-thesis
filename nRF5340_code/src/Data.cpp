@@ -113,13 +113,12 @@ uint16_t Data::calcSpeed()
         
         if (sumRevSpeed == oldSumRevSpeed)
         {
-            //return (uint16_t) oldSpeed;
             return 0;
         }
         else   
         {
             rpm_speed = (nbrRevSpeed) * 60 / time;
-            speed = (rpm_speed * wheelCircumference) * 60 / 1000; // km/h * 100 for the values after the comma
+            speed = (rpm_speed * wheelCircumference) * 60 / 1000; // km/h * 100 for 2 values after the comma
             retVal = (uint16_t) (speed);
             return retVal;
         }  

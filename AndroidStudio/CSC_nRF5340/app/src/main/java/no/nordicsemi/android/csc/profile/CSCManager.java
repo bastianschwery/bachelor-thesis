@@ -57,8 +57,9 @@ public class CSCManager extends ObservableBleManager {
 	/** CSC transmit data characteristic UUID. */
 	public final static UUID TX_CHARACTERISTIC_UUID = UUID.fromString("D3D46A35-4394-E9AA-5A43-E7921120AAED");
 
-	public static final  UUID CCCD_ID = UUID.fromString("000002902-0000-1000-8000-00805f9b34fb");
+	public static final UUID CCCD_ID = UUID.fromString("000002902-0000-1000-8000-00805f9b34fb");
 
+	// live data
 	private final MutableLiveData<Integer> rpmValue = new MutableLiveData<>();
 	private final MutableLiveData<Double> speedValue = new MutableLiveData<>();
 	private final MutableLiveData<Integer> messageCode = new MutableLiveData<>();
@@ -79,7 +80,6 @@ public class CSCManager extends ObservableBleManager {
 	private final int TYPE_CADENCE= 2;
 	private final int TYPE_HEARTRATE = 3;
 	private final int TYPE_BATTERY = 4;
-	private final int TYPE_NOTIFICATIONS_NOT_ON = 5;
 
 	/**
 	 * constructor
@@ -145,12 +145,21 @@ public class CSCManager extends ObservableBleManager {
 		logSession = session;
 	}
 
+	/**
+	 * logger
+	 * @param priority the priority
+	 * @param message the message
+	 */
 	@Override
 	public void log(final int priority, @NonNull final String message) {
 		// The priority is a Log.X constant, while the Logger accepts it's log levels.
 		Logger.log(logSession, LogContract.Log.Level.fromPriority(priority), message);
 	}
 
+	/**
+	 * clear cache when disconnected
+	 * @return if supported
+	 */
 	@Override
 	protected boolean shouldClearCacheWhenDisconnected() {
 		return !supported;
@@ -175,14 +184,12 @@ public class CSCManager extends ObservableBleManager {
 		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer[] data) {
 			log(Log.INFO, "Data received");
 
+			// message code received
 			if (data.length == 1) {
 				messageCode.setValue(data[0]);
 			}
 
-			if (data.length == 5) {
-				setNotificationsOn();
-			}
-
+			// data received
 			switch (data[0]) {
 				case TYPE_SPEED:
 					double val = data[2].doubleValue();
@@ -208,9 +215,6 @@ public class CSCManager extends ObservableBleManager {
 						default:
 							break;
 					}
-				//case TYPE_NOTIFICATIONS_NOT_ON:
-				//	setNotificationsOn();
-				//	break;
 				default:
 					log(Log.INFO, "Unknown type");
 					break;

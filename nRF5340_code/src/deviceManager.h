@@ -349,7 +349,6 @@ private:
      */
     static bool isCentral;
     static bool isPeripheral;
-    static bool scanning;
     static bool app_button_state;
     static bool subscriptionDone;
     static bool batterySubscriptionDone;
@@ -367,8 +366,18 @@ private:
     static uint8_t nbrAddresses;
     static uint8_t cntBatterySubscriptions;
     static uint8_t nbrConnectionsCentral;
-    static uint8_t sensorInfos;
     static uint8_t cntFirstHR;
+    /*
+     * sensor infos has the following information about which sensors the user wants to connect:
+     * 1 -> just one speed sensor 
+     * 2 -> just one cadence sensor
+     * 3 -> one speed and one cadence sensor
+     * 4 -> one speed, one cadence and one heart rate sensor 
+     * 5 -> one speed and one heart rate sensor
+     * 6 -> one cadence and one heart rate sensor
+     * 7 -> just one heart rate sensor
+     */
+    static uint8_t sensorInfos;
 
     // addresses of the three sensors
     static char sensor1[17]; 

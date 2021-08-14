@@ -9,7 +9,10 @@
  * 
  */
 
-#include <zephyr/types.h>
+/*---------------------------------------------------------------------------
+ * INCLUDES
+ *--------------------------------------------------------------------------*/ 
+#include <bluetooth/gatt.h>
 
 /*---------------------------------------------------------------------------
  * DEFINES
@@ -28,7 +31,7 @@
 #define BT_UUID_DATA_SERVICE_RX   BT_UUID_DECLARE_128(RX_CHARACTERISTIC_UUID)
 #define BT_UUID_DATA_SERVICE_TX   BT_UUID_DECLARE_128(TX_CHARACTERISTIC_UUID)
 
-#define MAX_TRANSMIT_SIZE 240			
+#define MAX_TRANSMIT_SIZE 240	
 
 /**
  * @brief Callback type for when new data is received

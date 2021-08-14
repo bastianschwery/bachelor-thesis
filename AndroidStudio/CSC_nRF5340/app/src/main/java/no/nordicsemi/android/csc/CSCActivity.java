@@ -22,7 +22,6 @@
 
 package no.nordicsemi.android.csc;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -54,7 +53,12 @@ import no.nordicsemi.android.csc.viewmodels.CSCViewModel;
 @SuppressWarnings("ConstantConditions")
 public class CSCActivity extends AppCompatActivity {
 	public static final String EXTRA_DEVICE = "no.nordicsemi.android.csc.EXTRA_DEVICE";
-	public static final String Sensor1 = "no.nordicsemi.android.csc.SENSOR_1";
+
+	// change this values when using other CSC / heart rate sensors (also in ScannerActivity)
+	private final String BOARD_NAME = "Nordic";
+	private final String SPEED_NAME = "SPD";
+	private final String CADENCE_NAME = "CAD";
+	private final String HEARTRATE_NAME = "Polar";
 
 	private boolean firstEntry = false;
 	private CSCViewModel viewModel;
@@ -100,6 +104,7 @@ public class CSCActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_csc);
 		ButterKnife.bind(this);
 
+		// save array from scanner activity
 		final Intent intent = getIntent();
 		receivedArray = intent.getParcelableArrayExtra(EXTRA_DEVICE);
 		for (int i=0;i<receivedArray.length;i++) {
@@ -108,7 +113,7 @@ public class CSCActivity extends AppCompatActivity {
 			}
 			else {
 				devices.add((DiscoveredBluetoothDevice) receivedArray[i]);
-				if (devices.get(i).getName().contains("Nordic")) {
+				if (devices.get(i).getName().contains(BOARD_NAME)) {
 					nordicBoard = devices.get(i);
 				}
 				else {
@@ -127,42 +132,42 @@ public class CSCActivity extends AppCompatActivity {
 		if there is just a heart rate sensor -> info devices: 7
 
 		make sure that the sequence is like: first speed sensor, second cadence sensor
-		and at the end heart rate sensor
+		and at the end the heart rate sensor
 		 */
 		infoDevices = 0;
 		switch (sensors.size()) {
 			case 1:
-				if (sensors.get(0).getName().contains("SPD")) {
+				if (sensors.get(0).getName().contains(SPEED_NAME)) {
 					infoDevices = 1;
-				} else if (sensors.get(0).getName().contains("CAD")) {
+				} else if (sensors.get(0).getName().contains(CADENCE_NAME)) {
 					infoDevices = 2;
-				} else if (sensors.get(0).getName().contains("Polar")) {
+				} else if (sensors.get(0).getName().contains(HEARTRATE_NAME)) {
 					infoDevices = 7;
 				}
 				break;
 			case 2:
-				if (sensors.get(0).getName().contains("SPD")) {
-					if (sensors.get(1).getName().contains("CAD")) {
+				if (sensors.get(0).getName().contains(SPEED_NAME)) {
+					if (sensors.get(1).getName().contains(CADENCE_NAME)) {
 						infoDevices = 3;
 					}
-					else if (sensors.get(1).getName().contains("Polar")) {
+					else if (sensors.get(1).getName().contains(HEARTRATE_NAME)) {
 						infoDevices = 5;
 					}
 				}
-				else if (sensors.get(0).getName().contains("CAD")) {
-					if (sensors.get(1).getName().contains("SPD")) {
+				else if (sensors.get(0).getName().contains(CADENCE_NAME)) {
+					if (sensors.get(1).getName().contains(SPEED_NAME)) {
 						infoDevices = 3;
 						Collections.swap(sensors,0,1);
 					}
-					else if (sensors.get(1).getName().contains("Polar")) {
+					else if (sensors.get(1).getName().contains(HEARTRATE_NAME)) {
 						infoDevices = 5;
 					}
 				}
-				else if (sensors.get(0).getName().contains("Polar")) {
-					if (sensors.get(1).getName().contains("SPD")) {
+				else if (sensors.get(0).getName().contains(HEARTRATE_NAME)) {
+					if (sensors.get(1).getName().contains(SPEED_NAME)) {
 						infoDevices = 5;
 						Collections.swap(sensors,0,1);
-					} else if (sensors.get(1).getName().contains("CAD")) {
+					} else if (sensors.get(1).getName().contains(CADENCE_NAME)) {
 						infoDevices = 6;
 						Collections.swap(sensors,0,1);
 					}
@@ -170,19 +175,19 @@ public class CSCActivity extends AppCompatActivity {
 				break;
 			case 3:
 				infoDevices = 4;
-				if (sensors.get(0).getName().contains("Polar")) {
+				if (sensors.get(0).getName().contains(HEARTRATE_NAME)) {
 					Collections.swap(sensors,0,2);
-					if (sensors.get(0).getName().contains("CAD")) {
+					if (sensors.get(0).getName().contains(CADENCE_NAME)) {
 						Collections.swap(sensors,0,1);
 					}
 				}
-				else if (sensors.get(1).getName().contains("Polar")) {
+				else if (sensors.get(1).getName().contains(HEARTRATE_NAME)) {
 					Collections.swap(sensors,1,2);
-					if (sensors.get(0).getName().contains("CAD")) {
+					if (sensors.get(0).getName().contains(CADENCE_NAME)) {
 						Collections.swap(sensors,0,1);
 					}
 				}
-				else if(sensors.get(0).getName().contains("CAD")) {
+				else if(sensors.get(0).getName().contains(CADENCE_NAME)) {
 					Collections.swap(sensors,0,1);
 				}
 				break;
@@ -195,11 +200,11 @@ public class CSCActivity extends AppCompatActivity {
 		}
 
 		/*
-		for every sensor is a buffer
-		buffer is user to add 1 byte at the end
-		this 1 byte indicates how many sensor
-		there are to connect
-		*/
+		 * for every sensor is a buffer
+		 * buffer is used to add 2 bytes at the end
+		 * first byte indicates how many sensors there are
+		 * second byte indicates which sensors there are
+		 */
 		ByteBuffer buffer1 = ByteBuffer.allocate(19);
 		ByteBuffer buffer2 = ByteBuffer.allocate(19);
 		ByteBuffer buffer3 = ByteBuffer.allocate(19);
@@ -297,20 +302,22 @@ public class CSCActivity extends AppCompatActivity {
 		batteryIconCadence = findViewById(R.id.batteryFull2);
 		batteryIconHeartRate = findViewById(R.id.batteryFull3);
 
+		// reset distance button
 		resetDistanceButton.setOnClickListener(v -> {
 			distanceValue.setText("0");
 			distance = 0;
 		});
 
+		// reset button
 		resetButton.setOnClickListener(v -> {
 			setValueButton.setEnabled(true);
 			diameterValue.setCursorVisible(true);
 			diameterValue.setText("0");
 			speedValue.setText("0");
-			cadenceValue.setText("0");
 			viewModel.resetDiameter();
 		});
 
+		// set value button
 		setValueButton.setOnClickListener(v -> {
 			boolean valueIsValid = false;
 			try {
@@ -352,6 +359,7 @@ public class CSCActivity extends AppCompatActivity {
 					connectionState.setText(R.string.state_initializing);
 					break;
 				case READY:
+					// send addresses with additional information to board
 					switch (nbrAddresses) {
 						case 1:
 							viewModel.sendAddresses(address1);
@@ -368,7 +376,6 @@ public class CSCActivity extends AppCompatActivity {
 						default:
 							break;
 					}
-					//viewModel.sendAddresses(addressesToSend);
 					progressContainer.setVisibility(View.GONE);
 					content.setVisibility(View.VISIBLE);
 					onConnectionStateChanged(true);
@@ -388,7 +395,7 @@ public class CSCActivity extends AppCompatActivity {
 			}
 		});
 
-
+		// observing values from CSCManager
 		viewModel.getRPMValue().observe(this,
 				integer -> cadenceValue.setText(integer.toString()));
 
@@ -550,9 +557,12 @@ public class CSCActivity extends AppCompatActivity {
 		}
 	}
 
+	/**
+	 * set the battery level value and icon of speed sensor
+	 * @param level the battery level in %
+	 */
 	public void setBatteryLevelSpeed(Integer level) {
 		batteryLevelSpeed.setText(level.toString() + "%");
-
 		if (level > 10) {
 			batteryIconSpeed.setImageResource(R.drawable.battery_full_icon);
 		}
@@ -561,6 +571,10 @@ public class CSCActivity extends AppCompatActivity {
 		}
 	}
 
+	/**
+	 * set the battery level value and icon of cadence sensor
+	 * @param level the battery level in %
+	 */
 	public void setBatteryLevelCadence(Integer level) {
 		batteryLevelCadence.setText(level.toString() + "%");
 
@@ -572,6 +586,10 @@ public class CSCActivity extends AppCompatActivity {
 		}
 	}
 
+	/**
+	 * set the battery level value and icon of heart rate sensor
+	 * @param level the battery level in %
+	 */
 	public void setBatteryLevelHeartRate(Integer level) {
 		batteryLevelHeartRate.setText(level.toString() + "%");
 

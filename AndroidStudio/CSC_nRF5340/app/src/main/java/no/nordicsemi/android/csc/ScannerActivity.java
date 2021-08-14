@@ -63,6 +63,12 @@ import no.nordicsemi.android.csc.viewmodels.ScannerViewModel;
 public class ScannerActivity extends AppCompatActivity implements DevicesAdapter.OnItemClickListener {
     private static final int REQUEST_ACCESS_FINE_LOCATION = 1022; // random number
 
+    // change this values when using other CSC / heart rate sensors (also in CSCActivity)
+    private final String BOARD_NAME = "Nordic";
+    private final String SPEED_NAME = "SPD";
+    private final String CADENCE_NAME = "CAD";
+    private final String HEARTRATE_NAME = "Polar";
+
     private ScannerViewModel scannerViewModel;
     private ArrayList<DiscoveredBluetoothDevice> devices_list = new ArrayList<>();
     private DiscoveredBluetoothDevice[] devices;
@@ -71,6 +77,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     private boolean nbrDevicesOK = false;
     private boolean nbrSensorsOK = false;
     private Button connect_btn;
+    private int cntGoodDevices = 0;
 
     @BindView(R.id.state_scanning) View scanningView;
     @BindView(R.id.no_devices) View emptyView;
@@ -121,11 +128,13 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
+
         final DevicesAdapter adapter = new DevicesAdapter(this, scannerViewModel.getDevices());
         adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
     }
 
+    // check if known sensors and a board is selected
     private void connect() {
         if (devices_list.size() > 4) {
             nbrDevicesOK = false;
@@ -137,22 +146,32 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
         for (int i=0;i<devices_list.size();i++) {
             if (devices_list.get(i).getName() == null) {
-                setText("Wrong sensors were selected -> try again");
+                setText("Unknown sensor/s were selected -> try again");
                 wrongSensors = true;
                 break;
             }
 
-            if (devices_list.get(i).getName().contains("Nordic")) {
+            if (devices_list.get(i).getName() == SPEED_NAME || devices_list.get(i).getName() == CADENCE_NAME
+                || devices_list.get(i).getName() == HEARTRATE_NAME || devices_list.get(i).getName() == BOARD_NAME) {
+                cntGoodDevices++;
+            }
+
+            if (devices_list.get(i).getName().contains(BOARD_NAME)) {
                 boardSelected = true;
             }
+        }
+
+        if (cntGoodDevices != devices_list.size() && !wrongSensors) {
+            setText("Wrong sensor/s were selected -> try again");
+            cntGoodDevices = 0;
+            wrongSensors = true;
         }
 
         if (boardSelected && devices_list.size() == 1) {
             setText("Please select minimum one sensor");
             nbrSensorsOK = false;
         }
-        else
-        {
+        else {
             nbrSensorsOK = true;
         }
 

@@ -10,7 +10,6 @@ BT_GATT_SERVICE_DEFINE(csc_srv,
 // initialize static attributes
 bool DeviceManager::isCentral = false;
 bool DeviceManager::isPeripheral = false;
-bool DeviceManager::scanning = false;
 bool DeviceManager::app_button_state = false;
 bool DeviceManager::subscriptionDone = false;
 bool DeviceManager::diameterSet = false;
@@ -114,7 +113,7 @@ void DeviceManager::setDevice(bool c, bool p)
 
 void DeviceManager::app_led_cb(bool led_state)
 {
-	// set led to led_state
+	// set led on board to led_state
     dk_set_led(USER_LED,led_state);
 }
 
@@ -138,7 +137,8 @@ uint8_t DeviceManager::initButton()
 	
 	// initialize function buttonChanged as callback when state of button changes
     err = dk_buttons_init(buttonChanged);
-	if (err) {
+	if (err) 
+	{
 		printk("Cannot init buttons (err: %d)\n", err);
 	}
 
@@ -221,7 +221,7 @@ void DeviceManager::startAdvertising()
 	}
 
 	printk("Advertising successfully started\n");
-	printk("Waiting for connection...\n");
+	printk("Waiting for connection with application...\n");
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -290,7 +290,6 @@ void DeviceManager::initScan()
 	uint8_t err;
 	static bool once = true;
 	sensorInfos = getSensorInfos();
-	bool readyToScan = false;
 	
 	// scan parameter
 	struct bt_le_scan_param scanParam = {
@@ -332,7 +331,6 @@ void DeviceManager::initScan()
 					printk("Scanning filters cannot be set\n");
 					return;
 				}
-				readyToScan = true;
 				break;
 			case 2:
 				// search just 1 cadence sensor
@@ -343,7 +341,6 @@ void DeviceManager::initScan()
 					printk("Scanning filters cannot be set\n");
 					return;
 				}		
-				readyToScan = true;	
 				break;
 			case 3:
 				// search just for CSC sensors
@@ -354,7 +351,6 @@ void DeviceManager::initScan()
 					printk("Scanning filters cannot be set\n");
 					return;
 				}
-				readyToScan = true;
 				break;
 			case 4:
 				// first search 2 CSC sensors, after a heart rate sensor
@@ -366,7 +362,6 @@ void DeviceManager::initScan()
 						printk("Scanning filters cannot be set\n");
 						return;
 					}
-					readyToScan = true;
 				}
 				else if (nbrConnectionsCentral == 2)
 				{
@@ -376,7 +371,6 @@ void DeviceManager::initScan()
 						printk("Scanning filters cannot be set\n");
 						return;
 					}
-					readyToScan = true;
 				}
 				break;
 			case 5:
@@ -388,8 +382,7 @@ void DeviceManager::initScan()
 					{
 						printk("Scanning filters cannot be set\n");
 						return;
-					}	
-					readyToScan = true;			
+					}			
 				}
 				else if (nbrConnectionsCentral == 1)
 				{
@@ -399,7 +392,6 @@ void DeviceManager::initScan()
 						printk("Scanning filters cannot be set\n");
 						return;
 					}
-					readyToScan = true;
 				}
 				break;
 			case 6:
@@ -411,8 +403,7 @@ void DeviceManager::initScan()
 					{
 						printk("Scanning filters cannot be set\n");
 						return;
-					}	
-					readyToScan = true;			
+					}			
 				}
 				else if (nbrConnectionsCentral == 1)
 				{
@@ -422,7 +413,6 @@ void DeviceManager::initScan()
 						printk("Scanning filters cannot be set\n");
 						return;
 					}
-					readyToScan = true;
 				}
 				break;			
 			case 7:
@@ -433,7 +423,6 @@ void DeviceManager::initScan()
 					printk("Scanning filters cannot be set\n");
 					return;
 				}	
-				readyToScan = true;
 				break;	
 			default:
 				break;
@@ -445,11 +434,8 @@ void DeviceManager::initScan()
 		{
 			printk("Filters cannot be turned on\n");
 		}
-		if (readyToScan)
-		{
-			startScan();
-			readyToScan = false;
-		}
+
+		startScan();
 	} 
 	else 
 	{
@@ -465,7 +451,6 @@ void DeviceManager::startScan()
 	{
 		printk("Scanning failed to start, err %d\n", err);
 	}
-	scanning = true;
 	printk("Scanning...\n");
 }
 
@@ -474,7 +459,7 @@ void DeviceManager::reScan(uint8_t type)
 	uint8_t err = 0;
 
 	bt_scan_filter_remove_all();	
-
+	// start scan with type of disconnected sensor
 	switch (type)
 	{
 	case 1:
@@ -520,6 +505,7 @@ void DeviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	if (nbrAddresses != 0)
 	{
 		ready = true;
+		// get addresses from data service
 		switch (nbrAddresses)
 		{
 		case 1:
@@ -553,7 +539,6 @@ void DeviceManager::scanFilterMatch(struct bt_scan_device_info *device_info,
 	if (ready)
 	{
 		bt_scan_stop();
-		scanning = false;
 		// search first for the sensor 1 and then the sensor 2 and at the end sensor 3
 		if (checkAddresses(addrShort,sensor1) && once_sensor1)
 		{
@@ -595,8 +580,8 @@ void DeviceManager::scanConnectionError(struct bt_scan_device_info *device_info)
 
 void DeviceManager::scanFilterNoMatch(struct bt_scan_device_info *device_info, bool connectable)
 {
+	// not used in this project
 	bt_scan_stop();
-	scanning = false;
 	initScan();
 }
 
@@ -646,8 +631,8 @@ void DeviceManager::connected(struct bt_conn *conn, uint8_t err)
 		{
 			cscDisconnected = false;
 		}
-		
 
+		// discover service 
 		switch (sensorInfos)
 		{
 		case 1:
@@ -760,7 +745,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 				hrDisconnected = true;
 				reconnectedHeartRate = true;
 				typeToReconnect = TYPE_HEARTRATE;
-				if (!serviceNotFound)	// don't show disconnected message to user
+				if (!serviceNotFound)	// don't show disconnected message to user when service not found
 				{
 					disconnectedCode[0] = 13;
 					data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -777,7 +762,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 					// cadence sensor disconneted
 					cscDisconnected = true;
 					typeToReconnect = TYPE_CSC_CADENCE;
-					if (!serviceNotFound)	// don't show disconnected message to user
+					if (!serviceNotFound)	// don't show disconnected message to user when service not found
 					{
 						disconnectedCode[0] = 12;
 						data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -789,10 +774,10 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 				}
 				else
 				{
-					// speed sensor disconnected
+					// speed sensor disconnected 
 					cscDisconnected = true;
 					typeToReconnect = TYPE_CSC_SPEED;
-					if (!serviceNotFound)	// don't show disconnected message to user
+					if (!serviceNotFound)	// don't show disconnected message to user when service not found
 					{
 						disconnectedCode[0] = 11;
 						data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -815,7 +800,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 				// cadence sensor disconnected
 				cscDisconnected = true;
 				typeToReconnect = TYPE_CSC_CADENCE;
-				if (!serviceNotFound)	// don't show disconnected message to user
+				if (!serviceNotFound)	// don't show disconnected message to user when service not found
 				{
 					disconnectedCode[0] = 12;
 					data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -830,7 +815,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 				hrDisconnected = true;
 				reconnectedHeartRate = true;
 				typeToReconnect = TYPE_HEARTRATE;
-				if (!serviceNotFound)	// don't show disconnected message to user
+				if (!serviceNotFound)	// don't show disconnected message to user when service not found
 				{
 					disconnectedCode[0] = 13;
 					data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -850,7 +835,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			subscriptionDone = false;
 			once_sensor3 = true;
 			dk_set_led_off(CON_STATUS_LED_CENTRAL);
-			if (!serviceNotFound)	// don't show disconnected message to user
+			if (!serviceNotFound)	// don't show disconnected message to user when service not found
 			{
 				disconnectedCode[0] = 13;
 				data_service_send(peripheralConn,disconnectedCode, sizeof(disconnectedCode));
@@ -874,7 +859,7 @@ void DeviceManager::disconnected(struct bt_conn *conn, uint8_t reason)
 			}
 		}
 
-		// start scanning again -> search first the same sensor type which has disconnected
+		// start scanning again -> search for the same sensor type which has disconnected
 		reScan(typeToReconnect);
 	}
 }
@@ -973,6 +958,7 @@ void DeviceManager::discoveryCompletedCSC(struct bt_gatt_dm *dm, void *ctx)
 	}
 	
 	// check number of connections -> can be modified for more devices
+	// send message code to client
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
@@ -1043,6 +1029,7 @@ void DeviceManager::discovery_service_not_found(struct bt_conn *conn, void *ctx)
 	uint8_t error[1];
 	error[0] = 10;
 	data_service_send(peripheralConn,error, sizeof(error));
+	// reconnect for another try
 	bt_conn_disconnect(conn,100);
 }
 
@@ -1066,7 +1053,7 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 
 	bt_gatt_dm_data_print(dm);
 
-	// Heart rate characteristic 
+	// Get the characteristic by its UUID
 	gatt_chrc = bt_gatt_dm_char_by_uuid(dm, BT_UUID_HRS_MEASUREMENT);
 
 	if (!gatt_chrc) 
@@ -1075,6 +1062,7 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 		return;
 	}
 
+	// Search the descriptor by its UUID
 	gatt_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_chrc, BT_UUID_HRS_MEASUREMENT);
 
 	if (!gatt_desc) 
@@ -1085,6 +1073,7 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 
 	subscribe_params[nbrConnectionsCentral-1].value_handle = gatt_desc->handle;
 
+	// Search the CCC descriptor by its UUID
 	gatt_desc = bt_gatt_dm_desc_by_uuid(dm, gatt_chrc,
 			BT_UUID_GATT_CCC);
 
@@ -1099,6 +1088,7 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 	subscribe_params[nbrConnectionsCentral-1].value = BT_GATT_CCC_NOTIFY;
 	subscribe_params[nbrConnectionsCentral-1].ccc_handle = gatt_desc->handle;
 
+	// Subscribe attribute value notification
 	err = bt_gatt_subscribe(conn, &subscribe_params[nbrConnectionsCentral-1]);
 
 	if (err && err != -EALREADY) 
@@ -1118,6 +1108,7 @@ void DeviceManager::discoveryCompletedHR(struct bt_gatt_dm *dm, void *ctx)
 
 	subscriptionDone = true;
 
+	// send message code to client
 	switch (nbrConnectionsCentral)
 	{
 	case 1:
@@ -1209,7 +1200,6 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 {
 	// local variables 
 	uint8_t batteryLevelToSend[4];
-	uint8_t notificationNotOn[1];
 	static uint8_t cntFirstSpeed = 0;
 	static uint8_t cntFirstCadence = 0;
 	static uint8_t cntNbrReceived1 = 0;
@@ -1273,7 +1263,7 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 					cntFirstHR = 0;
 				}
 				
-				// check if notifications are on, when disconnect from application -> so the user can reconnect
+				// check if notifications are on, when no, disconnect from application -> so the user can reconnect
 				if (!areNotificationsOn() && disconnectOnce)
 				{
 					disconnectOnce = false;
@@ -1329,6 +1319,8 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 							}
 						}
 					}
+
+					// ask from time to time for the battery level
 					if (cntFirstSpeed == 1 || cntNbrReceived1 == 50)
 					{
 						cntNbrReceived1 = 0;
@@ -1337,6 +1329,7 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 					}
 					else if (isValueReady(TYPE_CSC_SPEED))
 					{
+						// send new battery level to client
 						resetReadyValue(TYPE_CSC_SPEED);
 						DeviceManager::data.battValue_speed = getBatteryLevel(TYPE_CSC_SPEED);
 						batteryLevelToSend[0] = TYPE_BATTERY;
@@ -1381,6 +1374,7 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 						}
 					}	
 
+					// ask from time to time for the battery level
 					if (cntFirstCadence == 3 || cntNbrReceived2 == 100)
 					{
 						askForBatteryLevel(TYPE_CSC_CADENCE);
@@ -1389,6 +1383,7 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 					}
 					else if (isValueReady(TYPE_CSC_CADENCE))
 					{
+						// send new battery level to client
 						resetReadyValue(TYPE_CSC_CADENCE);
 						DeviceManager::data.battValue_cadence = getBatteryLevel(TYPE_CSC_CADENCE);
 						batteryLevelToSend[0] = TYPE_BATTERY;
@@ -1421,8 +1416,7 @@ uint8_t DeviceManager::notify_HR(struct bt_conn *conn,
 	// local variables
 	uint8_t err = 0;
 	static bool onceHeartRate = true;
-	static uint16_t cntNbrReceived = 0;		
-	//static uint16_t cntFirst = 0;	
+	static uint16_t cntNbrReceived = 0;	
 	uint8_t dataToSend[2];
 	uint8_t batteryLevelToSend[4];
 	dataToSend[0] = TYPE_HEARTRATE;
@@ -1453,7 +1447,7 @@ uint8_t DeviceManager::notify_HR(struct bt_conn *conn,
 	
 	if (batterySubscriptionDone)
 	{
-		// get battery level every few minutes
+		// ask from time to time for the battery level
 		if (cntFirstHR == 2 || cntNbrReceived == 300)
 		{
 			cntFirstHR++;
@@ -1462,6 +1456,7 @@ uint8_t DeviceManager::notify_HR(struct bt_conn *conn,
 		}
 		else if (isValueReady(TYPE_HEARTRATE))
 		{
+			// send new battery level to client
 			resetReadyValue(TYPE_HEARTRATE);
 			cntNbrReceived = 0;
 			cntFirstHR++;

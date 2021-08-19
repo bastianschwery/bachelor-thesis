@@ -13,8 +13,9 @@ Nordic Semiconductor recently stated that further development of the traditional
 - Establish a technical documentation.
 
 ### Content:
-It contains 3 parts. 
+It contains 4 parts. 
  
- 1. The code for the nRF5340, for the peripheral and central connection (nRF_5340_code folder)
- 2. The code for the android application (android_studio folder)
- 3. The report with all annexes (docs folder)
+ 1. The code for the nRF5340, for the peripheral and central connection (nRF5340_code folder)
+ 2. The code for the android application (androidStudio folder)
+ 3. The report (rapport folder)
+ 4. The annexes (annex folder)

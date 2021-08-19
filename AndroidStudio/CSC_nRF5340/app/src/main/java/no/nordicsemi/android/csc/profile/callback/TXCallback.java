@@ -31,8 +31,8 @@ public interface TXCallback {
     /**
      * Called when a new data was received from the device.
      *
-     * @param device the target device.
-     * @param data first arrived value is type of sensor, second arrived value is the speed/cadence.
+     * @param device the target device
+     * @param data first value in array is type of sensor, second value is the speed/cadence
      */
-    void onCSCDataChanged(@NonNull final BluetoothDevice device, final Integer data[]);
+    void onCSCDataChanged(@NonNull final BluetoothDevice device, final Integer[] data);
 }

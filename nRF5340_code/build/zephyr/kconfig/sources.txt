@@ -1,4 +1,3 @@
-C:\Users\basti\ncs\ba\Bachelorarbeit\nRF5340_code\Kconfig
 C:\Users\basti\ncs\ba\Bachelorarbeit\nRF5340_code\build\Kconfig\Kconfig.modules
 C:\Users\basti\ncs\ba\Bachelorarbeit\nRF5340_code\build\Kconfig\Kconfig.shield
 C:\Users\basti\ncs\ba\Bachelorarbeit\nRF5340_code\build\Kconfig\Kconfig.shield.defconfig
@@ -157,6 +156,7 @@ C:\Users\basti\ncs\nrfxlib\softdevice_controller\Kconfig
 C:\Users\basti\ncs\nrfxlib\zboss\Kconfig
 C:\Users\basti\ncs\nrfxlib\zboss\development\Kconfig
 C:\Users\basti\ncs\nrfxlib\zboss\production\Kconfig
+C:\Users\basti\ncs\zephyr\Kconfig
 C:\Users\basti\ncs\zephyr\Kconfig.zephyr
 C:\Users\basti\ncs\zephyr\arch\Kconfig
 C:\Users\basti\ncs\zephyr\arch\arm\Kconfig

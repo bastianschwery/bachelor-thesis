@@ -30,6 +30,10 @@ import android.os.Handler;
 public class SplashScreenActivity extends Activity {
 	private static final int DURATION = 1000;
 
+	/**
+	 * create all necessary instances
+	 * @param savedInstanceState state
+	 */
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -43,6 +47,9 @@ public class SplashScreenActivity extends Activity {
 		}, DURATION);
 	}
 
+	/**
+	 * when back is pressed on splash screen -> do nothing
+	 */
 	@Override
 	public void onBackPressed() {
 		// We don't want the splash screen to be interrupted

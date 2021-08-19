@@ -135,6 +135,10 @@ public class Utils {
 		preferences.edit().putBoolean(PREFS_PERMISSION_REQUESTED, true).apply();
 	}
 
+	/**
+	 * check the version of the operating system
+	 * @return boolean if version is above marshmallow
+	 */
 	public static boolean isMarshmallowOrAbove() {
 		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 	}

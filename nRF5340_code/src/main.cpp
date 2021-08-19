@@ -1,20 +1,24 @@
 /**
- * @author  Schwery Bastian
- * @file    main.cpp    
- * @date    05/2021
- * @reason: Bachelor Thesis
- * 
- * @brief   This class creates a deviceManager instance a
+ * @file 	main.cpp
+ * @author 	Schwery Bastian (bastian98@gmx.ch)
+ * @brief 	This class creates a DeviceManager instance a
  * 			starts the application
+ * @version 0.1
+ * @date 	2021-05
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
-#include "deviceManager.h"
+#include "DeviceManager.h"
 
 void main(void)
 {
+
 	printk("Application start\n");
+
 	// create a new device manager
-	deviceManager dManager;
+	DeviceManager dManager;
 	// start application as peripheral and central
 	dManager.setDevice(true,true);
 } 	

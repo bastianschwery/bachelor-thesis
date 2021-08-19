@@ -39,6 +39,10 @@ public class CSCViewModel extends AndroidViewModel {
 	private final CSCManager CSCManager;
 	private BluetoothDevice device;
 
+	/**
+	 * constructor
+	 * @param application object
+	 */
 	public CSCViewModel(@NonNull final Application application) {
 		super(application);
 
@@ -46,17 +50,58 @@ public class CSCViewModel extends AndroidViewModel {
 		CSCManager = new CSCManager(getApplication());
 	}
 
+	/**
+	 * get the connection state
+	 * @return connection state
+	 */
 	public LiveData<ConnectionState> getConnectionState() {
 		return CSCManager.getState();
 	}
 
-	public LiveData<Integer> getRPMValue() {return CSCManager.getRPMValue();}
+	/**
+	 * get the rpm value from the CSCManager
+	 * @return the rpm value
+	 */
+	public LiveData<Integer> getRPMValue() { return CSCManager.getRPMValue();}
 
-	public LiveData<Double> getSpeedValue() {return CSCManager.getSpeedValue();}
+	/**
+	 * get the speed value from the CSCManager
+	 * @return the speed value
+	 */
+	public LiveData<Double> getSpeedValue() { return CSCManager.getSpeedValue();}
+
+	/**
+	 * get the heart rate value from the CSCManager
+	 * @return the heart rate value
+	 */
+	public LiveData<Integer> getHeartRateValue() { return CSCManager.getHeartRateValue();}
+
+	/**
+	 * get the battery level of the first sensor from the CSCManager
+	 * @return the battery level
+	 */
+	public LiveData<Integer> getBatteryLevelSpeed() { return CSCManager.getBatteryLevelSpeed();}
+
+	/**
+	 * get the battery level of the first sensor from the CSCManager
+	 * @return the battery level
+	 */
+	public LiveData<Integer> getBatteryLevelCadence() { return CSCManager.getBatteryLevelCadence();}
+
+	/**
+	 * get the battery level of the first sensor from the CSCManager
+	 * @return the battery level
+	 */
+	public LiveData<Integer> getBatteryLevelHeartRate() { return CSCManager.getBatteryLevelHeartRate();}
+
+	/**
+	 * get error code
+	 * @return error code
+	 */
+	public LiveData<Integer> getMessageCode() { return  CSCManager.getMessageCode();}
 
 	/**
 	 * Connect to the given peripheral.
-	 *
 	 * @param target the target device.
 	 */
 	public void connect(@NonNull final DiscoveredBluetoothDevice target) {
@@ -93,24 +138,44 @@ public class CSCViewModel extends AndroidViewModel {
 	}
 
 	/**
-	 * Sends a command to set the wheel diameter to value.
-	 *
-	 * @param value diameter of the wheels in cm
+	 * sends a command to set the wheel diameter to value
+	 * @param value diameter of the wheels in inch
 	 */
-	public void setWheelDiameter(final Integer value) {
+	public void sendWheelDiameter(final Integer value) {
 		CSCManager.sendDiameter(value);}
 
+	/**
+	 * sends a command to set notifications manually to the CSCManager
+	 */
 	public void setNotifications() {
 		CSCManager.setNotificationsOn();}
 
+	/**
+	 * sends command to reset the diameter value to the CSCManager
+	 */
 	public void resetDiameter() {
 		CSCManager.resetDiameterValue();}
 
+	/**
+	 * sends command to send addresses to the CSCManager
+ 	 * @param addresses
+	 */
+	public void sendAddresses(byte[] addresses) {
+		CSCManager.sendAddresses(addresses);
+	}
+
+	/**
+	 * when connected -> disconnect
+	 */
 	@Override
 	protected void onCleared() {
 		super.onCleared();
 		if (CSCManager.isConnected()) {
 			disconnect();
 		}
+	}
+
+	public void resetValues() {
+		device = null;
 	}
 }

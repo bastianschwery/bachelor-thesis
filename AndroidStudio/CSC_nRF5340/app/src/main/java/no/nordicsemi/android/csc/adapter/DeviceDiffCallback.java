@@ -36,21 +36,41 @@ public class DeviceDiffCallback extends DiffUtil.Callback {
 		this.newList = newList;
 	}
 
+	/**
+	 * getter
+	 * @return size of old list
+	 */
 	@Override
 	public int getOldListSize() {
 		return oldList != null ? oldList.size() : 0;
 	}
 
+	/**
+	 * getter
+	 * @return size of new list
+	 */
 	@Override
 	public int getNewListSize() {
 		return newList != null ? newList.size() : 0;
 	}
 
+	/**
+	 * compare two items
+	 * @param oldItemPosition
+	 * @param newItemPosition
+	 * @return boolean if the two items is same
+	 */
 	@Override
 	public boolean areItemsTheSame(final int oldItemPosition, final int newItemPosition) {
 		return oldList.get(oldItemPosition) == newList.get(newItemPosition);
 	}
 
+	/**
+	 * compare content of two items
+	 * @param oldItemPosition
+	 * @param newItemPosition
+	 * @return boolean if the content of the two items is the same
+	 */
 	@Override
 	public boolean areContentsTheSame(final int oldItemPosition, final int newItemPosition) {
 		final DiscoveredBluetoothDevice device = oldList.get(oldItemPosition);

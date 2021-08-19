@@ -21,30 +21,34 @@
   -->
 
 <resources>
-	<string name="app_name">HES-SO CSC</string>
+	<string name="app_name">HES-SO BIKE</string>
 	<string name="feature_name">CSC</string>
 	<string name="board_name">Nordic nRF5340 DK</string>
 
 	<string name="menu_filter">Filter</string>
-	<string name="menu_filter_uuid">Only devices advertising LBS UUID</string>
+	<string name="menu_filter_uuid">Only devices with Data service</string>
 	<string name="menu_filter_nearby">Only nearby devices</string>
+	<string name="connect_button">Connect...</string>
 
 	<string name="title_speed">Speed [km/h]</string>
 	<string name="title_cadence">Cadence [rpm]</string>
 	<string name="title_distance">Distance [km]</string>
 	<string name="text_setValue">Set</string>
+	<string name="title_heartRate">Heart Rate [bpm]</string>
 	<string name="text_resetValue">Reset</string>
 	<string name="speed_default">0</string>
 	<string name="cadence_default">0</string>
 	<string name="distance_default">0</string>
 	<string name="diameter_default">0</string>
+	<string name="heartRate_default">0</string>
+	<string name="batteryLevel_default">0%</string>
 
 	<string name="unknown_device">Unknown Device</string>
 	<string name="turn_on">On</string>
 	<string name="turn_off">Off</string>
 	<string name="title_led_state">LED</string>
 	<string name="title_button_state">Button</string>
-	<string name="title_value">Wheel diameter [Inch]</string>
+	<string name="title_value">Wheel diameter [inch]</string>
 
 	<string name="state">State</string>
 	<string name="button_pressed">Pressed</string>
@@ -55,7 +59,7 @@
 
 	<string name="location_permission_title">LOCATION PERMISSION REQUIRED</string>
 	<string name="location_permission_info">From Android 6.0 Marshmallow onwards the application requires Location permission in order to scan for Bluetooth Low Energy devices.
-      \n\nThis is because Bluetooth LE beacons, for example iBeacons or Eddystone, may be used to determine the phone\'s and user\'s location. <b>nRF Blinky</b> will not use this information in any way.</string>
+      \n\nThis is because Bluetooth LE beacons, for example iBeacons or Eddystone, may be used to determine the phone\'s and user\'s location. <b>HES-SO BIKE</b> will not use this information in any way.</string>
 	<string name="location_permission_action">Grant permission</string>
 	<string name="location_permission_settings">Settings</string>
 
@@ -65,7 +69,7 @@
 
 	<string name="guide_title">CAN\'T SEE YOUR Board?</string>
 	<string name="guide_info">1. Make sure the DK is <b>turned on</b> and is connected to a power source using a micro USB cable or a coin cell is plugged in.
-        \n\n2. Make sure the <b>PerCel</b> firmware is flashed.</string>
+        \n\n2. Make sure the <b>PerCen</b> firmware is flashed.</string>
 	<string name="guide_location_info">3. Location is turned off. Some Android phones require it enabled in order to scan for Bluetooth LE devices.
 		If you are sure your Board is advertising and it doesn\'t show up here, click the button below to enable Location.</string>
 	<string name="csc_guide_location_action">Enable</string>

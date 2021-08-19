@@ -181,7 +181,8 @@
 			"cinttypes": "cpp",
 			"iomanip": "cpp",
 			"zephyr.h": "c",
-			"att_internal.h": "c"
+			"att_internal.h": "c",
+			"bas_client.h": "c"
 		},
 		"kconfig.zephyr.board": {
 			"board": "nrf5340dk_nrf5340_cpuapp",

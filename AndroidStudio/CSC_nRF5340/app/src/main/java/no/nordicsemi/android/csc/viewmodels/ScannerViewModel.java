@@ -58,14 +58,26 @@ public class ScannerViewModel extends AndroidViewModel {
 
 	private final SharedPreferences preferences;
 
+	/**
+	 * getter
+	 * @return devices
+	 */
 	public DevicesLiveData getDevices() {
 		return devicesLiveData;
 	}
 
+	/**
+	 * getter
+	 * @return scanner state
+	 */
 	public ScannerStateLiveData getScannerState() {
 		return scannerStateLiveData;
 	}
 
+	/**
+	 * create instances with parameter
+	 * @param application object
+	 */
 	public ScannerViewModel(final Application application) {
 		super(application);
 		preferences = PreferenceManager.getDefaultSharedPreferences(application);
@@ -79,6 +91,9 @@ public class ScannerViewModel extends AndroidViewModel {
 		registerBroadcastReceivers(application);
 	}
 
+	/**
+	 * clear application
+	 */
 	@Override
 	protected void onCleared() {
 		super.onCleared();
@@ -89,10 +104,18 @@ public class ScannerViewModel extends AndroidViewModel {
 		}
 	}
 
+	/**
+	 * getter
+	 * @return boolean if UUID filter is enabled
+	 */
 	public boolean isUuidFilterEnabled() {
 		return preferences.getBoolean(PREFS_FILTER_UUID_REQUIRED, true);
 	}
 
+	/**
+	 * getter
+	 * @return boolean if nearby filter is enabled
+	 */
 	public boolean isNearbyFilterEnabled() {
 		return preferences.getBoolean(PREFS_FILTER_NEARBY_ONLY, false);
 	}
@@ -111,7 +134,7 @@ public class ScannerViewModel extends AndroidViewModel {
 	 * even if they move away from the phone, or change the advertising packet. This is to
 	 * avoid removing devices from the list.
 	 *
-	 * @param uuidRequired if true, the list will display only devices with Led-Button Service UUID
+	 * @param uuidRequired if true, the list will display only devices with CSC Service UUID
 	 *                     in the advertising packet.
 	 */
 	public void filterByUuid(final boolean uuidRequired) {
@@ -169,6 +192,11 @@ public class ScannerViewModel extends AndroidViewModel {
 	}
 
 	private final ScanCallback scanCallback = new ScanCallback() {
+		/**
+		 * called when scanning process has found device
+		 * @param callbackType integer
+		 * @param result of scanning
+		 */
 		@Override
 		public void onScanResult(final int callbackType, @NonNull final ScanResult result) {
 			// This callback will be called only if the scan report delay is not set or is set to 0.
@@ -183,6 +211,10 @@ public class ScannerViewModel extends AndroidViewModel {
 			}
 		}
 
+		/**
+		 * callback, gets list of all results
+		 * @param results list of scanning results
+		 */
 		@Override
 		public void onBatchScanResults(@NonNull final List<ScanResult> results) {
 			// This callback will be called only if the report delay set above is greater then 0.
@@ -200,9 +232,13 @@ public class ScannerViewModel extends AndroidViewModel {
 			}
 		}
 
+		/**
+		 * called when scanning process failed
+		 * @param errorCode integer
+		 */
 		@Override
 		public void onScanFailed(final int errorCode) {
-			// TODO This should be handled
+			System.out.println("Scanning failed with Error Code: " + errorCode);
 			scannerStateLiveData.scanningStopped();
 		}
 	};

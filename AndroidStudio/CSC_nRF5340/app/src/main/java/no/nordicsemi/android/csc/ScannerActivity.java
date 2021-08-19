@@ -23,15 +23,22 @@
 package no.nordicsemi.android.csc;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,6 +52,8 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.util.ArrayList;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -57,7 +66,21 @@ import no.nordicsemi.android.csc.viewmodels.ScannerViewModel;
 public class ScannerActivity extends AppCompatActivity implements DevicesAdapter.OnItemClickListener {
     private static final int REQUEST_ACCESS_FINE_LOCATION = 1022; // random number
 
+    // change this values when using other CSC / heart rate sensors (also in CSCActivity)
+    private final String BOARD_NAME = "Nordic";
+    private final String SPEED_NAME = "SPD";
+    private final String CADENCE_NAME = "CAD";
+    private final String HEARTRATE_NAME = "Polar";
+
     private ScannerViewModel scannerViewModel;
+    private ArrayList<DiscoveredBluetoothDevice> devices_list = new ArrayList<>();
+    private DiscoveredBluetoothDevice[] devices;
+    private boolean boardSelected = false;
+    private boolean wrongSensors = false;
+    private boolean nbrDevicesOK = false;
+    private boolean nbrSensorsOK = false;
+    private Button connect_btn;
+    private int cntGoodDevices = 0;
 
     @BindView(R.id.state_scanning) View scanningView;
     @BindView(R.id.no_devices) View emptyView;
@@ -67,6 +90,10 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     @BindView(R.id.no_location) View noLocationView;
     @BindView(R.id.bluetooth_off) View noBluetoothView;
 
+    /**
+     * create all necessary instances and add on click listeners
+     * @param savedInstanceState state
+     */
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +104,20 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         toolbar.setTitle(R.string.app_name);
         setSupportActionBar(toolbar);
 
+        connect_btn = findViewById(R.id.connect_button);
+        connect_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (devices_list.isEmpty()) {
+                    setText("Please select minimum one device");
+                }
+                else
+                {
+                    connect();
+                }
+            }
+        });
+
         // Create view model containing utility methods for scanning
         scannerViewModel = new ViewModelProvider(this).get(ScannerViewModel.class);
         scannerViewModel.getScannerState().observe(this, this::startScan);
@@ -85,27 +126,117 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         final RecyclerView recyclerView = findViewById(R.id.recycler_view_ble_devices);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+
         final RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
+
         final DevicesAdapter adapter = new DevicesAdapter(this, scannerViewModel.getDevices());
         adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
     }
 
+    // check if known sensors and a board is selected
+    private void connect() {
+        if (devices_list.size() > 4) {
+            nbrDevicesOK = false;
+            setText("Please select not more than 4 devices");
+        }
+        else {
+            nbrDevicesOK = true;
+        }
+
+        for (int i=0;i<devices_list.size();i++) {
+            // check if a unknown device is selected
+            if (devices_list.get(i).getName() == null) {
+                setText("Unknown sensor/s were selected -> try again");
+                wrongSensors = true;
+                break;
+            }
+
+            // count if there are known and accepted sensors are selected
+            if (devices_list.get(i).getName().contains(SPEED_NAME) || devices_list.get(i).getName().contains(CADENCE_NAME)
+                || devices_list.get(i).getName().contains(HEARTRATE_NAME) || devices_list.get(i).getName().contains(BOARD_NAME)) {
+                cntGoodDevices++;
+            }
+
+            // check if a board is selected
+            if (devices_list.get(i).getName().contains(BOARD_NAME)) {
+                boardSelected = true;
+            }
+        }
+
+        // check if there is a not accepted device selected
+        if (cntGoodDevices != devices_list.size() && !wrongSensors) {
+            setText("Wrong sensor/s were selected -> try again");
+            cntGoodDevices = 0;
+            wrongSensors = true;
+        }
+
+        // check if there is at minimum one accepted sensor selected
+        if (boardSelected && devices_list.size() == 1) {
+            setText("Please select minimum one sensor");
+            nbrSensorsOK = false;
+        }
+        else {
+            nbrSensorsOK = true;
+        }
+
+        // if all checks are good, start next and send list with devices to CSCActivity
+        if (boardSelected && nbrDevicesOK && nbrSensorsOK && !wrongSensors) {
+            boardSelected = false;
+            nbrDevicesOK = false;
+            nbrSensorsOK = false;
+            wrongSensors = false;
+            cntGoodDevices = 0;
+            devices = new DiscoveredBluetoothDevice[devices_list.size()];
+            devices = devices_list.toArray(devices);
+            final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
+            controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
+            startActivity(controlBlinkIntent);
+        }   // otherwise reset values for next try
+        else if (!boardSelected && !wrongSensors) {
+            setText("Please select a Nordic Board to continue");
+            wrongSensors = false;
+            nbrSensorsOK = false;
+            boardSelected = false;
+            nbrDevicesOK = false;
+            cntGoodDevices = 0;
+        }
+        else {
+            wrongSensors = false;
+            nbrSensorsOK = false;
+            boardSelected = false;
+            nbrDevicesOK = false;
+            cntGoodDevices = 0;
+        }
+    }
+
+    /**
+     * on restart application -> call constructor and clear
+     */
     @Override
     protected void onRestart() {
         super.onRestart();
         clear();
     }
 
+    /**
+     * when stopping application -> stop scanning
+     */
     @Override
     protected void onStop() {
         super.onStop();
+        devices_list.clear();
         stopScan();
     }
 
+    /**
+     * create options menu
+     * @param menu object
+     * @return true
+     */
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.filter, menu);
@@ -114,6 +245,11 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         return true;
     }
 
+    /**
+     * get the selected menu options
+     * @param item object
+     * @return true
+     */
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
@@ -129,13 +265,27 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * get clicked item
+     * @param device item
+     * @param set
+     */
     @Override
-    public void onItemClick(@NonNull final DiscoveredBluetoothDevice device) {
-        final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
-        controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, device);
-        startActivity(controlBlinkIntent);
+    public void onItemClick(@NonNull final DiscoveredBluetoothDevice device, boolean set) {
+        if (set) {
+            devices_list.add(device);
+        }
+        else {
+            devices_list.remove(device);
+        }
     }
 
+    /**
+     * result of the permission request
+     * @param requestCode int code
+     * @param permissions String array
+     * @param grantResults int array
+     */
     @Override
     public void onRequestPermissionsResult(final int requestCode,
                                            @NonNull final String[] permissions,
@@ -146,18 +296,27 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         }
     }
 
+    /**
+     * when location enabled clicked
+     */
     @OnClick(R.id.action_enable_location)
     public void onEnableLocationClicked() {
         final Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         startActivity(intent);
     }
 
+    /**
+     * when bluetooth enable clicked
+     */
     @OnClick(R.id.action_enable_bluetooth)
     public void onEnableBluetoothClicked() {
         final Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivity(enableIntent);
     }
 
+    /**
+     * when grant location enable clicked
+     */
     @OnClick(R.id.action_grant_location_permission)
     public void onGrantLocationPermissionClicked() {
         Utils.markLocationPermissionRequested(this);
@@ -167,6 +326,9 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
                 REQUEST_ACCESS_FINE_LOCATION);
     }
 
+    /**
+     * when permission settings clicked
+     */
     @OnClick(R.id.action_permission_settings)
     public void onPermissionSettingsClicked() {
         final Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -231,7 +393,23 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
      * Clears the list of devices, which will notify the observer.
      */
     private void clear() {
+        devices_list.clear();
         scannerViewModel.getDevices().clear();
         scannerViewModel.getScannerState().clearRecords();
+    }
+
+    /**
+     * show toast on application
+     * @param msg string to show
+     */
+    public void setText(String msg) {
+        Toast toast = Toast.makeText(this,msg,Toast.LENGTH_SHORT);
+        LinearLayout layout = (LinearLayout) toast.getView();
+        if (layout.getChildCount() > 0) {
+            TextView tv = (TextView) layout.getChildAt(0);
+            tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        }
+
+        toast.show();
     }
 }

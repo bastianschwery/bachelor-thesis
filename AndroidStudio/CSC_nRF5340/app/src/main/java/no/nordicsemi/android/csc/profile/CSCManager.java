@@ -50,19 +50,23 @@ import no.nordicsemi.android.log.Logger;
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY;
 
 public class CSCManager extends ObservableBleManager {
-	/** Nordic Blinky Service UUID. */
-	public final static UUID LBS_UUID_SERVICE = UUID.fromString("00001523-1212-efde-1523-785feabcd123");
 	/** CSC data characteristic Service UUID. */
-	public final static UUID CSC_SERVICE = UUID.fromString("75c276c3-8f97-20bc-a143-b354244886d4");
+	public final static UUID DATA_SERVICE_UUID = UUID.fromString("75c276c3-8f97-20bc-a143-b354244886d4");
 	/** CSC receive data characteristic UUID. */
 	public final static UUID RX_CHARACTERISTIC_UUID = UUID.fromString("6ACF4F08-CC9D-D495-6B41-AA7E60C4E8A6");
 	/** CSC transmit data characteristic UUID. */
 	public final static UUID TX_CHARACTERISTIC_UUID = UUID.fromString("D3D46A35-4394-E9AA-5A43-E7921120AAED");
 
-	public static final  UUID CCCD_ID = UUID.fromString("000002902-0000-1000-8000-00805f9b34fb");
+	public static final UUID CCCD_ID = UUID.fromString("000002902-0000-1000-8000-00805f9b34fb");
 
+	// live data
 	private final MutableLiveData<Integer> rpmValue = new MutableLiveData<>();
 	private final MutableLiveData<Double> speedValue = new MutableLiveData<>();
+	private final MutableLiveData<Integer> messageCode = new MutableLiveData<>();
+	private final MutableLiveData<Integer> heartRateValue = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelSpeed = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelCadence = new MutableLiveData<>();
+	private final MutableLiveData<Integer> batteryLevelHeartRate = new MutableLiveData<>();
 
 	private BluetoothGattCharacteristic RX_characteristic, TX_characteristic;
 
@@ -70,19 +74,62 @@ public class CSCManager extends ObservableBleManager {
 	private boolean supported;
 
 	private BluetoothGatt mBluetoothGatt;
-	private int cnt = 0;
-	private int type = 0;
+	private double speed = 0;
 
 	private final int TYPE_SPEED = 1;
-	private final int TYPE_RPM = 2;
+	private final int TYPE_CADENCE= 2;
+	private final int TYPE_HEARTRATE = 3;
+	private final int TYPE_BATTERY = 4;
 
+	/**
+	 * constructor
+	 * @param context the context
+	 */
 	public CSCManager(@NonNull final Context context) {
 		super(context);
 	}
 
+	/**
+	 * get the rpm value
+	 * @return the rpm value
+	 */
 	public final LiveData<Integer> getRPMValue() { return  rpmValue;}
 
+	/**
+	 * get the speed value
+	 * @return the speed value
+	 */
 	public final LiveData<Double> getSpeedValue() { return speedValue;}
+
+	/**
+	 * get the heart rate value
+	 * @return the heart rate value
+	 */
+	public final LiveData<Integer> getHeartRateValue() { return heartRateValue;}
+
+	/**
+	 * get the message code
+	 * @return the message code
+	 */
+	public final LiveData<Integer> getMessageCode() { return messageCode;}
+
+	/**
+	 * get battery level of first sensor
+	 * @return the battery level
+	 */
+	public final LiveData<Integer> getBatteryLevelSpeed() { return batteryLevelSpeed;}
+
+	/**
+	 * get battery level of second sensor
+	 * @return the battery level
+	 */
+	public final LiveData<Integer> getBatteryLevelCadence() { return batteryLevelCadence;}
+
+	/**
+	 * get battery level of third sensor
+	 * @return the battery level
+	 */
+	public final LiveData<Integer> getBatteryLevelHeartRate() { return batteryLevelHeartRate;}
 
 	@NonNull
 	@Override
@@ -98,12 +145,21 @@ public class CSCManager extends ObservableBleManager {
 		logSession = session;
 	}
 
+	/**
+	 * logger
+	 * @param priority the priority
+	 * @param message the message
+	 */
 	@Override
 	public void log(final int priority, @NonNull final String message) {
 		// The priority is a Log.X constant, while the Logger accepts it's log levels.
 		Logger.log(logSession, LogContract.Log.Level.fromPriority(priority), message);
 	}
 
+	/**
+	 * clear cache when disconnected
+	 * @return if supported
+	 */
 	@Override
 	protected boolean shouldClearCacheWhenDisconnected() {
 		return !supported;
@@ -119,48 +175,57 @@ public class CSCManager extends ObservableBleManager {
 	 */
 	private final TXDataCallback txCallback = new TXDataCallback() {
 
+		/**
+		 * callback -> called when new data arrived
+		 * @param device the target device
+		 * @param data first value in array is type of sensor, second value is the speed/cadence/heart rate
+		 */
 		@Override
-		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer data[]) {
-			log(Log.INFO,"Data received");
+		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer[] data) {
+			log(Log.INFO, "Data received");
 
+			// message code received
+			if (data.length == 1) {
+				messageCode.setValue(data[0]);
+			}
+
+			// data received
 			switch (data[0]) {
-				case 1:
-					// type speed
-					speedValue.setValue(data[1].doubleValue());
+				case TYPE_SPEED:
+					double val = data[2].doubleValue();
+					speed = data[1] + val / 100;
+					speedValue.setValue(speed);
 					break;
-				case 2:
-					// type cadence
-					rpmValue.setValue(data[1]);
+				case TYPE_CADENCE:
+					rpmValue.setValue(data[1] + (data[2] << 8));
 					break;
+				case TYPE_HEARTRATE:
+					heartRateValue.setValue(data[1]);
+				case TYPE_BATTERY:
+					switch (data[1]) {
+						case TYPE_SPEED:
+							batteryLevelSpeed.setValue(data[2]);
+							break;
+						case TYPE_CADENCE:
+							batteryLevelCadence.setValue(data[2]);
+							break;
+						case TYPE_HEARTRATE:
+							batteryLevelHeartRate.setValue(data[2]);
+							break;
+						default:
+							break;
+					}
 				default:
-					log(Log.INFO,"Unknown type");
+					log(Log.INFO, "Unknown type");
 					break;
 			}
-
-
-
-			/*if (cnt == 0) {
-				if (data[0] == 1) {
-					type = TYPE_SPEED;
-					cnt++;
-				}
-				else if (data[1] == 2) {
-					type = TYPE_RPM;
-					cnt++;
-				}
-			}
-			else if (cnt == 1) {
-				if (type == TYPE_SPEED) {
-					speedValue.setValue(data.doubleValue());
-					cnt = 0;
-				}
-				else if (type == TYPE_RPM) {
-					rpmValue.setValue(data);
-					cnt = 0;
-				}
-			}*/
 		}
 
+		/**
+		 * invalid data was received
+		 * @param device the target device
+		 * @param data the fault data
+		 */
 		@Override
 		public void onInvalidDataReceived(@NonNull @NotNull BluetoothDevice device, @NonNull @NotNull Data data) {
 			// Data can only invalid if we read them. We assume the app always sends correct data.
@@ -177,12 +242,21 @@ public class CSCManager extends ObservableBleManager {
 	 * will be called with the data received.
 	 */
 	private final RXDataCallback rxCallback = new RXDataCallback() {
+		/**
+		 * value changed on the rx characteristic
+		 * @param device the target device
+		 * @param data the new data
+		 */
 		@Override
 		public void onCSCDataChanged(@NonNull @NotNull BluetoothDevice device, Integer data) {
 			log(Log.INFO, "New Data:" + data);
-			//cscValue.setValue(data);
 		}
 
+		/**
+		 * invalid data was received
+		 * @param device the target device
+		 * @param data the fault data
+		 */
 		@Override
 		public void onInvalidDataReceived(@NonNull @NotNull BluetoothDevice device, @NonNull @NotNull Data data) {
 			// Data can only invalid if we read them. We assume the app always sends correct data.
@@ -195,6 +269,9 @@ public class CSCManager extends ObservableBleManager {
 	 * initialize all notification settings
 	 */
 	private class CSCBleManagerGattCallback extends BleManagerGattCallback {
+		/**
+		 * initialize all notifications of the characterstics
+		 */
 		@Override
 		protected void initialize() {
 			setNotificationCallback(RX_characteristic).with(rxCallback);
@@ -205,9 +282,15 @@ public class CSCManager extends ObservableBleManager {
 			enableNotifications(TX_characteristic).enqueue();
 		}
 
+		/**
+		 *
+		 * check if service is supported or not
+		 * @param gatt object
+		 * @return boolean supported
+		 */
 		@Override
 		public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
-			final BluetoothGattService CSCService = gatt.getService(CSC_SERVICE);
+			final BluetoothGattService CSCService = gatt.getService(DATA_SERVICE_UUID);
 			if (CSCService != null) {
 				mBluetoothGatt = gatt;
 				RX_characteristic = CSCService.getCharacteristic(RX_CHARACTERISTIC_UUID);
@@ -231,13 +314,21 @@ public class CSCManager extends ObservableBleManager {
 		}
 	}
 
+	/**
+	 *
+	 * send diameter value in inch over ble to server
+	 * @param diameter value in inch
+	 */
 	public void sendDiameter(int diameter) {
 		log(Log.VERBOSE,"Sending wheel diameter, Data: " + diameter);
 		writeCharacteristic(RX_characteristic,Data.opCode((byte) diameter)).enqueue();
 	}
 
-	public void setNotificationsOn(){
-		BluetoothGattService service = mBluetoothGatt.getService(CSC_SERVICE);
+	/**
+	 * set notifications manually
+	 */
+	public void setNotificationsOn() {
+		BluetoothGattService service = mBluetoothGatt.getService(DATA_SERVICE_UUID);
 		BluetoothGattCharacteristic TXcharacteristic = service.getCharacteristic(TX_CHARACTERISTIC_UUID);
 		BluetoothGattDescriptor descriptor = TXcharacteristic.getDescriptor(CCCD_ID);
 		TXcharacteristic.addDescriptor(descriptor);
@@ -247,7 +338,18 @@ public class CSCManager extends ObservableBleManager {
 		mBluetoothGatt.setCharacteristicNotification(TXcharacteristic,true);
 	}
 
+	/**
+	 * send message to server that the diameter has been reset
+	 */
 	public void resetDiameterValue() {
 		writeCharacteristic(RX_characteristic,Data.opCode((byte) 0)).enqueue();
+	}
+
+	/**
+	 * send addresses to connect to the server
+	 * @param addresses to connect
+	 */
+	public void sendAddresses(byte[] addresses) {
+		writeCharacteristic(RX_characteristic,addresses).enqueue();
 	}
 }

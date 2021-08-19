@@ -22,8 +22,10 @@
 
 package no.nordicsemi.android.csc.adapter;
 
+import android.graphics.drawable.ColorDrawable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -45,10 +47,13 @@ import no.nordicsemi.android.csc.viewmodels.DevicesLiveData;
 public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHolder> {
 	private List<DiscoveredBluetoothDevice> devices;
 	private OnItemClickListener onItemClickListener;
+	private boolean once = false;
+	ColorDrawable standardColor;
+	int standardColorId;
 
 	@FunctionalInterface
 	public interface OnItemClickListener {
-		void onItemClick(@NonNull final DiscoveredBluetoothDevice device);
+		void onItemClick(@NonNull final DiscoveredBluetoothDevice device, boolean set);
 	}
 
 	public void setOnItemClickListener(final OnItemClickListener listener) {
@@ -102,10 +107,19 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 		return getItemCount() == 0;
 	}
 
+	public void reset() {
+		final View v = null;
+		v.findViewById(R.id.device_container);
+		v.setBackgroundColor(-15592942);
+	}
+
 	final class ViewHolder extends RecyclerView.ViewHolder {
 		@BindView(R.id.device_address) TextView deviceAddress;
 		@BindView(R.id.device_name) TextView deviceName;
 		@BindView(R.id.rssi) ImageView rssi;
+		ColorDrawable viewColor;
+
+		int colorId;
 
 		private ViewHolder(@NonNull final View view) {
 			super(view);
@@ -113,7 +127,22 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
 			view.findViewById(R.id.device_container).setOnClickListener(v -> {
 				if (onItemClickListener != null) {
-					onItemClickListener.onItemClick(devices.get(getAdapterPosition()));
+					viewColor = (ColorDrawable) v.getBackground();
+					colorId = viewColor.getColor();
+
+					if (!once) {
+						once = true;
+						standardColor = (ColorDrawable) v.getBackground();
+						standardColorId = standardColor.getColor();
+					}
+					if (colorId == 0xF00BFFFF) {
+						v.setBackgroundColor(standardColorId);
+						onItemClickListener.onItemClick(devices.get(getAdapterPosition()),false);
+					}
+					else {
+						v.setBackgroundColor(0xF00BFFFF);
+						onItemClickListener.onItemClick(devices.get(getAdapterPosition()),true);
+					}
 				}
 			});
 		}

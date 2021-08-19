@@ -145,14 +145,18 @@ static void on_sent(struct bt_conn *conn, void *user_data)
 	ARG_UNUSED(user_data);
 
     const bt_addr_le_t * addr = bt_conn_get_dst(conn);
+    printk("Data sent to Address 0x %02X %02X %02X %02X %02X %02X \n", addr->a.val[0]
+                                                                , addr->a.val[1]
+                                                                , addr->a.val[2]
+                                                                , addr->a.val[3]
+                                                                , addr->a.val[4]
+                                                                , addr->a.val[5]);
 }
 
 // This function is called whenever the CCCD register has been changed by the client
 void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value)
 {
     ARG_UNUSED(attr);
-
-    uint8_t notificationsCode[1];
 
     switch(value)
     {

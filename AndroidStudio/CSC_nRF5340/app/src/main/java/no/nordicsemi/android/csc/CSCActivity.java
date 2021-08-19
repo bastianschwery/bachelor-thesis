@@ -91,8 +91,7 @@ public class CSCActivity extends AppCompatActivity {
 	@BindView(R.id.battery_level_sensor2) TextView batteryLevelCadence;
 	@BindView(R.id.battery_level_sensor3) TextView batteryLevelHeartRate;
 
-	public CSCActivity() {
-	}
+	public CSCActivity() {}
 
 	/**
 	 * create all necessary instances and add on click listeners

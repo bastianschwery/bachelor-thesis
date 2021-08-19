@@ -31,10 +31,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -145,28 +148,33 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         }
 
         for (int i=0;i<devices_list.size();i++) {
+            // check if a unknown device is selected
             if (devices_list.get(i).getName() == null) {
                 setText("Unknown sensor/s were selected -> try again");
                 wrongSensors = true;
                 break;
             }
 
-            if (devices_list.get(i).getName() == SPEED_NAME || devices_list.get(i).getName() == CADENCE_NAME
-                || devices_list.get(i).getName() == HEARTRATE_NAME || devices_list.get(i).getName() == BOARD_NAME) {
+            // count if there are known and accepted sensors are selected
+            if (devices_list.get(i).getName().contains(SPEED_NAME) || devices_list.get(i).getName().contains(CADENCE_NAME)
+                || devices_list.get(i).getName().contains(HEARTRATE_NAME) || devices_list.get(i).getName().contains(BOARD_NAME)) {
                 cntGoodDevices++;
             }
 
+            // check if a board is selected
             if (devices_list.get(i).getName().contains(BOARD_NAME)) {
                 boardSelected = true;
             }
         }
 
+        // check if there is a not accepted device selected
         if (cntGoodDevices != devices_list.size() && !wrongSensors) {
             setText("Wrong sensor/s were selected -> try again");
             cntGoodDevices = 0;
             wrongSensors = true;
         }
 
+        // check if there is at minimum one accepted sensor selected
         if (boardSelected && devices_list.size() == 1) {
             setText("Please select minimum one sensor");
             nbrSensorsOK = false;
@@ -175,18 +183,33 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
             nbrSensorsOK = true;
         }
 
+        // if all checks are good, start next and send list with devices to CSCActivity
         if (boardSelected && nbrDevicesOK && nbrSensorsOK && !wrongSensors) {
+            boardSelected = false;
+            nbrDevicesOK = false;
+            nbrSensorsOK = false;
+            wrongSensors = false;
+            cntGoodDevices = 0;
             devices = new DiscoveredBluetoothDevice[devices_list.size()];
             devices = devices_list.toArray(devices);
             final Intent controlBlinkIntent = new Intent(this, CSCActivity.class);
             controlBlinkIntent.putExtra(CSCActivity.EXTRA_DEVICE, devices);
             startActivity(controlBlinkIntent);
-        }
+        }   // otherwise reset values for next try
         else if (!boardSelected && !wrongSensors) {
             setText("Please select a Nordic Board to continue");
+            wrongSensors = false;
+            nbrSensorsOK = false;
+            boardSelected = false;
+            nbrDevicesOK = false;
+            cntGoodDevices = 0;
         }
         else {
             wrongSensors = false;
+            nbrSensorsOK = false;
+            boardSelected = false;
+            nbrDevicesOK = false;
+            cntGoodDevices = 0;
         }
     }
 
@@ -380,6 +403,13 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
      * @param msg string to show
      */
     public void setText(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        Toast toast = Toast.makeText(this,msg,Toast.LENGTH_SHORT);
+        LinearLayout layout = (LinearLayout) toast.getView();
+        if (layout.getChildCount() > 0) {
+            TextView tv = (TextView) layout.getChildAt(0);
+            tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        }
+
+        toast.show();
     }
 }

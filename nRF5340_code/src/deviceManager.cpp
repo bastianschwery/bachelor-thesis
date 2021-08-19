@@ -1222,19 +1222,15 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 			{
 				if (isFree())
 				{
-					if (cntForDiscover == 0 || cntForDiscover == 7 || cntForDiscover == 14) 
-					{
-						initBatteryManager(sensorInfos);
-						err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);	
-						
-						printk("Nbr connections %d\n", cntBatterySubscriptions);
+					initBatteryManager(sensorInfos);
+					err = gatt_discover_battery_service(centralConnections[cntBatterySubscriptions]);	
+					
+					printk("Nbr connections %d\n", cntBatterySubscriptions);
 
-						if (err == 0)
-						{
-							cntBatterySubscriptions++;
-						}
+					if (err == 0)
+					{
+						cntBatterySubscriptions++;
 					}
-					cntForDiscover++;
 				}
 			}
 		}
@@ -1320,8 +1316,8 @@ uint8_t DeviceManager::onReceived(struct bt_conn *conn,
 						}
 					}
 
-					// ask from time to time for the battery level
-					if (cntFirstSpeed == 1 || cntNbrReceived1 == 50)
+					// ask from at the beginning and time to time for the battery level
+					if (cntFirstSpeed == 2 || cntNbrReceived1 == 50)
 					{
 						cntNbrReceived1 = 0;
 						askForBatteryLevel(TYPE_CSC_SPEED);
